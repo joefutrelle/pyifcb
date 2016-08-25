@@ -14,5 +14,12 @@ class Adc(object):
         self.pid = Pid(adc_path, parse=False)
     def parse(self):
         schema = COLUMNS[self.pid.schema_version]
-        return pd.read_csv(self.path, names=schema, index_col=False)
-
+        df = pd.read_csv(self.path, index_col=False)
+        # deal with files that don't match the hardcoded schema
+        cols = list(df.columns)
+        if len(cols) > len(schema):
+            cols[:len(schema)] = schema
+        elif len(cols) < len(schema):
+            cols = schema[:len(cols)]
+        df.columns = cols
+        return df
