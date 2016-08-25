@@ -33,6 +33,12 @@ class Pid(object):
     @property
     def timestamp(self):
         return pd.to_datetime(self.parsed['timestamp'], format=self.parsed['timestamp_format'], utc=True)
+    @property
+    @imemoize
+    def schema(self):
+        """return ADC columns"""
+        # FIXME move elsewhere
+        return self.parsed['adc_cols'].split(' ')
     def __getattr__(self, name):
         if name in ['bin_lid', 'lid', 'instrument', 'namespace', 'product', 'target', 'ts_label']:
             return self.parsed[name]

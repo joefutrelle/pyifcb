@@ -3,8 +3,16 @@ import os
 from oii.utils import imemoize
 
 from .identifiers import Pid
+from .adc import Adc
 
 def list_filesets(dirpath, blacklist=['skip'], sort=True):
+    """iterate over entire directory tree and return a Fileset
+    object for each .adc/.hdr/.roi fileset found. warning: for
+    large directories, this is slow.
+    parameters:
+    blacklist - list of names to ignore
+    sort - whether to sort output (does not guarantee that output
+    is sorted by time"""
     # FIXME implement faster version using scandir package
     for dp, dirnames, filenames in os.walk(dirpath):
         for d in dirnames:
@@ -19,7 +27,11 @@ def list_filesets(dirpath, blacklist=['skip'], sort=True):
                 yield dp, f[:-4]
 
 def list_data_dirs(dirpath, blacklist=['skip'], sort=True):
-    """return the path of any directory that contains an .adc file"""
+    """return the path of any descendant directory that contains an .adc file
+    parameters:
+    blacklist - list of names to ignore
+    sort - whether to sort output (does not guarantee that output
+    is sorted by time"""
     dirlist = os.listdir(dirpath)
     if sort:
         dirlist.sort()
@@ -35,6 +47,9 @@ def list_data_dirs(dirpath, blacklist=['skip'], sort=True):
                     yield dp
 
 def find_fileset(dirpath, lid):
+    """find a fileset anywhere below the given directory path
+    given the lid. This assumes that the file is contained in
+    directories whose names are parts of the lid."""
     dirlist = os.listdir(dirpath)
     for name in dirlist:
         if name == lid + '.adc':
@@ -95,3 +110,7 @@ class DataDirectory(object):
         # yield from list_filesets called with no keyword args
         for fs in self.list_filesets():
             yield fs
+    def __repr__(self):
+        return '<DataDirectory %s>' % self.path
+    def __str__(self):
+        return self.path
