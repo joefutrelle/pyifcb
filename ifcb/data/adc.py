@@ -45,6 +45,21 @@ class Adc(object):
             mode = 'w' if replace else 'a'
             with h5.File(hdf_file,mode) as f:
                 write_df(f)
+    @property
+    def index(self):
+        return self.parsed.index
+    def __len__(self):
+        return len(self.parsed)
+    @lru_cache()
+    def get_target(self, target_number):
+        d = { c: self.parsed[c][target_number] for c in self.parsed.columns }
+        d.update({ 'targetNumber': target_number })
+        return d
+    def __getitem__(self, target_number):
+        return self.get_target(target_number)
+    def __iter__(self):
+        for target_number in self.index:
+            yield self[target_number]
     def __repr__(self):
         return '<ADC %s>' % self.path
     def __str__(self):

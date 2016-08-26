@@ -34,10 +34,10 @@ class Roi(object):
             raise ValueError('adc parameter type not supported')
         # now remove 0x0 rois from adc data
         self._adc = self._adc[self._adc['width'] != 0]
-        self.roi_path = roi_path
+        self.path = roi_path
         self._inroi = None # open roi file
     def __enter__(self):
-        self._inroi = open(self.roi_path,'rb')
+        self._inroi = open(self.path,'rb')
         return self
     def __exit__(self, exc_type, exc_value, traceback):
         self._inroi.close()
@@ -54,7 +54,7 @@ class Roi(object):
         if self._inroi is not None:
             return read_image(self._inroi, bo, width, height)
         else:
-            with open(self.roi_path,'rb') as inroi:
+            with open(self.path,'rb') as inroi:
                 return read_image(inroi, bo, width, height)
     def __len__(self):
         return len(self._adc)
@@ -67,6 +67,10 @@ class Roi(object):
     def __getitem__(self, roi_number):
         """wraps get_image"""
         return self.get_image(roi_number)
+    def __repr__(self):
+        return '<ROI %s>' % self.path
+    def __str__(self):
+        return self.path
                 
 
                 
