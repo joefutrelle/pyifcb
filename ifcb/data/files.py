@@ -1,7 +1,11 @@
 import os
 
+from functools32 import lru_cache
+
 from .identifiers import Pid
 from .adc import Adc
+from .hdr import parse_hdr_file
+from .roi import Roi
 
 def list_filesets(dirpath, blacklist=['skip'], sort=True):
     """iterate over entire directory tree and return a Fileset
@@ -73,6 +77,18 @@ class Fileset(object):
     @property
     def roi_path(self):
         return self.basepath + '.roi'
+    @property
+    @lru_cache()
+    def adc(self):
+        return Adc(self.adc_path)
+    @property
+    @lru_cache()
+    def roi(self):
+        return Roi(self.adc, self.roi_path)
+    @property
+    @lru_cache()
+    def hdr(self):
+        return parse_hdr_file(self.hdr_path)
     @property
     def pid(self):
         return Pid(os.path.basename(self.basepath))
