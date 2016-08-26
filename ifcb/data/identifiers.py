@@ -96,13 +96,10 @@ class Pid(object):
     def parsed(self):
         return parse(self.pid)
     @property
-    def schema_version(self):
-        return int(self.parsed['schema_version'][1:])
-    @property
     def timestamp(self):
         return pd.to_datetime(self.parsed['timestamp'], format=self.parsed['timestamp_format'], utc=True)
     def __getattr__(self, name):
-        if name in ['bin_lid', 'lid', 'instrument', 'namespace', 'product', 'target', 'ts_label']:
+        if name in ['bin_lid', 'lid', 'instrument', 'namespace', 'product', 'target', 'ts_label', 'schema_version']:
             return self.parsed[name]
         else:
             return self.__getattribute__(name)
