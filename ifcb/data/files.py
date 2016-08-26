@@ -1,7 +1,5 @@
 import os
 
-from oii.utils import imemoize
-
 from .identifiers import Pid
 from .adc import Adc
 

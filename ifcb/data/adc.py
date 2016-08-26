@@ -1,6 +1,6 @@
 import pandas as pd
 import h5py as h5
-from oii.utils import imemoize
+from functools32 import lru_cache
 
 from .h5utils import df2h5, touch_group
 from .identifiers import Pid
@@ -18,7 +18,7 @@ class Adc(object):
         if parse:
             self.parsed
     @property
-    @imemoize
+    @lru_cache()
     def parsed(self):
         schema = COLUMNS[self.pid.schema_version]
         df = pd.read_csv(self.path, header=None, index_col=False)
