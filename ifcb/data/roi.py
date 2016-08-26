@@ -4,6 +4,12 @@ import numpy as np
 
 from .adc import Adc
 
+def read_image(inroi, byte_offset, width, height):
+    """inroi is roi file open in random access mode"""
+    length = width * height
+    inroi.seek(byte_offset)
+    return np.fromstring(inroi.read(length), dtype=np.uint8).reshape((width,height))
+
 class Roi(object):
     def __init__(self, adc, roi_path):
         """parameters:
@@ -29,6 +35,13 @@ class Roi(object):
         # now remove 0x0 rois from adc data
         self._adc = self._adc[self._adc['width'] != 0]
         self.roi_path = roi_path
+        self._inroi = None # open roi file
+    def __enter__(self):
+        self._inroi = open(self.roi_path,'rb')
+        return self
+    def __exit__(self, exc_type, exc_value, traceback):
+        self._inroi.close()
+        self._inroi = None
     @lru_cache(maxsize=2)
     def get_image(self, roi_number):
         keys = ['byteOffset', 'width', 'height']
@@ -36,13 +49,13 @@ class Roi(object):
             bo, width, height = [self._adc[k][roi_number] for k in keys]
         except KeyError:
             raise KeyError('adc data does not contain a roi #%d' % roi_number)
-        length = width * height
-        if length == 0:
+        if width * height == 0:
             raise KeyError('roi #%d is 0x0' % roi_number)
-        with open(self.roi_path,'rb') as inroi:
-            inroi.seek(bo)
-            im = np.fromstring(inroi.read(length), dtype=np.uint8).reshape((width,height))
-            return im
+        if self._inroi is not None:
+            return read_image(self._inroi, bo, width, height)
+        else:
+            with open(self.roi_path,'rb') as inroi:
+                return read_image(inroi, bo, width, height)
     def __len__(self):
         return len(self._adc)
     @property
@@ -50,7 +63,7 @@ class Roi(object):
         return self._adc.index
     def __iter__(self):
         for roi_number in self.index:
-            yield self[roi_number]
+            yield self.get_image(roi_number)
     def __getitem__(self, roi_number):
         """wraps get_image"""
         return self.get_image(roi_number)
