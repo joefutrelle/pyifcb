@@ -1,6 +1,27 @@
+from contextlib import contextmanager
+
 import numpy as np
 import pandas as pd
 import h5py as h5
+
+@contextmanager
+def open_h5_group(path, group=None):
+    """open an hdf5 group from a file or other group
+    parameters:
+    path - path to HDF5 file, or open HDF5 group
+    group - for HDF5 file paths, the group path to return (optional);
+    for groups, a subgroup to require (optional)"""
+    try:
+        with h5.File(path) as f:
+            if group is None:
+                yield f
+            else:
+                yield f.require_group(group)
+    except AttributeError:
+        if group is None:
+            yield path
+        else:
+            yield path.require_group(group)
 
 def df2h5(h5group, df, replace=False, **kw):
     """write a pandas dataframe to hdf5 represented as a group containing

@@ -3,6 +3,7 @@ from functools32 import lru_cache
 import numpy as np
 
 from .adc import Adc
+from .h5utils import open_h5_group
 
 def read_image(inroi, byte_offset, width, height):
     """inroi is roi file open in random access mode"""
@@ -36,14 +37,31 @@ class Roi(object):
         self._adc = self._adc[self._adc['width'] != 0]
         self.path = roi_path
         self._inroi = None # open roi file
-    def __enter__(self):
-        self._inroi = open(self.path,'rb')
+    def isopen(self):
+        return self._inroi is not None
+    def open(self, reopen=True):
+        # close if already open
+        if self.isopen():
+            if reopen:
+                self.close()
+            else:
+                return self
+        self._inroi = open(self.path, 'rb')
         return self
-    def __exit__(self, exc_type, exc_value, traceback):
+    def close(self):
         self._inroi.close()
         self._inroi = None
+    def __enter__(self, reopen=True):
+        self.open(reopen=reopen)
+        return self
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.close()
+    @property
+    def index(self):
+        return self._adc.index
     @lru_cache(maxsize=2)
     def get_image(self, roi_number):
+        roi_number = int(roi_number)
         keys = ['byteOffset', 'width', 'height']
         try:
             bo, width, height = [self._adc[k][roi_number] for k in keys]
@@ -62,11 +80,21 @@ class Roi(object):
     def index(self):
         return self._adc.index
     def __iter__(self):
-        for roi_number in self.index:
-            yield self.get_image(roi_number)
+        def iter():
+            for roi_number in self.index:
+                yield self.get_image(roi_number)
+        if not self.isopen():
+            with self as me:
+                for im in iter():
+                    yield im
+        else:
+            for im in iter():
+                yield im
     def __getitem__(self, roi_number):
         """wraps get_image"""
         return self.get_image(roi_number)
+    def to_hdf(self, hdf_file, group_path=None, replace=True, **kw):
+        pass
     def __repr__(self):
         return '<ROI %s>' % self.path
     def __str__(self):

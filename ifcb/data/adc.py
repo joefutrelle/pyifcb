@@ -1,8 +1,10 @@
+import os
+
 import pandas as pd
 import h5py as h5
 from functools32 import lru_cache
 
-from .h5utils import df2h5
+from .h5utils import df2h5, open_h5_group
 from .identifiers import Pid
 
 # columns by schema
@@ -35,19 +37,21 @@ class Adc(object):
         return self.parsed
     def to_dict(self):
         return self.parsed.to_dict('series')
-    def to_hdf(self, hdf_file, group_path=None, replace=True, compression='gzip'):
-        def write_df(f):
-            if group_path is not None:
-                g = f.require_group(group_path)
-            else:
-                g = f
-            df2h5(g, self.parsed, replace=replace, compression=compression)
+    def to_hdf(self, hdf_file, group=None, replace=True, **kw):
+        """
+        parameters:
+        hdf_file - hdf file pathname, or h5.File or h5.Group
+        group - optional (sub)group path
+        replace - for files, whether or not to replace file
+        """
         try:
-            write_df(hdf_file)
+            if replace and os.path.exists(hdf_file):
+                os.remove(hdf_file)
         except:
-            mode = 'w' if replace else 'a'
-            with h5.File(hdf_file,mode) as f:
-                write_df(f)
+            # not a pathname
+            pass
+        with open_h5_group(hdf_file, group) as g:
+            df2h5(g, self.parsed, replace=replace, **kw)
     @property
     def index(self):
         return self.parsed.index
