@@ -2,39 +2,40 @@ import numpy as np
 import pandas as pd
 import h5py as h5
 
-def touch_group(h5group, group_path):
-    """ensure that an h5 Group exists at the given path.
-    returns the group"""
-    try:
-        return h5group.create_group(group_path)
-    except ValueError:
-        # the following must succeed
-        return h5group.get(group_path)
-    
-def df2h5(h5group, df, compression=None, replace=True):
-    """save a pandas dataframe to hdf5 including a special "columns" attribute
-    that contains column names in order. this is different from pandas.to_hdf, less efficient
-    for dataframes with a uniform dtype, but has reasonable naming conventions.
+def df2h5(h5group, df, replace=False, **kw):
+    """write a pandas dataframe to hdf5 represented as a group containing
+    data: column data, keyed by column name
+    index: dataframe index
+    columns: list of column names
+    non-string column names will be coerced to strings and so will not
+    round-trip.
     parameters:
     h5group - an h5py Group object in which to store the dataframe,
-    df - the dataframe,
-    compression - optional compression type"""
-    for c in df.columns:
-        if replace and c in h5group:
-            del h5group[c]
-        h5group.create_dataset(c, data=df[c], compression=compression)
-    h5group.attrs.create('columns', data=df.columns, dtype=h5.special_dtype(vlen=bytes))
-        
+    df - the dataframe"""
+    if replace:
+        for k in h5group.keys(): del h5group[k]
+        for k in h5group.attrs.keys(): del h5group.attrs[k]
+    data = h5group.create_group('data')
+    cols = map(str,df.columns)
+    for c,n in zip(df.columns, cols):
+        data.create_dataset(n, data=df[c], **kw)
+    h5group.create_dataset('index', data=df.index, **kw)
+    h5group.create_dataset('columns', data=cols, dtype=h5.special_dtype(vlen=bytes), **kw)
+
 def h52df(h5group):
-    """read a pandas dataframe from hdf5 represented as a group where each
-    key is a column. looks for a "columns" attribute giving the column names
-    in order, but doesn't require it.
+    """read a pandas dataframe from hdf5 represented as a group containing
+    data: column data, keyed by column name
+    index: dataframe index
+    columns: list of column names
     parameters:
     h5group an h5py Group object in which the dataframe is stored"""
-    # note that the DataFrame constructor ignores h5py Group objects
-    d = dict(h5group)
+    d = dict(h5group.get('data'))
     try:
-        cols = np.array(h5group.attrs['columns'])
-        return pd.DataFrame(d, columns=cols)
+        cols = np.array(h5group['columns'])
     except KeyError:
-        return pd.DataFrame(d)
+        cols = None
+    try:
+        index = np.array(h5group['index'])
+    except KeyError:
+        index = None
+    return pd.DataFrame(d, columns=cols, index=index)

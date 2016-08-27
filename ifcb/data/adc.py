@@ -2,7 +2,7 @@ import pandas as pd
 import h5py as h5
 from functools32 import lru_cache
 
-from .h5utils import df2h5, touch_group
+from .h5utils import df2h5
 from .identifiers import Pid
 
 # columns by schema
@@ -35,10 +35,13 @@ class Adc(object):
         return self.parsed
     def to_dict(self):
         return self.parsed.to_dict('series')
-    def to_hdf(self, hdf_file, group_path='adc', replace=True, compression='gzip'):
+    def to_hdf(self, hdf_file, group_path=None, replace=True, compression='gzip'):
         def write_df(f):
-            g = touch_group(f, group_path)
-            df2h5(g, self.parsed, compression=compression, replace=replace)
+            if group_path is not None:
+                g = f.require_group(group_path)
+            else:
+                g = f
+            df2h5(g, self.parsed, replace=replace, compression=compression)
         try:
             write_df(hdf_file)
         except:
