@@ -5,23 +5,25 @@ import pandas as pd
 import h5py as h5
 
 @contextmanager
-def open_h5_group(path, group=None):
+def open_h5_group(path, group=None, replace=False, **kw):
     """open an hdf5 group from a file or other group
     parameters:
     path - path to HDF5 file, or open HDF5 group
     group - for HDF5 file paths, the group path to return (optional);
     for groups, a subgroup to require (optional)"""
     try:
-        with h5.File(path) as f:
+        mode = 'w' if replace else 'r'
+        with h5.File(path,mode) as f:
             if group is None:
                 yield f
             else:
-                yield f.require_group(group)
+                yield f.require_group(group, **kw)
     except AttributeError:
         if group is None:
             yield path
         else:
-            yield path.require_group(group)
+            # FIXME support replace flag in this case
+            yield path.require_group(group, **kw)
 
 def df2h5(h5group, df, replace=False, **kw):
     """write a pandas dataframe to hdf5 represented as a group containing

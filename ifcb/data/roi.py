@@ -1,7 +1,9 @@
+from itertools import izip
 from functools32 import lru_cache
 
 import numpy as np
 
+import h5py as h5
 from .adc import Adc
 from .h5utils import open_h5_group
 
@@ -29,7 +31,7 @@ class Roi(object):
             pass
         try:
             if self._adc is None:
-                adc.columns
+                adc.columns # ersatz type test for DataFrame
                 self._adc = adc
         except AttributeError:
             raise ValueError('adc parameter type not supported')
@@ -94,11 +96,19 @@ class Roi(object):
         """wraps get_image"""
         return self.get_image(roi_number)
     def to_hdf(self, hdf_file, group_path=None, replace=True, **kw):
-        pass
+        with open_h5_group(hdf_file, group_path, replace=replace) as g:
+            for roi_number, image in izip(self.index, self):
+                key = str(roi_number)
+                g.create_dataset(key, data=image)
     def __repr__(self):
         return '<ROI %s>' % self.path
     def __str__(self):
         return self.path
-                
 
-                
+
+
+
+
+
+
+
