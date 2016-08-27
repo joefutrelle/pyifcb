@@ -4,6 +4,12 @@ import numpy as np
 import pandas as pd
 import h5py as h5
 
+def clear_h5_group(h5group):
+    """delete all keys and attrs from an h5.Group.
+    is this a good idea?"""
+    for k in h5group.keys(): del h5group[k]
+    for k in h5group.attrs.keys(): del h5group.attrs[k]
+
 @contextmanager
 def open_h5_group(path, group=None, replace=False, **kw):
     """open an hdf5 group from a file or other group
@@ -15,15 +21,20 @@ def open_h5_group(path, group=None, replace=False, **kw):
         mode = 'w' if replace else 'r'
         with h5.File(path,mode) as f:
             if group is None:
-                yield f
+                g = f
             else:
-                yield f.require_group(group, **kw)
+                g = f.require_group(group, **kw)
+            if replace:
+                clear_h5_group(g)
+            yield g
     except AttributeError:
         if group is None:
-            yield path
+            g = path
         else:
-            # FIXME support replace flag in this case
-            yield path.require_group(group, **kw)
+            g = path.require_group(group, **kw)
+        if replace:
+            clear_h5_group(g) # is this a good idea?
+        yield g
 
 def df2h5(h5group, df, replace=False, **kw):
     """write a pandas dataframe to hdf5 represented as a group containing

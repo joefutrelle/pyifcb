@@ -6,6 +6,7 @@ from .identifiers import Pid
 from .adc import Adc
 from .hdr import parse_hdr_file
 from .roi import Roi
+from .h5utils import open_h5_group
 
 def list_filesets(dirpath, blacklist=['skip'], sort=True):
     """iterate over entire directory tree and return a Fileset
@@ -104,6 +105,15 @@ class Fileset(object):
     @property
     def timestamp(self):
         return self.pid.timestamp
+    def to_hdf(self, hdf_file, group=None, replace=True):
+        with open_h5_group(hdf_file, group, replace=replace) as root:
+            root.attrs['lid'] = self.pid.bin_lid
+            root.attrs['timestamp'] = self.timestamp.strftime('%Y-%m-%dT%H:%M:%SZ')
+            with open_h5_group(root, 'hdr', replace=replace) as hdr:
+                for k, v in self.hdr.items():
+                    hdr.attrs[k] = v
+            self.adc.to_hdf(root, 'adc', replace=replace)
+            self.roi.to_hdf(root, 'roi', replace=replace)
     def __repr__(self):
         return '<Fileset %s>' % self.basepath
     def __str__(self):

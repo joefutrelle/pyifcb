@@ -44,13 +44,7 @@ class Adc(object):
         group - optional (sub)group path
         replace - for files, whether or not to replace file
         """
-        try:
-            if replace and os.path.exists(hdf_file):
-                os.remove(hdf_file)
-        except:
-            # not a pathname
-            pass
-        with open_h5_group(hdf_file, group) as g:
+        with open_h5_group(hdf_file, group, replace=replace) as g:
             df2h5(g, self.parsed, replace=replace, **kw)
     @property
     def index(self):

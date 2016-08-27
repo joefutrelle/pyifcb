@@ -97,6 +97,7 @@ class Roi(object):
         return self.get_image(roi_number)
     def to_hdf(self, hdf_file, group_path=None, replace=True, **kw):
         with open_h5_group(hdf_file, group_path, replace=replace) as g:
+            g.attrs['index'] = self.index
             for roi_number, image in izip(self.index, self):
                 key = str(roi_number)
                 g.create_dataset(key, data=image)
