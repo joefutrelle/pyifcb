@@ -50,6 +50,7 @@ def m(pattern, string):
     return col_or_scalar(tuple(m.groups()))
 
 def parse(pid):
+    pid = c(r'^.*\\').sub('',pid) # strip Windows dirs
     namespace, suffix = m('(.*/)?(.*)',pid)
     ts_label = m('(?:.*/)?(.*)/$',namespace)
     # try v2 identifier pattern
