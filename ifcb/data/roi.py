@@ -81,17 +81,24 @@ class Roi(object):
     @property
     def index(self):
         return self._adc.index
+    @lru_cache()
+    def keys(self):
+        return list(self.index)
     def __iter__(self):
-        def iter():
-            for roi_number in self.index:
-                yield self.get_image(roi_number)
+        return iter(self.keys())
+    def iteritems(self):
         if not self.isopen():
-            with self as me:
-                for im in iter():
-                    yield im
+            with self:
+                for i in self:
+                    yield i, self[i]
         else:
-            for im in iter():
-                yield im
+            for i in self:
+                yield i, self[i]
+    def items(self):
+        """warning: consumes much RAM"""
+        return list(self.iteritems())
+    def __contains__(self, roi_number):
+        return roi_number in self.keys()
     def __getitem__(self, roi_number):
         """wraps get_image"""
         return self.get_image(roi_number)

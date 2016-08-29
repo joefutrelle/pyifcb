@@ -18,10 +18,10 @@ class Adc(object):
         self.path = adc_path
         self.pid = Pid(adc_path, parse=False)
         if parse:
-            self.parsed
+            self.csv
     @property
     @lru_cache()
-    def parsed(self):
+    def csv(self):
         schema = COLUMNS[self.pid.schema_version]
         df = pd.read_csv(self.path, header=None, index_col=False)
         # deal with files that don't match the hardcoded schema
@@ -34,9 +34,9 @@ class Adc(object):
         df.index += 1 # index by 1-based ROI number
         return df
     def to_dataframe(self):
-        return self.parsed
+        return self.csv
     def to_dict(self):
-        return self.parsed.to_dict('series')
+        return self.csv.to_dict('series')
     def to_hdf(self, hdf_file, group=None, replace=True, **kw):
         """
         parameters:
@@ -45,22 +45,28 @@ class Adc(object):
         replace - for files, whether or not to replace file
         """
         with open_h5_group(hdf_file, group, replace=replace) as g:
-            df2h5(g, self.parsed, replace=replace, **kw)
-    @property
-    def index(self):
-        return self.parsed.index
+            df2h5(g, self.csv, replace=replace, **kw)
+    @lru_cache()
+    def keys(self):
+        return list(self.csv.index)
     def __len__(self):
-        return len(self.parsed)
+        return len(self.csv)
     @lru_cache()
     def get_target(self, target_number):
-        d = { c: self.parsed[c][target_number] for c in self.parsed.columns }
+        d = { c: self.csv[c][target_number] for c in self.csv.columns }
         d.update({ 'targetNumber': target_number })
         return d
+    def __contains__(self, target_number):
+        return target_number in self.csv.index
     def __getitem__(self, target_number):
         return self.get_target(target_number)
     def __iter__(self):
-        for target_number in self.index:
-            yield self[target_number]
+        return iter(self.csv.index)
+    def iteritems(self):
+        for i in self:
+            yield i, self[i]
+    def items(self):
+        return list(self.iteritems())
     def __repr__(self):
         return '<ADC %s>' % self.path
     def __str__(self):
