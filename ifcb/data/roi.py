@@ -102,6 +102,10 @@ class Roi(object):
     def __getitem__(self, roi_number):
         """wraps get_image"""
         return self.get_image(roi_number)
+    def to_dict(self):
+        """this copies all data and should generally not be used,
+        in favor of this class's own dict-like interface"""
+        return dict(self.items())
     def to_hdf(self, hdf_file, group_path=None, replace=True, **kw):
         with open_h5_group(hdf_file, group_path, replace=replace) as g:
             g.attrs['index'] = self.index
