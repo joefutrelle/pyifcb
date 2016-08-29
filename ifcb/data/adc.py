@@ -13,7 +13,7 @@ COLUMNS = {
     2: 'trigger processingEndTime pmtA pmtB pmtC pmtD peakA peakB peakC peakD timeOfFlight grabTimeStart frameGrabTime bottom left height width byteOffset comparatorOut startPoint signalStrength valveStatus'.split(' ')
 }
 
-class Adc(object):
+class AdcFile(object):
     def __init__(self, adc_path, parse=False):
         self.path = adc_path
         self.pid = Pid(adc_path, parse=False)
@@ -68,6 +68,6 @@ class Adc(object):
     def items(self):
         return list(self.iteritems())
     def __repr__(self):
-        return '<ADC %s>' % self.path
+        return '<ADC file %s>' % self.path
     def __str__(self):
         return self.path

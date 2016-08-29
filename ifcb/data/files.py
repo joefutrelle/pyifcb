@@ -3,9 +3,9 @@ import os
 from functools32 import lru_cache
 
 from .identifiers import Pid
-from .adc import Adc
+from .adc import AdcFile
 from .hdr import parse_hdr_file
-from .roi import Roi
+from .roi import RoiFile
 from .h5utils import open_h5_group
 
 def list_filesets(dirpath, blacklist=['skip'], sort=True):
@@ -49,22 +49,27 @@ def list_data_dirs(dirpath, blacklist=['skip'], sort=True):
                 for dp in list_data_dirs(child):
                     yield dp
 
-def find_fileset(dirpath, lid):
+def find_fileset(dirpath, lid, whitelist=['data']):
     """find a fileset anywhere below the given directory path
     given the lid. This assumes that the file is contained in
-    directories whose names are parts of the lid."""
+    directories whose names are parts of the lid. directories
+    with names on the whitelist are followed anyway. if the fileset
+    is not found, returns None"""
     dirlist = os.listdir(dirpath)
     for name in dirlist:
         if name == lid + '.adc':
             return Fileset(os.path.join(dirpath,lid))
         else:
             try:
-                lid.index(name)
-                result = find_fileset(os.path.join(dirpath,name), lid)
-                if result is not None:
-                    return result
-            except ValueError:
+                # is the name whitelisted or contains part of the lid?
+                name in whitelist or lid.index(name)
+                fs = find_fileset(os.path.join(dirpath,name), lid, whitelist=whitelist)
+                if fs is not None:
+                    return fs
+            except ValueError: # non-matching name: skip
                 pass
+    # not found
+    return None
                                 
 class Fileset(object):
     def __init__(self, basepath):
@@ -81,11 +86,11 @@ class Fileset(object):
     @property
     @lru_cache()
     def adc(self):
-        return Adc(self.adc_path)
+        return AdcFile(self.adc_path)
     @property
     @lru_cache()
     def roi(self):
-        return Roi(self.adc, self.roi_path)
+        return RoiFile(self.adc, self.roi_path)
     @property
     @lru_cache()
     def hdr(self):
@@ -115,7 +120,7 @@ class Fileset(object):
             self.adc.to_hdf(root, 'adc', replace=replace)
             self.roi.to_hdf(root, 'roi', replace=replace)
     def __repr__(self):
-        return '<Fileset %s>' % self.basepath
+        return '<IFCB Fileset %s>' % self.basepath
     def __str__(self):
         return self.basepath
 
@@ -125,15 +130,23 @@ class DataDirectory(object):
     def list_filesets(self, **kw):
         """use this instead of iteration interface if you want
         to pass keywords to list_filesets"""
-        for dirpath, basename in list_filesets(self.path):
+        for dirpath, basename in list_filesets(self.path, **kw):
             basepath = os.path.join(dirpath, basename)
             yield Fileset(basepath)
-    def find_fileset(self, lid):
-        return find_fileset(self.path, lid)
+    def find_fileset(self, lid, **kw):
+        return find_fileset(self.path, lid, **kw)
     def __iter__(self):
         # yield from list_filesets called with no keyword args
         for fs in self.list_filesets():
             yield fs
+    def __contains__(self, lid):
+        # fast contains method that avoids iteration
+        return self.find_fileset(lid) is not None
+    def __getitem__(self, lid):
+        fs = self.find_fileset(lid)
+        if fs is None:
+            raise KeyError('No fileset for %s found at or under %s' % (lid, self.path))
+        return fs
     def __repr__(self):
         return '<DataDirectory %s>' % self.path
     def __str__(self):
