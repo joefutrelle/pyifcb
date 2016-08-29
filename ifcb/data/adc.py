@@ -4,7 +4,6 @@ import pandas as pd
 import h5py as h5
 from functools32 import lru_cache
 
-from .h5utils import df2h5, open_h5_group
 from .identifiers import Pid
 
 # columns by schema
@@ -44,8 +43,8 @@ class AdcFile(object):
         group - optional (sub)group path
         replace - for files, whether or not to replace file
         """
-        with open_h5_group(hdf_file, group, replace=replace) as g:
-            df2h5(g, self.csv, replace=replace, **kw)
+        from .hdf import adc2hdf
+        adc2hdf(self, hdf_file, group, replace=replace, **kw)
     @lru_cache()
     def keys(self):
         return list(self.csv.index)

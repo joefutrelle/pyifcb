@@ -3,9 +3,7 @@ from functools32 import lru_cache
 
 import numpy as np
 
-import h5py as h5
 from .adc import AdcFile
-from .h5utils import open_h5_group
 
 def read_image(inroi, byte_offset, width, height):
     """inroi is roi file open in random access mode"""
@@ -81,7 +79,6 @@ class RoiFile(object):
     @property
     def index(self):
         return self._adc.index
-    @lru_cache()
     def keys(self):
         return list(self.index)
     def __iter__(self):
@@ -95,7 +92,8 @@ class RoiFile(object):
             for i in self:
                 yield i, self[i]
     def items(self):
-        """warning: consumes much RAM"""
+        """warning: contains all image data, which can use
+        very large amounts of RAM"""
         return list(self.iteritems())
     def __contains__(self, roi_number):
         return roi_number in self.keys()
@@ -103,15 +101,12 @@ class RoiFile(object):
         """wraps get_image"""
         return self.get_image(roi_number)
     def to_dict(self):
-        """this copies all data and should generally not be used,
-        in favor of this class's own dict-like interface"""
+        """warning: contains all image data, which can use
+        very large amounts of RAM"""
         return dict(self.items())
-    def to_hdf(self, hdf_file, group_path=None, replace=True, **kw):
-        with open_h5_group(hdf_file, group_path, replace=replace) as g:
-            g.attrs['index'] = self.index
-            for roi_number, image in self.iteritems():
-                key = str(roi_number)
-                g.create_dataset(key, data=image)
+    def to_hdf(self, hdf_file, group=None, replace=True):
+        from .hdf import roi2hdf
+        roi2hdf(self, hdf_file, group, replace=replace)
     def __repr__(self):
         return '<ROI file %s>' % self.path
     def __str__(self):

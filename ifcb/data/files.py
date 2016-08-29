@@ -96,8 +96,12 @@ class Fileset(object):
     def hdr(self):
         return parse_hdr_file(self.hdr_path)
     @property
+    @lru_cache()
     def pid(self):
         return Pid(os.path.basename(self.basepath))
+    @property
+    def lid(self):
+        return self.pid.bin_lid
     def exists(self):
         """checks for existence of all three raw data files"""
         if not os.path.exists(self.adc_path):
@@ -111,14 +115,8 @@ class Fileset(object):
     def timestamp(self):
         return self.pid.timestamp
     def to_hdf(self, hdf_file, group=None, replace=True):
-        with open_h5_group(hdf_file, group, replace=replace) as root:
-            root.attrs['lid'] = self.pid.bin_lid
-            root.attrs['timestamp'] = self.timestamp.strftime('%Y-%m-%dT%H:%M:%SZ')
-            with open_h5_group(root, 'hdr', replace=replace) as hdr:
-                for k, v in self.hdr.items():
-                    hdr.attrs[k] = v
-            self.adc.to_hdf(root, 'adc', replace=replace)
-            self.roi.to_hdf(root, 'roi', replace=replace)
+        from .hdf import fileset2hdf
+        fileset2hdf(self, hdf_file, group, replace)
     def __repr__(self):
         return '<IFCB Fileset %s>' % self.basepath
     def __str__(self):
