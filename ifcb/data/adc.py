@@ -6,30 +6,46 @@ from functools32 import lru_cache
 
 from .identifiers import Pid
 
-# columns by schema
+# column names by schema
+# FIXME these are not anywhere in raw data except new-style instruments contain
+# an attribute listing column names
+"""
 COLUMNS = {
     1: 'trigger processingEndTime fluorescenceLow fluoresenceHigh scatteringLow scatteringHigh comparatorPulse triggerOpenTime frameGrabTime bottom left height width byteOffset valveStatus'.split(' '),
     2: 'trigger processingEndTime pmtA pmtB pmtC pmtD peakA peakB peakC peakD timeOfFlight grabTimeStart frameGrabTime bottom left height width byteOffset comparatorOut startPoint signalStrength valveStatus'.split(' ')
 }
+"""
+
+class SCHEMA_VERSION_1(object):
+    TRIGGER = 0
+    ROI_X = 9
+    ROI_Y = 10
+    ROI_WIDTH = 11
+    ROI_HEIGHT = 12
+    START_BYTE = 13
+
+class SCHEMA_VERSION_2(object):
+    TRIGGER = 0
+    ROI_X = 13
+    ROI_Y = 14
+    ROI_WIDTH = 15
+    ROI_HEIGHT = 16
+    START_BYTE = 17
+
+SCHEMA = [None, SCHEMA_VERSION_1, SCHEMA_VERSION_2]
 
 class AdcFile(object):
     def __init__(self, adc_path, parse=False):
         self.path = adc_path
-        self.pid = Pid(adc_path, parse=False)
+        self.pid = Pid(adc_path)
+        self.schema_version = self.pid.schema_version
+        self.schema = SCHEMA[self.schema_version]
         if parse:
             self.csv
     @property
     @lru_cache()
     def csv(self):
-        schema = COLUMNS[self.pid.schema_version]
         df = pd.read_csv(self.path, header=None, index_col=False)
-        # deal with files that don't match the hardcoded schema
-        cols = list(df.columns)
-        if len(cols) > len(schema):
-            cols[:len(schema)] = schema
-        elif len(cols) < len(schema):
-            cols = schema[:len(cols)]
-        df.columns = map(str,cols) # don't allow numeric column names
         df.index += 1 # index by 1-based ROI number
         return df
     def to_dataframe(self):
@@ -53,7 +69,6 @@ class AdcFile(object):
     @lru_cache()
     def get_target(self, target_number):
         d = { c: self.csv[c][target_number] for c in self.csv.columns }
-        d.update({ 'targetNumber': target_number })
         return d
     def __contains__(self, target_number):
         return target_number in self.csv.index

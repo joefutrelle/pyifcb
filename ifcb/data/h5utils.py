@@ -4,6 +4,8 @@ import numpy as np
 import pandas as pd
 import h5py as h5
 
+H5_REF_TYPE = h5.special_dtype(ref=h5.Reference)
+
 def clear_h5_group(h5group):
     """delete all keys and attrs from an h5.Group.
     is this a good idea?"""
@@ -36,40 +38,40 @@ def open_h5_group(path, group=None, replace=False, **kw):
             clear_h5_group(g) # is this a good idea?
         yield g
 
-def df2h5(h5group, df, replace=False, **kw):
-    """write a pandas dataframe to hdf5 represented as a group containing
-    data: column data, keyed by column name
-    index: dataframe index
-    columns: list of column names
-    non-string column names will be coerced to strings and so will not
-    round-trip.
-    parameters:
-    h5group - an h5py Group object in which to store the dataframe,
-    df - the dataframe"""
-    if replace:
-        for k in h5group.keys(): del h5group[k]
-        for k in h5group.attrs.keys(): del h5group.attrs[k]
-    data = h5group.create_group('data')
-    cols = map(str,df.columns)
-    for c,n in zip(df.columns, cols):
-        data.create_dataset(n, data=df[c], **kw)
-    h5group.create_dataset('index', data=df.index, **kw)
-    h5group.create_dataset('columns', data=cols, dtype=h5.special_dtype(vlen=bytes), **kw)
+"""
+Layout of Pandas DataFrame / Series representation
+- {path} (group): the group containing the dataframe
+- {path}.ptype (attribute): 'DataFrame' / 'Series'
+- {path}/columns (dataset): 1d array of references to column data
+- {path}/columns.names (attribute, optional): 1d array of column names
+- {path}/{n} (dataset): 1d array of data for column n
+- {path}/index (dataset): 1d array of data for dataframe index
+- {path}/index.name (attribute, optional): name of index
 
-def h52df(h5group):
-    """read a pandas dataframe from hdf5 represented as a group containing
-    data: column data, keyed by column name
-    index: dataframe index
-    columns: list of column names
-    parameters:
-    h5group an h5py Group object in which the dataframe is stored"""
-    d = dict(h5group.get('data'))
-    try:
-        cols = np.array(h5group['columns'])
-    except KeyError:
-        cols = None
-    try:
-        index = np.array(h5group['index'])
-    except KeyError:
-        index = None
-    return pd.DataFrame(d, columns=cols, index=index)
+Series are represented like single-column DataFrames
+"""
+
+def df2h5(group, df, **kw):
+    """kw params used for all dataset creation operations"""
+    group.attrs['ptype'] = 'DataFrame'
+    refs = []
+    for i in range(len(df.columns)):
+        c = group.create_dataset(str(i), data=df.iloc[:,i], **kw)
+        refs.append(c.ref)
+    cols = group.create_dataset('columns', data=refs, dtype=H5_REF_TYPE)
+    cols.attrs['names'] = [str(c) for c in df.columns]
+    ix = group.create_dataset('index', data=df.index, **kw)
+    if df.index.name is not None:
+        ix.attrs['name'] = df.index.name
+
+def h52df(group):
+    assert group.attrs['ptype'] == 'DataFrame'
+    index = group['index']
+    index_name = index.attrs.get('name',None)
+    col_refs = group['columns']
+    col_data = [np.array(group[r]) for r in col_refs]
+    # note: the below assumes that no column names mean use numeric oness
+    col_names = col_refs.attrs.get('names', range(len(col_refs)))
+    data = { k: v for k, v in zip(col_names, col_data) }
+    index = np.array(index)
+    return pd.DataFrame(data=data, index=index, columns=col_names)

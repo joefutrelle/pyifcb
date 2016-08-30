@@ -14,29 +14,22 @@ def read_image(inroi, byte_offset, width, height):
 class RoiFile(object):
     def __init__(self, adc, roi_path):
         """parameters:
-        adc - path of adc file, Adc object, or adc dataframe
+        adc - path of adc file, Adc object
         roi_path - path to roi file"""
         # duck type adc argument
-        self._adc = None
+        self.adc = None
         try:
-            self._adc = adc.to_dataframe()
+            adc.pid # should work for AdcFile objects
+            self.adc = adc
         except AttributeError:
-            pass
-        try:
-            if self._adc is None:
-                self.adc = AdcFile(adc).to_dataframe()
-        except:
-            pass
-        try:
-            if self._adc is None:
-                adc.columns # ersatz type test for DataFrame
-                self._adc = adc
-        except AttributeError:
-            raise ValueError('adc parameter type not supported')
+            self.adc = AdcFile(adc)
         # now remove 0x0 rois from adc data
-        self._adc = self._adc[self._adc['width'] != 0]
+        csv = self.adc.csv
+        s = self.adc.schema
+        csv = csv[csv[s.ROI_WIDTH] != 0]
+        self.csv = csv
         self.path = roi_path
-        self._inroi = None # open roi file
+        self._inroi = None # for the open roi file
     def isopen(self):
         return self._inroi is not None
     def open(self, reopen=True):
@@ -56,29 +49,28 @@ class RoiFile(object):
         return self
     def __exit__(self, exc_type, exc_value, traceback):
         self.close()
-    @property
-    def index(self):
-        return self._adc.index
     @lru_cache(maxsize=2)
     def get_image(self, roi_number):
         roi_number = int(roi_number)
-        keys = ['byteOffset', 'width', 'height']
+        s = self.adc.schema
+        keys = [s.START_BYTE, s.ROI_WIDTH, s.ROI_HEIGHT]
         try:
-            bo, width, height = [self._adc[k][roi_number] for k in keys]
+            bo, width, height = [self.csv[k][roi_number] for k in keys]
         except KeyError:
+            raise # FIXME
             raise KeyError('adc data does not contain a roi #%d' % roi_number)
         if width * height == 0:
             raise KeyError('roi #%d is 0x0' % roi_number)
         if self._inroi is not None:
-            return read_image(self._inroi, bo, width, height)
+            return read_image(self._inroi, bo, height, width)
         else:
             with open(self.path,'rb') as inroi:
-                return read_image(inroi, bo, width, height)
+                return read_image(inroi, bo, height, width)
     def __len__(self):
-        return len(self._adc)
+        return len(self.adc)
     @property
     def index(self):
-        return self._adc.index
+        return self.csv.index
     def keys(self):
         return list(self.index)
     def __iter__(self):

@@ -77,6 +77,7 @@ def parse(pid):
         lid = bin_lid # make sure both are present
     # now del non-desired locals
     del tpe
+    # this might actually be an acceptable use of locals()
     return locals()
 
 class Pid(object):
