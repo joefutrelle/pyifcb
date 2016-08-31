@@ -8,15 +8,36 @@ from .hdr import parse_hdr_file
 from .roi import RoiFile
 from .h5utils import open_h5_group
 
-def list_filesets(dirpath, blacklist=['skip'], sort=True):
+"""
+A well-formed raw data file path relative to some root
+only contains path components that are
+not blacklisted and either
+either whitelisted or part of the file's LID.
+"""
+
+def validate_path(filepath, blacklist=['skip'], whitelist=['data']):
+    assert set(blacklist).isdisjoint(set(whitelist))
+    dirname, basename = os.path.split(filepath)
+    lid, ext = os.path.splitext(basename)
+    components = dirname.split(os.sep)
+    for c in components:
+        if c in blacklist:
+            return False
+        if c not in whitelist and c not in lid:
+            return False
+    return True
+
+def list_filesets(dirpath, blacklist=['skip'], whitelist=['data'], sort=True, validate=True):
     """iterate over entire directory tree and return a Fileset
     object for each .adc/.hdr/.roi fileset found. warning: for
     large directories, this is slow.
     parameters:
     blacklist - list of names to ignore
     sort - whether to sort output (does not guarantee that output
-    is sorted by time"""
-    # FIXME implement faster version using scandir package
+    is sorted by time
+    validate - whether to check the entire path for well-formedness
+    (see above)"""
+    assert set(blacklist).isdisjoint(set(whitelist))
     for dp, dirnames, filenames in os.walk(dirpath):
         for d in dirnames:
             if d in blacklist:
@@ -27,7 +48,11 @@ def list_filesets(dirpath, blacklist=['skip'], sort=True):
         for f in filenames:
             basename, extension = f[:-4], f[-3:]
             if extension == 'adc' and basename+'.hdr' in filenames and basename+'.roi' in filenames:
-                yield dp, f[:-4]
+                if validate:
+                    reldir = dp[len(dirpath)+1:]
+                    if not validate_path(os.path.join(reldir,basename), whitelist=whitelist, blacklist=blacklist):
+                        continue
+                yield dp, basename
 
 def list_data_dirs(dirpath, blacklist=['skip'], sort=True):
     """return the path of any descendant directory that contains an .adc file
@@ -49,7 +74,7 @@ def list_data_dirs(dirpath, blacklist=['skip'], sort=True):
                 for dp in list_data_dirs(child):
                     yield dp
 
-def find_fileset(dirpath, lid, whitelist=['data']):
+def find_fileset(dirpath, lid, whitelist=['data'], blacklist=['skip']):
     """find a fileset anywhere below the given directory path
     given the lid. This assumes that the file is contained in
     directories whose names are parts of the lid. directories
@@ -58,16 +83,13 @@ def find_fileset(dirpath, lid, whitelist=['data']):
     dirlist = os.listdir(dirpath)
     for name in dirlist:
         if name == lid + '.adc':
-            return Fileset(os.path.join(dirpath,lid))
-        else:
-            try:
-                # is the name whitelisted or contains part of the lid?
-                name in whitelist or lid.index(name)
-                fs = find_fileset(os.path.join(dirpath,name), lid, whitelist=whitelist)
-                if fs is not None:
-                    return fs
-            except ValueError: # non-matching name: skip
-                pass
+            basepath = os.path.join(dirpath,lid)
+            return Fileset(basepath)
+        elif name in whitelist or name in lid:
+            # is the name whitelisted or contains part of the lid?
+            fs = find_fileset(os.path.join(dirpath,name), lid, whitelist=whitelist, blacklist=blacklist)
+            if fs is not None:
+                return fs
     # not found
     return None
                                 
@@ -123,16 +145,16 @@ class Fileset(object):
         return self.basepath
 
 class DataDirectory(object):
-    def __init__(self, path):
+    def __init__(self, path, whitelist=['data'], blacklist=['skip']):
         self.path = path
-    def list_filesets(self, **kw):
-        """use this instead of iteration interface if you want
-        to pass keywords to list_filesets"""
-        for dirpath, basename in list_filesets(self.path, **kw):
+        self.whitelist = whitelist
+        self.blacklist = blacklist
+    def list_filesets(self):
+        for dirpath, basename in list_filesets(self.path, whitelist=self.whitelist, blacklist=self.blacklist):
             basepath = os.path.join(dirpath, basename)
             yield Fileset(basepath)
-    def find_fileset(self, lid, **kw):
-        return find_fileset(self.path, lid, **kw)
+    def find_fileset(self, lid):
+        return find_fileset(self.path, lid, whitelist=self.whitelist, blacklist=self.blacklist)
     def __iter__(self):
         # yield from list_filesets called with no keyword args
         for fs in self.list_filesets():
