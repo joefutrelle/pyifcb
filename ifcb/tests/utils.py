@@ -12,4 +12,19 @@ def test_dir():
         yield d
     finally:
         shutil.rmtree(d)
+        
+@contextmanager
+def test_file(name=None):
+    if name is None:
+        name = 'test_file'
+    with test_dir() as d:
+        yield os.path.join(d, name)
     
+def withfile(method):
+    """decorator that adds a named temporary file argument"""
+    def wrapper(*args, **kw):
+        with test_file() as f:
+            args = args + (f,)
+            return method(*args, **kw)
+    return wrapper
+
