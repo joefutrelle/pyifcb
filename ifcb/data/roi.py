@@ -67,7 +67,7 @@ class RoiFile(object):
             with open(self.path,'rb') as inroi:
                 return read_image(inroi, bo, height, width)
     def __len__(self):
-        return len(self.adc)
+        return len(self.csv)
     @property
     def index(self):
         return self.csv.index

@@ -6,21 +6,7 @@ import numpy as np
 
 from ifcb.data import files
 
-TEST_DATA_DIR=os.path.join('ifcb','data','tests','data')
-
-TEST_LIDS = [
-    'D20130526T095207_IFCB013',
-    'IFCB5_2012_028_081515'
-]
-
-WHITELIST = ['data','white']
-
-def data_dir():
-    for p in sys.path:
-        fp = os.path.join(p, TEST_DATA_DIR)
-        if os.path.exists(fp):
-            return fp
-    raise KeyError('cannot find %s on sys.path' % TEST_DATA_DIR)
+from .fileset_info import TEST_FILES, data_dir, WHITELIST
 
 class TestFiles(unittest.TestCase):
     def setUp(self):
@@ -41,7 +27,7 @@ class TestFiles(unittest.TestCase):
             assert os.path.exists(fs.hdr_path)
             assert os.path.exists(fs.roi_path)
         lids = [fs.lid for fs in fss]
-        for lid in TEST_LIDS:
+        for lid in TEST_FILES:
             assert lid in lids
             assert lid in dd
         for fs in fss:
