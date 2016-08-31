@@ -34,9 +34,6 @@ def open_h5_group(path, group=None, replace=False, **kw):
             g = path
         else:
             g = path.require_group(group, **kw)
-        if replace:
-            clear_h5_group(g) # is this a good idea?
-        yield g
 
 """
 Layout of Pandas DataFrame / Series representation
@@ -59,7 +56,7 @@ def df2h5(group, df, **kw):
         c = group.create_dataset(str(i), data=df.iloc[:,i], **kw)
         refs.append(c.ref)
     cols = group.create_dataset('columns', data=refs, dtype=H5_REF_TYPE)
-    cols.attrs['names'] = [str(c) for c in df.columns]
+    cols.attrs['names'] = list(df.columns)
     ix = group.create_dataset('index', data=df.index, **kw)
     if df.index.name is not None:
         ix.attrs['name'] = df.index.name
@@ -73,5 +70,5 @@ def h52df(group):
     # note: the below assumes that no column names mean use numeric oness
     col_names = col_refs.attrs.get('names', range(len(col_refs)))
     data = { k: v for k, v in zip(col_names, col_data) }
-    index = np.array(index)
+    index = pd.Series(index, name=index_name)
     return pd.DataFrame(data=data, index=index, columns=col_names)
