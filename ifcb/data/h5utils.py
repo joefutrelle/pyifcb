@@ -34,6 +34,7 @@ def open_h5_group(path, group=None, replace=False, **kw):
             g = path
         else:
             g = path.require_group(group, **kw)
+        yield g
 
 """
 Layout of Pandas DataFrame / Series representation

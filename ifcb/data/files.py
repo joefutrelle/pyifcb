@@ -136,9 +136,9 @@ class Fileset(object):
     @property
     def timestamp(self):
         return self.pid.timestamp
-    def to_hdf(self, hdf_file, group=None, replace=True):
+    def to_hdf(self, hdf_file, group=None, replace=True, archive=False):
         from .hdf import fileset2hdf
-        fileset2hdf(self, hdf_file, group, replace)
+        fileset2hdf(self, hdf_file, group, replace, archive=archive)
     def __repr__(self):
         return '<IFCB Fileset %s>' % self.basepath
     def __str__(self):

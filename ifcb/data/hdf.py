@@ -1,3 +1,5 @@
+import datetime
+
 import numpy as np
 
 from .h5utils import df2h5, open_h5_group, H5_REF_TYPE
@@ -21,14 +23,21 @@ def roi2hdf(roifile, hdf_file, group=None, replace=True):
         n = max(d.keys())+1
         r = [ d[i].ref if i in d else None for i in range(n) ]
         g.create_dataset('images', data=r, dtype=H5_REF_TYPE)
-    
-def fileset2hdf(fileset, hdf_file, group=None, replace=True):
+
+def hdr2hdf(hdr_dict, hdf_file, group=None, replace=True, archive=False):
+    with open_h5_group(hdf_file, group, replace=replace) as g:
+        for k, v in hdr_dict.items():
+            g.attrs[k] = v
+        
+def fileset2hdf(fileset, hdf_file, group=None, replace=True, archive=False):
     with open_h5_group(hdf_file, group, replace=replace) as root:
         root.attrs['lid'] = fileset.lid
-        root.attrs['timestamp'] = fileset.timestamp.strftime('%Y-%m-%dT%H:%M:%SZ')
-        # hdr is an empty group with k/v pairs
-        with open_h5_group(root, 'hdr', replace=replace) as hdr:
-            for k, v in fileset.hdr.items():
-                hdr.attrs[k] = v
+        root.attrs['timestamp'] = fileset.timestamp.isoformat()
+        hdr2hdf(fileset.hdr, root, 'hdr', replace=replace)
         adc2hdf(fileset.adc, root, 'adc', replace=replace)
         roi2hdf(fileset.roi, root, 'roi', replace=replace)
+        if archive:
+            with open(fileset.adc_path) as adcdata:
+                root.create_dataset('archive/adc', data=np.array(adcdata.read()), compression='gzip')
+            with open(fileset.hdr_path) as hdrdata:
+                root.create_dataset('archive/hdr', data=np.array(hdrdata.read()), compression='gzip')
