@@ -28,6 +28,12 @@ def hdr2hdf(hdr_dict, hdf_file, group=None, replace=True, archive=False):
     with open_h5_group(hdf_file, group, replace=replace) as g:
         for k, v in hdr_dict.items():
             g.attrs[k] = v
+
+def file2hdf(hdf_root, ds_name, path, **kw):
+    with open(path,'rb') as infile:
+        file_data = infile.read()
+    file_array = bytearray(file_data)
+    hdf_root.create_dataset(ds_name, data=file_array, **kw)
         
 def fileset2hdf(fileset, hdf_file, group=None, replace=True, archive=False):
     with open_h5_group(hdf_file, group, replace=replace) as root:
@@ -37,7 +43,6 @@ def fileset2hdf(fileset, hdf_file, group=None, replace=True, archive=False):
         adc2hdf(fileset.adc, root, 'adc', replace=replace)
         roi2hdf(fileset.roi, root, 'roi', replace=replace)
         if archive:
-            with open(fileset.adc_path) as adcdata:
-                root.create_dataset('archive/adc', data=np.array(adcdata.read()), compression='gzip')
-            with open(fileset.hdr_path) as hdrdata:
-                root.create_dataset('archive/hdr', data=np.array(hdrdata.read()), compression='gzip')
+            file2hdf(root, 'archive/adc', fileset.adc_path)
+            file2hdf(root, 'archive/hdr', fileset.hdr_path)
+

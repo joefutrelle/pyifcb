@@ -64,3 +64,16 @@ class TestFilesetHdf(unittest.TestCase):
             with h5.File(path) as h:
                 assert h.attrs['lid'] == fs.lid
                 assert h.attrs['timestamp'] == fs.timestamp.isoformat()
+    @withfile
+    def test_archive(self, path):
+        for fs in list_test_filesets():
+            fileset2hdf(fs, path, archive=True)
+            with h5.File(path) as h:
+                archived_adc_data = bytearray(h['archive/adc'])
+                with open(fs.adc_path,'rb') as adc_in:
+                    adc_data = bytearray(adc_in.read())
+                assert np.all(adc_data == archived_adc_data)
+                archived_hdr_data = bytearray(h['archive/hdr'])
+                with open(fs.hdr_path,'rb') as hdr_in:
+                    hdr_data = bytearray(hdr_in.read())
+                assert np.all(hdr_data == archived_hdr_data)

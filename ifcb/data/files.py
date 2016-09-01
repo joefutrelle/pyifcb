@@ -145,7 +145,7 @@ class Fileset(object):
         return self.basepath
 
 class DataDirectory(object):
-    def __init__(self, path, whitelist=['data'], blacklist=['skip']):
+    def __init__(self, path='.', whitelist=['data'], blacklist=['skip']):
         self.path = path
         self.whitelist = whitelist
         self.blacklist = blacklist
