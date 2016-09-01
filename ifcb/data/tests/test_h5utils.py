@@ -50,7 +50,7 @@ class TestH5Utils(unittest.TestCase):
                 yield in_df
                 df2h5(g, in_df)
                 out_df = h52df(g)
-                assert_frame_equal(in_df, out_df, check_index_type=True, check_column_type=True)
+                assert_frame_equal(in_df, out_df, check_index_type='equiv', check_column_type='equiv')
         with roundtrip():
             in_df.index = r.permutation(in_df.index)
         with roundtrip():
