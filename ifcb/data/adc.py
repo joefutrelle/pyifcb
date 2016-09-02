@@ -5,6 +5,7 @@ import h5py as h5
 from functools32 import lru_cache
 
 from .identifiers import Pid
+from .bins import BaseDictlike
 
 # column names by schema
 # FIXME these are not anywhere in raw data except new-style instruments contain
@@ -17,6 +18,7 @@ COLUMNS = {
 """
 
 class SCHEMA_VERSION_1(object):
+    name = 'v1'
     TRIGGER = 0
     ROI_X = 9
     ROI_Y = 10
@@ -25,6 +27,7 @@ class SCHEMA_VERSION_1(object):
     START_BYTE = 13
 
 class SCHEMA_VERSION_2(object):
+    name = 'v2'
     TRIGGER = 0
     ROI_X = 13
     ROI_Y = 14
@@ -34,7 +37,7 @@ class SCHEMA_VERSION_2(object):
 
 SCHEMA = [None, SCHEMA_VERSION_1, SCHEMA_VERSION_2]
 
-class AdcFile(object):
+class AdcFile(BaseDictlike):
     def __init__(self, adc_path, parse=False):
         self.path = adc_path
         self.pid = Pid(adc_path)
@@ -61,26 +64,15 @@ class AdcFile(object):
         """
         from .hdf import adc2hdf
         adc2hdf(self, hdf_file, group, replace=replace, **kw)
-    @lru_cache()
-    def keys(self):
-        return list(self.csv.index)
-    def __len__(self):
-        return len(self.csv)
+    def iterkeys(self):
+        for k in self.csv.index:
+            yield k
     @lru_cache()
     def get_target(self, target_number):
         d = { c: self.csv[c][target_number] for c in self.csv.columns }
         return d
-    def __contains__(self, target_number):
-        return target_number in self.csv.index
     def __getitem__(self, target_number):
         return self.get_target(target_number)
-    def __iter__(self):
-        return iter(self.csv.index)
-    def iteritems(self):
-        for i in self:
-            yield i, self[i]
-    def items(self):
-        return list(self.iteritems())
     def __repr__(self):
         return '<ADC file %s>' % self.path
     def __str__(self):

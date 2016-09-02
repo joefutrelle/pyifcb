@@ -1,4 +1,5 @@
 import os
+from UserDict import IterableUserDict
 
 from functools32 import lru_cache
 
@@ -7,6 +8,7 @@ from .adc import AdcFile
 from .hdr import parse_hdr_file
 from .roi import RoiFile
 from .h5utils import open_h5_group
+from .bins import BaseBin
 
 """
 A well-formed raw data file path relative to some root
@@ -133,6 +135,8 @@ class Fileset(object):
         if not os.path.exists(self.roi_path):
             return False
         return True
+    def schema(self):
+        return self.adc.schema
     @property
     def timestamp(self):
         return self.pid.timestamp
@@ -171,3 +175,22 @@ class DataDirectory(object):
         return '<DataDirectory %s>' % self.path
     def __str__(self):
         return self.path
+
+# bin interface to Fileset
+
+class FilesetBin(IterableUserDict, BaseBin):
+    def __init__(self, fileset):
+        IterableUserDict.__init__(self, fileset.adc)
+        self.fs = fileset
+    @property
+    def pid(self):
+        return self.fs.pid
+    @property
+    def schema(self):
+        return self.fs.schema
+    @property
+    def images(self):
+        return self.fs.roi
+    @property
+    def headers(self):
+        return self.fs.hdr

@@ -46,3 +46,8 @@ def fileset2hdf(fileset, hdf_file, group=None, replace=True, archive=False):
             file2hdf(root, 'archive/adc', fileset.adc_path)
             file2hdf(root, 'archive/hdr', fileset.hdr_path)
 
+def HdfBin(object):
+    """Bin interface to HDF file/group"""
+    def __init__(self, hdf_file, group=None):
+        self.hdf_file = hdf_file
+        self.hdf_group = group
