@@ -35,7 +35,12 @@ class SCHEMA_VERSION_2(object):
     ROI_HEIGHT = 16
     START_BYTE = 17
 
-SCHEMA = [None, SCHEMA_VERSION_1, SCHEMA_VERSION_2]
+SCHEMA = {
+    1: SCHEMA_VERSION_1,
+    2: SCHEMA_VERSION_2,
+    SCHEMA_VERSION_1.name: SCHEMA_VERSION_1,
+    SCHEMA_VERSION_2.name: SCHEMA_VERSION_2
+}
 
 class AdcFile(BaseDictlike):
     def __init__(self, adc_path, parse=False):
@@ -69,7 +74,7 @@ class AdcFile(BaseDictlike):
             yield k
     @lru_cache()
     def get_target(self, target_number):
-        d = { c: self.csv[c][target_number] for c in self.csv.columns }
+        d = tuple(self.csv[c][target_number] for c in self.csv.columns)
         return d
     def __getitem__(self, target_number):
         return self.get_target(target_number)

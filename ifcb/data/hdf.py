@@ -1,13 +1,19 @@
 import datetime
 
 import numpy as np
+from functools32 import lru_cache
 
-from .h5utils import df2h5, open_h5_group, H5_REF_TYPE
+from .h5utils import df2h5, h52df, open_h5_group, H5_REF_TYPE, opengroup
+
+from .adc import SCHEMA
+from .bins import BaseBin, BaseDictlike
 
 def adc2hdf(adcfile, hdf_file, group=None, replace=True):
-    """an ADC file is represented as a Pandas DataFrame"""
+    """an ADC file is represented as a Pandas DataFrame
+    with 'schema' attr naming schema version"""
     with open_h5_group(hdf_file, group, replace=replace) as g:
         df2h5(g, adcfile.to_dataframe(), compression='gzip')
+        g.attrs['schema'] = adcfile.schema.name
 
 def roi2hdf(roifile, hdf_file, group=None, replace=True):
     """ROI layout given {root}
@@ -37,6 +43,7 @@ def file2hdf(hdf_root, ds_name, path, **kw):
         
 def fileset2hdf(fileset, hdf_file, group=None, replace=True, archive=False):
     with open_h5_group(hdf_file, group, replace=replace) as root:
+        root.attrs['pid'] = str(fileset.pid)
         root.attrs['lid'] = fileset.lid
         root.attrs['timestamp'] = fileset.timestamp.isoformat()
         hdr2hdf(fileset.hdr, root, 'hdr', replace=replace)
@@ -46,8 +53,67 @@ def fileset2hdf(fileset, hdf_file, group=None, replace=True, archive=False):
             file2hdf(root, 'archive/adc', fileset.adc_path)
             file2hdf(root, 'archive/hdr', fileset.hdr_path)
 
-def HdfBin(object):
-    """Bin interface to HDF file/group"""
+# bin interface to HDF
+
+class HdfRoi(BaseDictlike):
+    def __init__(self, group):
+        self._group = group
+    def iterkeys():
+        for k in self._group.attrs['index']:
+            yield k
+    def __getitem__(self, roi_number):
+        return np.array(self._group[self._group['images'][roi_number]])
+        
+class HdfBin(BaseBin, BaseDictlike):
+    """Bin interface to HDF file/group.
+    must be opened and closed with open/close or context manager interface
+    """
     def __init__(self, hdf_file, group=None):
-        self.hdf_file = hdf_file
-        self.hdf_group = group
+        self._hdf_file = hdf_file
+        self._hdf_group = group
+        self._group = None # for the open HDF file
+        # context manager implementation
+    def isopen(self):
+        return self._group is not None
+    def open(self, reopen=True):
+        if self.isopen() and reopen:
+            return self
+        self._group = opengroup(self._hdf_file, self._hdf_group)
+        return self
+    def close(self, ignore_closed=False):
+        if ignore_closed and not self.isopen():
+            return
+        self._group.close()
+    def __enter__(self):
+        return self.open()
+    def __exit__(self, *args):
+        self.close()
+    # Dictlike
+    @property
+    @lru_cache()
+    def csv(self):
+        return h52df(self._group['adc'])
+    @property
+    @lru_cache()
+    def schema(self):
+        return SCHEMA[self._group['adc'].attrs['schema']]
+    @lru_cache()
+    def get_target(self, target_number):
+        d = tuple(self.csv[c][target_number] for c in self.csv.columns)
+        return d
+    def __getitem__(self, target_number):
+        return self.get_target(target_number)
+    def iterkeys(self):
+        for k in self.csv.index:
+            yield k
+    @property
+    @lru_cache()
+    def headers(self):
+        return dict(self._group['hdr'].attrs)
+    @property
+    @lru_cache()
+    def pid(self):
+        return Pid(self._group.attrs['pid'])
+    @property
+    def images(self):
+        return HdfRoi(self._group['roi'])

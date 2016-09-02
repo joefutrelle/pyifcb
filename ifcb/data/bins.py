@@ -7,8 +7,13 @@ class Bin(object):
         return FilesetBin(fileset)
     @staticmethod
     def from_files(*files):
+        from ifcb.data.files import Fileset
         fs = Fileset(os.path.common_prefix(files))
-        return FilesetBin(fs)
+        return Bin.from_fileset(fs)
+    @staticmethod
+    def from_hdf(hdf_file, group=None):
+        from ifcb.data.hdf import HdfBin
+        return HdfBin(hdf_file, group)
 
 """Bin API
 
@@ -59,7 +64,7 @@ class BaseDictlike(object):
         return list(self.itervalues())
     def __len__(self):
         n = 0
-        for k in iterkeys():
+        for k in self.iterkeys():
             n += 1
         return n
     

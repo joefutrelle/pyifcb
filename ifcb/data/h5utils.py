@@ -12,6 +12,22 @@ def clear_h5_group(h5group):
     for k in h5group.keys(): del h5group[k]
     for k in h5group.attrs.keys(): del h5group.attrs[k]
 
+def opengroup(path, group=None, replace=False):
+    try:
+        f = h5.File(path)
+        if group is None:
+            g = f
+        else:
+            g = f.require_group(group)
+    except AttributeError:
+        if group is None:
+            g = path
+        else:
+            g = path.require_group(group)
+    if replace:
+        clear_h5_group(g)
+    return g
+
 @contextmanager
 def open_h5_group(path, group=None, replace=False, **kw):
     """open an hdf5 group from a file or other group
@@ -22,19 +38,9 @@ def open_h5_group(path, group=None, replace=False, **kw):
     try:
         mode = 'w' if replace else 'r'
         with h5.File(path,mode) as f:
-            if group is None:
-                g = f
-            else:
-                g = f.require_group(group, **kw)
-            if replace:
-                clear_h5_group(g)
-            yield g
+            yield opengroup(f, group, replace=replace)
     except AttributeError:
-        if group is None:
-            g = path
-        else:
-            g = path.require_group(group, **kw)
-        yield g
+        yield opengroup(path, group, replace=replace)
 
 """
 Layout of Pandas DataFrame / Series representation

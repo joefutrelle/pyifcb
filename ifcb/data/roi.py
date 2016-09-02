@@ -34,11 +34,8 @@ class RoiFile(object):
         return self._inroi is not None
     def open(self, reopen=True):
         # close if already open
-        if self.isopen():
-            if reopen:
-                self.close()
-            else:
-                return self
+        if self.isopen() and reopen:
+            return self
         self._inroi = open(self.path, 'rb')
         return self
     def close(self):

@@ -14,6 +14,7 @@ from .fileset_info import list_test_filesets
 def test_adc_roundtrip(adc, path, group=None):
     with open_h5_group(path, group) as h:
         csv = h52df(h)
+        assert h.attrs['schema'] == adc.schema.name
     assert_frame_equal(csv, adc.csv)
 
 def test_hdr_roundtrip(hdr, path, group=None):
@@ -62,8 +63,10 @@ class TestFilesetHdf(unittest.TestCase):
             test_roi_roundtrip(fs.roi, path, 'roi')
             # now test other aspects
             with h5.File(path) as h:
+                assert h.attrs['pid'] == str(fs.pid)
                 assert h.attrs['lid'] == fs.lid
                 assert h.attrs['timestamp'] == fs.timestamp.isoformat()
+    @unittest.skip('skip because slow')
     @withfile
     def test_archive(self, path):
         for fs in list_test_filesets():
