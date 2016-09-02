@@ -7,9 +7,11 @@ from pandas.util.testing import assert_frame_equal
 from ifcb.tests.utils import withfile
 
 from ..h5utils import h52df, open_h5_group
-from ..hdf import roi2hdf, hdr2hdf, adc2hdf, fileset2hdf
+from ..hdf import roi2hdf, hdr2hdf, adc2hdf, fileset2hdf, HdfBin
+from ..files import FilesetBin
 
 from .fileset_info import list_test_filesets
+from .bins import assert_bin_equals
 
 def test_adc_roundtrip(adc, path, group=None):
     with open_h5_group(path, group) as h:
@@ -80,3 +82,12 @@ class TestFilesetHdf(unittest.TestCase):
                 with open(fs.hdr_path,'rb') as hdr_in:
                     hdr_data = bytearray(hdr_in.read())
                 assert np.all(hdr_data == archived_hdr_data)
+
+class TestHdfBin(unittest.TestCase):
+    @withfile
+    def test_roundtrip(self, path):
+        for fs in list_test_filesets():
+            out_bin = FilesetBin(fs)
+            out_bin.to_hdf(path)
+            with HdfBin(path) as in_bin:
+                assert_bin_equals(in_bin, out_bin)

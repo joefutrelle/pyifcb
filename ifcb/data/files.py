@@ -135,6 +135,7 @@ class Fileset(object):
         if not os.path.exists(self.roi_path):
             return False
         return True
+    @property
     def schema(self):
         return self.adc.schema
     @property
@@ -194,3 +195,5 @@ class FilesetBin(IterableUserDict, BaseBin):
     @property
     def headers(self):
         return self.fs.hdr
+    def to_hdf(self, path, group=None):
+        self.fs.to_hdf(path, group)

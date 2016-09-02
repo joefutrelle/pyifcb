@@ -93,6 +93,13 @@ class Pid(object):
         except ValueError:
             pass
         return False
+    def __cmp__(self, other):
+        if self.pid < other.pid:
+            return -1
+        elif self.pid > other.pid:
+            return 1
+        else:
+            return 0
     @property
     @lru_cache()
     def parsed(self):

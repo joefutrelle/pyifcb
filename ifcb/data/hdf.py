@@ -5,6 +5,7 @@ from functools32 import lru_cache
 
 from .h5utils import df2h5, h52df, open_h5_group, H5_REF_TYPE, opengroup
 
+from .identifiers import Pid
 from .adc import SCHEMA
 from .bins import BaseBin, BaseDictlike
 
@@ -58,7 +59,7 @@ def fileset2hdf(fileset, hdf_file, group=None, replace=True, archive=False):
 class HdfRoi(BaseDictlike):
     def __init__(self, group):
         self._group = group
-    def iterkeys():
+    def iterkeys(self):
         for k in self._group.attrs['index']:
             yield k
     def __getitem__(self, roi_number):
