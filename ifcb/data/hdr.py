@@ -1,6 +1,8 @@
 import re
 import fileinput
 
+import ast
+
 """Header file parsing that is robust to ancient header formats"""
 
 HDR='hdr'
@@ -36,6 +38,12 @@ def parse_hdr(lines):
         for line in lines[1:]:
             try:
                 k, v = re.split(r': ',line)
+                try:
+                    v = ast.literal_eval(v)
+                except ValueError:
+                    pass
+                except SyntaxError:
+                    pass
                 props[k] = v
             except ValueError:
                 # not valid RFC 822. Ignore.
