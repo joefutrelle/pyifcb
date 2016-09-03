@@ -12,9 +12,9 @@ from .bins import BaseBin, BaseDictlike
 def adc2hdf(adcfile, hdf_file, group=None, replace=True):
     """an ADC file is represented as a Pandas DataFrame
     with 'schema' attr naming schema version"""
-    with hdfopen(hdf_file, group, replace=replace) as g:
-        pd2hdf(g, adcfile.to_dataframe(), compression='gzip')
-        g.attrs['schema'] = adcfile.schema.name
+    with hdfopen(hdf_file, group, replace=replace) as root:
+        pd2hdf(root, adcfile.to_dataframe(), compression='gzip')
+        root.attrs['schema'] = adcfile.schema.name
 
 def roi2hdf(roifile, hdf_file, group=None, replace=True):
     """ROI layout given {root}
@@ -22,14 +22,14 @@ def roi2hdf(roifile, hdf_file, group=None, replace=True):
     {root}/images (dataset): references to images keyed by roi number
     {root}/{n} (dataset): 2d uint8 image (n = str(roi_number))
     """
-    with hdfopen(hdf_file, group, replace=replace) as g:
-        g.attrs['index'] = roifile.index
+    with hdfopen(hdf_file, group, replace=replace) as root:
+        root.attrs['index'] = roifile.index
         # create image datasets and map them to roi numbers
-        d = { n: g.create_dataset(str(n), data=im) for n, im in roifile.iteritems() }
+        d = { n: root.create_dataset(str(n), data=im) for n, im in roifile.iteritems() }
         # now create sparse array of references keyed by roi number
         n = max(d.keys())+1
         r = [ d[i].ref if i in d else None for i in range(n) ]
-        g.create_dataset('images', data=r, dtype=H5_REF_TYPE)
+        root.create_dataset('images', data=r, dtype=H5_REF_TYPE)
 
 def hdr2hdf(hdr_dict, hdf_file, group=None, replace=True, archive=False):
     """hdr is represented as attributes on the group"""
@@ -46,6 +46,7 @@ def file2hdf(hdf_root, ds_name, path, **kw):
     hdf_root.create_dataset(ds_name, data=file_array, **kw)
 
 def hdf2file(hdf_dataset, path):
+    """write the contents of an HDF dataset to a file"""
     file_data = bytearray(hdf_dataset)
     with open(path,'wb') as outfile:
         outfile.write(file_data)
