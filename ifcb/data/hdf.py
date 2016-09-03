@@ -3,7 +3,7 @@ import datetime
 import numpy as np
 from functools32 import lru_cache
 
-from .h5utils import df2h5, h52df, open_h5_group, H5_REF_TYPE, opengroup
+from .h5utils import df2h5, h52df, hdfopen, H5_REF_TYPE, opengroup
 
 from .identifiers import Pid
 from .adc import SCHEMA
@@ -12,7 +12,7 @@ from .bins import BaseBin, BaseDictlike
 def adc2hdf(adcfile, hdf_file, group=None, replace=True):
     """an ADC file is represented as a Pandas DataFrame
     with 'schema' attr naming schema version"""
-    with open_h5_group(hdf_file, group, replace=replace) as g:
+    with hdfopen(hdf_file, group, replace=replace) as g:
         df2h5(g, adcfile.to_dataframe(), compression='gzip')
         g.attrs['schema'] = adcfile.schema.name
 
@@ -22,7 +22,7 @@ def roi2hdf(roifile, hdf_file, group=None, replace=True):
     {root}/images (dataset): references to images keyed by roi number
     {root}/{n} (dataset): 2d uint8 image (n = str(roi_number))
     """
-    with open_h5_group(hdf_file, group, replace=replace) as g:
+    with hdfopen(hdf_file, group, replace=replace) as g:
         g.attrs['index'] = roifile.index
         # create image datasets and map them to roi numbers
         d = { n: g.create_dataset(str(n), data=im) for n, im in roifile.iteritems() }
@@ -33,7 +33,7 @@ def roi2hdf(roifile, hdf_file, group=None, replace=True):
 
 def hdr2hdf(hdr_dict, hdf_file, group=None, replace=True, archive=False):
     """hdr is represented as attributes on the group"""
-    with open_h5_group(hdf_file, group, replace=replace) as root:
+    with hdfopen(hdf_file, group, replace=replace) as root:
         for k, v in hdr_dict.items():
             root.attrs[k] = v
 
@@ -62,7 +62,7 @@ def fileset2hdf(fileset, hdf_file, group=None, replace=True, archive=False):
     {root}/archive/adc (dataset) - archived ADC file
     {root}/archive/hdr (dataset) - archived HDR file
     """
-    with open_h5_group(hdf_file, group, replace=replace) as root:
+    with hdfopen(hdf_file, group, replace=replace) as root:
         root.attrs['pid'] = str(fileset.pid)
         root.attrs['lid'] = fileset.lid
         root.attrs['timestamp'] = fileset.timestamp.isoformat()
@@ -74,7 +74,7 @@ def fileset2hdf(fileset, hdf_file, group=None, replace=True, archive=False):
             file2hdf(root, 'archive/hdr', fileset.hdr_path)
 
 def hdf2fileset(hdf_path, fileset_path, group=None):
-    with open_h5_group(hdf_path, group) as root:
+    with hdfopen(hdf_path, group) as root:
         if not 'archive' in root:
             raise ValueError('no archived IFCB data found')
         hdf2file(root['archive/adc'], fileset_path + '.adc')

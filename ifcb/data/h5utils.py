@@ -29,7 +29,7 @@ def opengroup(path, group=None, replace=False):
     return g
 
 @contextmanager
-def open_h5_group(path, group=None, replace=False, **kw):
+def hdfopen(path, group=None, replace=False, **kw):
     """open an hdf5 group from a file or other group
     parameters:
     path - path to HDF5 file, or open HDF5 group

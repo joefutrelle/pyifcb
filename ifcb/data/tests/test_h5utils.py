@@ -10,22 +10,22 @@ from pandas.util.testing import assert_frame_equal
 
 from ifcb.tests.utils import withfile
 
-from ..h5utils import open_h5_group, clear_h5_group, df2h5, h52df
+from ..h5utils import hdfopen, clear_h5_group, df2h5, h52df
 
 class TestH5Utils(unittest.TestCase):
     @withfile
-    def test_open_h5_group(self, F):
+    def test_hdfopen(self, F):
         attr = 'test'
         v1, v2 = 5, 6
         for group in [None, 'g']:
-            with open_h5_group(F, group, replace=True) as f:
+            with hdfopen(F, group, replace=True) as f:
                 f.attrs[attr] = v1
             assert os.path.exists(F)
-            with open_h5_group(F, group) as f:
+            with hdfopen(F, group) as f:
                 assert f.attrs[attr] == v1
-            with open_h5_group(F, group, replace=True) as f:
+            with hdfopen(F, group, replace=True) as f:
                 f.attrs[attr] = v2
-            with open_h5_group(F, group) as f:
+            with hdfopen(F, group) as f:
                 assert f.attrs[attr] == v2
     @withfile
     def test_clear_h5_group(self, F):
@@ -46,7 +46,7 @@ class TestH5Utils(unittest.TestCase):
         in_df = pd.DataFrame(data=data)
         @contextmanager
         def roundtrip(): # test dataframe roundtrip
-            with open_h5_group(F,replace=True) as g:
+            with hdfopen(F,replace=True) as g:
                 yield in_df
                 df2h5(g, in_df)
                 out_df = h52df(g)

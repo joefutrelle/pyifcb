@@ -7,7 +7,7 @@ from pandas.util.testing import assert_frame_equal
 
 from ifcb.tests.utils import withfile, test_dir
 
-from ..h5utils import h52df, open_h5_group
+from ..h5utils import h52df, hdfopen
 from ..hdf import roi2hdf, hdr2hdf, adc2hdf, fileset2hdf, hdf2fileset, HdfBin
 from ..files import FilesetBin
 
@@ -15,18 +15,18 @@ from .fileset_info import list_test_filesets
 from .bins import assert_bin_equals
 
 def test_adc_roundtrip(adc, path, group=None):
-    with open_h5_group(path, group) as h:
+    with hdfopen(path, group) as h:
         csv = h52df(h)
         assert h.attrs['schema'] == adc.schema.name
     assert_frame_equal(csv, adc.csv)
 
 def test_hdr_roundtrip(hdr, path, group=None):
-    with open_h5_group(path, group) as h:
+    with hdfopen(path, group) as h:
         for k,v in hdr.items():
             assert np.all(h.attrs[k] == hdr[k])
 
 def test_roi_roundtrip(roi, path, group=None):
-    with open_h5_group(path, group) as h:
+    with hdfopen(path, group) as h:
         index = h.attrs['index']
         assert np.all(index == roi.keys())
         for roi_number in index:

@@ -7,7 +7,7 @@ from .identifiers import Pid
 from .adc import AdcFile
 from .hdr import parse_hdr_file
 from .roi import RoiFile
-from .h5utils import open_h5_group
+from .h5utils import hdfopen
 from .bins import BaseBin
 
 """
