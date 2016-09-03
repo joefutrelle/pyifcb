@@ -1,13 +1,14 @@
+import os
 import unittest
 
 import numpy as np
 import h5py as h5
 from pandas.util.testing import assert_frame_equal
 
-from ifcb.tests.utils import withfile
+from ifcb.tests.utils import withfile, test_dir
 
 from ..h5utils import h52df, open_h5_group
-from ..hdf import roi2hdf, hdr2hdf, adc2hdf, fileset2hdf, HdfBin
+from ..hdf import roi2hdf, hdr2hdf, adc2hdf, fileset2hdf, hdf2fileset, HdfBin
 from ..files import FilesetBin
 
 from .fileset_info import list_test_filesets
@@ -68,7 +69,7 @@ class TestFilesetHdf(unittest.TestCase):
                 assert h.attrs['pid'] == str(fs.pid)
                 assert h.attrs['lid'] == fs.lid
                 assert h.attrs['timestamp'] == fs.timestamp.isoformat()
-    @unittest.skip('skip because slow')
+    @unittest.skip('slow')
     @withfile
     def test_archive(self, path):
         for fs in list_test_filesets():
@@ -82,6 +83,21 @@ class TestFilesetHdf(unittest.TestCase):
                 with open(fs.hdr_path,'rb') as hdr_in:
                     hdr_data = bytearray(hdr_in.read())
                 assert np.all(hdr_data == archived_hdr_data)
+                with open(fs.roi_path,'rb') as roi_in:
+                    roi_data = bytearray(roi_in.read())
+                # now test unarchiving API
+                with test_dir() as d:
+                    fs_path = os.path.join(d, fs.lid)
+                    hdf2fileset(h, fs_path)
+                    with open(fs_path + '.adc','rb') as adc_in:
+                        unarchived_adc_data = bytearray(adc_in.read())
+                    assert np.all(adc_data == unarchived_adc_data)
+                    with open(fs_path + '.hdr','rb') as hdr_in:
+                        unarchived_hdr_data = bytearray(hdr_in.read())
+                    assert np.all(hdr_data == unarchived_hdr_data)
+                    with open(fs_path + '.roi','rb') as roi_in:
+                        unarchived_roi_data = bytearray(roi_in.read())
+                    assert np.all(roi_data == unarchived_roi_data)
 
 class TestHdfBin(unittest.TestCase):
     @withfile
