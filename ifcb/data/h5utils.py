@@ -55,7 +55,7 @@ Layout of Pandas DataFrame / Series representation
 Series are represented like single-column DataFrames
 """
 
-def df2h5(group, df, **kw):
+def pd2hdf(group, df, **kw):
     """kw params used for all dataset creation operations"""
     group.attrs['ptype'] = 'DataFrame'
     refs = []
@@ -68,7 +68,7 @@ def df2h5(group, df, **kw):
     if df.index.name is not None:
         ix.attrs['name'] = df.index.name
 
-def h52df(group):
+def hdf2pd(group):
     assert group.attrs['ptype'] == 'DataFrame'
     index = group['index']
     index_name = index.attrs.get('name',None)

@@ -10,7 +10,7 @@ from pandas.util.testing import assert_frame_equal
 
 from ifcb.tests.utils import withfile
 
-from ..h5utils import hdfopen, clear_h5_group, df2h5, h52df
+from ..h5utils import hdfopen, clear_h5_group, pd2hdf, hdf2pd
 
 class TestH5Utils(unittest.TestCase):
     @withfile
@@ -48,8 +48,8 @@ class TestH5Utils(unittest.TestCase):
         def roundtrip(): # test dataframe roundtrip
             with hdfopen(F,replace=True) as g:
                 yield in_df
-                df2h5(g, in_df)
-                out_df = h52df(g)
+                pd2hdf(g, in_df)
+                out_df = hdf2pd(g)
                 assert_frame_equal(in_df, out_df, check_index_type='equiv', check_column_type='equiv')
         with roundtrip():
             in_df.index = r.permutation(in_df.index)

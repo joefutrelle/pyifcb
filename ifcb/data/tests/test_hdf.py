@@ -7,7 +7,7 @@ from pandas.util.testing import assert_frame_equal
 
 from ifcb.tests.utils import withfile, test_dir
 
-from ..h5utils import h52df, hdfopen
+from ..h5utils import hdf2pd, hdfopen
 from ..hdf import roi2hdf, hdr2hdf, adc2hdf, fileset2hdf, hdf2fileset, HdfBin
 from ..files import FilesetBin
 
@@ -16,7 +16,7 @@ from .bins import assert_bin_equals
 
 def test_adc_roundtrip(adc, path, group=None):
     with hdfopen(path, group) as h:
-        csv = h52df(h)
+        csv = hdf2pd(h)
         assert h.attrs['schema'] == adc.schema.name
     assert_frame_equal(csv, adc.csv)
 

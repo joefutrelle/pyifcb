@@ -3,7 +3,7 @@ import datetime
 import numpy as np
 from functools32 import lru_cache
 
-from .h5utils import df2h5, h52df, hdfopen, H5_REF_TYPE, opengroup
+from .h5utils import pd2hdf, hdf2pd, hdfopen, H5_REF_TYPE, opengroup
 
 from .identifiers import Pid
 from .adc import SCHEMA
@@ -13,7 +13,7 @@ def adc2hdf(adcfile, hdf_file, group=None, replace=True):
     """an ADC file is represented as a Pandas DataFrame
     with 'schema' attr naming schema version"""
     with hdfopen(hdf_file, group, replace=replace) as g:
-        df2h5(g, adcfile.to_dataframe(), compression='gzip')
+        pd2hdf(g, adcfile.to_dataframe(), compression='gzip')
         g.attrs['schema'] = adcfile.schema.name
 
 def roi2hdf(roifile, hdf_file, group=None, replace=True):
@@ -129,7 +129,7 @@ class HdfBin(BaseBin, BaseDictlike):
     @property
     @lru_cache()
     def csv(self):
-        return h52df(self._group['adc'])
+        return hdf2pd(self._group['adc'])
     @property
     @lru_cache()
     def schema(self):
