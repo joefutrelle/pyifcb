@@ -6,7 +6,6 @@ dist: trusty
 cache: pip
 before_install:
   - sudo apt-get -qq update
-  - sudo apt-get install -y python-pip python-dev
   - sudo apt-get install -y python-numpy python-scipy python-pandas
   - sudo apt-get install -y python-h5py
   - sudo pip install functools32
