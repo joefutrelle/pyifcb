@@ -1,4 +1,4 @@
-# pyficb - Imaging FlowCytobot Python API, generation 2
+# pyifcb - Imaging FlowCytobot Python API, generation 2
 
 ## Overview
 
