@@ -2,10 +2,10 @@ language: python
 python:
   - "2.7"
 dist: trusty
-addons:
-  apt:
-    packages:
-      - python-dev libhdf5-serial-dev
+sudo: required
+before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get install python-dev libhdf5-serial-dev
 install:
   - pip install functools32 'pandas<=0.14.1' 'h5py<=2.2.1'
 script:
