@@ -2,10 +2,10 @@ language: python
 python:
   - "2.7"
 dist: trusty
-addons:
-  apt:
-    packages:
-      - python-pandas python-h5py
+sudo: required
+before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get install -y python-pandas python-h5py
 install:
   - pip install functools32
 script:
