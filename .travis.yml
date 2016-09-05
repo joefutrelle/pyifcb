@@ -3,7 +3,7 @@ python:
   - "2.7"
 dist: trusty
 install:
-  - pip install 'functools32==3.2.3-2' 'pandas==0.14.1' 'h5py==2.2.1'
+  - pip install 'functools32<=3.2.3' 'pandas<=0.14.1' 'h5py<=2.2.1'
 script:
   - python -m unittest discover
 branches:
