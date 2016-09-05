@@ -3,11 +3,8 @@ python:
   - "2.7"
 dist: trusty
 sudo: required
-before_install:
-  - sudo apt-get -qq update
-  - sudo apt-get install -y python-pandas python-h5py
 install:
-  - pip install functools32
+  - pip install functools32 pandas h5py
 script:
   - python -m unittest discover
 branches:
