@@ -12,35 +12,36 @@ def clear_h5_group(h5group):
     for k in h5group.keys(): del h5group[k]
     for k in h5group.attrs.keys(): del h5group.attrs[k]
 
-def opengroup(path, group=None, replace=False):
-    try:
-        f = h5.File(path)
-        if group is None:
-            g = f
-        else:
-            g = f.require_group(group)
-    except AttributeError:
-        if group is None:
-            g = path
-        else:
-            g = path.require_group(group)
-    if replace:
-        clear_h5_group(g)
-    return g
-
-@contextmanager
-def hdfopen(path, group=None, replace=False, **kw):
-    """open an hdf5 group from a file or other group
+class hdfopen(object):
+    """context mgr: open an hdf5 group from a file or other group
     parameters:
     path - path to HDF5 file, or open HDF5 group
     group - for HDF5 file paths, the group path to return (optional);
     for groups, a subgroup to require (optional)"""
-    try:
-        mode = 'w' if replace else 'r'
-        with h5.File(path,mode) as f:
-            yield opengroup(f, group, replace=replace)
-    except AttributeError:
-        yield opengroup(path, group, replace=replace)
+    def __init__(self, path, group=None, replace=None):
+        if isinstance(path, h5.Group):
+            if group is not None:
+                self.group = path.require_group(group)
+            else:
+                self.group = path
+            if replace:
+                clear_h5_group(self.group)
+            self._file = None
+        else:
+            mode = 'w' if replace else 'r+'
+            self._file = h5.File(path, mode)
+            if group is not None:
+                self.group = self._file.require_group(group)
+            else:
+                self.group = self._file
+    def close(self):
+        if self._file is not None:
+            self._file.close()
+    def __enter__(self, *args, **kw):
+        return self.group
+    def __exit__(self, *args):
+        self.close()
+        pass
 
 """
 Layout of Pandas DataFrame / Series representation

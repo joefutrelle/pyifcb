@@ -46,6 +46,8 @@ class TestH5Utils(unittest.TestCase):
         in_df = pd.DataFrame(data=data)
         @contextmanager
         def roundtrip(): # test dataframe roundtrip
+            if os.path.exists(F):
+                os.remove(F)
             with hdfopen(F,replace=True) as g:
                 yield in_df
                 pd2hdf(g, in_df)

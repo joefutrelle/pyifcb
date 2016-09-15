@@ -3,7 +3,7 @@ import datetime
 import numpy as np
 from functools32 import lru_cache
 
-from .h5utils import pd2hdf, hdf2pd, hdfopen, H5_REF_TYPE, opengroup
+from .h5utils import pd2hdf, hdf2pd, hdfopen, H5_REF_TYPE
 
 from .identifiers import Pid
 from .adc import SCHEMA
@@ -111,19 +111,20 @@ class HdfBin(BaseBin, BaseDictlike):
         """
         # open the file or group
         self._open_params = (hdf_file, group)
-        self._group = None
+        self._hdf = None
         self._open()
     # context manager implementation
     @property
     def isopen(self):
-        return self._group is not None
+        return self._hdf is not None
     def _open(self):
         assert not self.isopen, 'HdfBin already open'
-        self._group = opengroup(*self._open_params)
+        self._hdf = hdfopen(*self._open_params)
+        self._group = self._hdf.group
     def close(self):
         assert self.isopen, 'HdfBin is already closed'
-        self._group.close()
-        self._group = None
+        self._hdf.close()
+        self._hdf = None
     def __enter__(self):
         return self
     def __exit__(self, *args):
