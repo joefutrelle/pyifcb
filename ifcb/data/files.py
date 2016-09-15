@@ -98,6 +98,7 @@ def find_fileset(dirpath, lid, whitelist=['data'], blacklist=['skip']):
 class Fileset(object):
     def __init__(self, basepath):
         self.basepath = basepath
+        self._roi = None
     @property
     def adc_path(self):
         return self.basepath + '.adc'
@@ -112,9 +113,11 @@ class Fileset(object):
     def adc(self):
         return AdcFile(self.adc_path)
     @property
-    @lru_cache()
     def roi(self):
-        return RoiFile(self.adc, self.roi_path)
+        # explicit cache management
+        if self._roi is None:
+            self._roi = RoiFile(self.adc, self.roi_path)
+        return self._roi
     @property
     @lru_cache()
     def hdr(self):
@@ -148,6 +151,15 @@ class Fileset(object):
         return '<IFCB Fileset %s>' % self.basepath
     def __str__(self):
         return self.basepath
+    # context management
+    @property
+    def isopen(self):
+        return self._roi is not None
+    def close(self):
+        if not self.isopen:
+            self._roi.close()
+    def __exit__(self, *args):
+        self.close()
 
 class DataDirectory(object):
     def __init__(self, path='.', whitelist=['data'], blacklist=['skip']):
@@ -197,3 +209,12 @@ class FilesetBin(IterableUserDict, BaseBin):
         return self.fs.hdr
     def to_hdf(self, path, group=None):
         self.fs.to_hdf(path, group)
+    # context manager implementation
+    def close(self):
+        self.fs.close()
+    def __exit__(self, *args):
+        self.close()
+    def __repr__(self):
+        return '<FilesetBin %s>' % self
+    def __str__(self):
+        return self.fs.__str__()

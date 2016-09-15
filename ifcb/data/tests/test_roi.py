@@ -23,11 +23,11 @@ class TestRoi(unittest.TestCase):
             assert np.all(A == B)
     def test_with(self):
         for lid, info, fs in self.fsinfo():
-            assert not fs.roi.isopen()
             with fs.roi as o:
-                assert o.isopen()
-                assert fs.roi.isopen()
-            assert not fs.roi.isopen()
+                assert not o.isopen
+                _ = o[o.keys()[0]]
+                assert o.isopen
+            assert not fs.roi.isopen
     def test_dictlike(self):
         for lid, info, fs in self.fsinfo():
             rn = info['roi_numbers']

@@ -87,3 +87,8 @@ class BaseBin(object):
     @property
     def headers(self):
         raise NotImplementedError
+    # context manager default implementation
+    def __enter__(self):
+        return self
+    def __exit__(self, *args):
+        pass

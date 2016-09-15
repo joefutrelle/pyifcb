@@ -103,29 +103,32 @@ class HdfRoi(BaseDictlike):
         return np.array(self._group[self._group['images'][roi_number]])
         
 class HdfBin(BaseBin, BaseDictlike):
-    """Bin interface to HDF file/group.
-    must be opened and closed with open/close or context manager interface
-    """
+    """Bin interface to HDF file/group."""
     def __init__(self, hdf_file, group=None):
-        self._hdf_file = hdf_file
-        self._hdf_group = group
-        self._group = None # for the open HDF file
-        # context manager implementation
+        """parameters:
+        hdf_file (str or h5py.Group) - pathname to HDF file, or an open HDF group
+        group (str, optional) - path of subgroup to open (if any)
+        """
+        # open the file or group
+        self._open_params = (hdf_file, group)
+        self._group = None
+        self._open()
+    # context manager implementation
+    @property
     def isopen(self):
         return self._group is not None
-    def open(self, reopen=True):
-        if self.isopen() and reopen:
-            return self
-        self._group = opengroup(self._hdf_file, self._hdf_group)
-        return self
-    def close(self, ignore_closed=False):
-        if ignore_closed and not self.isopen():
-            return
+    def _open(self):
+        assert not self.isopen, 'HdfBin already open'
+        self._group = opengroup(*self._open_params)
+    def close(self):
+        assert self.isopen, 'HdfBin is already closed'
         self._group.close()
+        self._group = None
     def __enter__(self):
-        return self.open()
+        return self
     def __exit__(self, *args):
-        self.close()
+        if self.isopen:
+            self.close()
     # Dictlike
     @property
     @lru_cache()

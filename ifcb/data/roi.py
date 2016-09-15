@@ -29,22 +29,21 @@ class RoiFile(object):
         csv = csv[csv[s.ROI_WIDTH] != 0]
         self.csv = csv
         self.path = roi_path
-        self._inroi = None # for the open roi file
+        self._inroi = None # start with the file closed
+    @property
     def isopen(self):
         return self._inroi is not None
-    def open(self, reopen=True):
-        # close if already open
-        if self.isopen() and reopen:
-            return self
+    def _open(self):
+        assert not self.isopen, 'RoiFile already open'
         self._inroi = open(self.path, 'rb')
-        return self
     def close(self):
-        self._inroi.close()
+        # allow re-closing
+        if self.isopen:
+            self._inroi.close()
         self._inroi = None
-    def __enter__(self, reopen=True):
-        self.open(reopen=reopen)
+    def __enter__(self):
         return self
-    def __exit__(self, exc_type, exc_value, traceback):
+    def __exit__(self, *args):
         self.close()
     @lru_cache(maxsize=2)
     def get_image(self, roi_number):
@@ -58,11 +57,9 @@ class RoiFile(object):
             raise KeyError('adc data does not contain a roi #%d' % roi_number)
         if width * height == 0:
             raise KeyError('roi #%d is 0x0' % roi_number)
-        if self._inroi is not None:
-            return read_image(self._inroi, bo, height, width)
-        else:
-            with open(self.path,'rb') as inroi:
-                return read_image(inroi, bo, height, width)
+        if not self.isopen:
+            self._open()
+        return read_image(self._inroi, bo, height, width)
     def __len__(self):
         return len(self.csv)
     @property
@@ -73,13 +70,8 @@ class RoiFile(object):
     def __iter__(self):
         return iter(self.keys())
     def iteritems(self):
-        if not self.isopen():
-            with self:
-                for i in self:
-                    yield i, self[i]
-        else:
-            for i in self:
-                yield i, self[i]
+        for i in self:
+            yield i, self[i]
     def items(self):
         """warning: contains all image data, which can use
         very large amounts of RAM"""
