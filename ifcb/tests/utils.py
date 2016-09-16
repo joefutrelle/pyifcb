@@ -2,6 +2,7 @@ import os
 import shutil
 import tempfile
 from contextlib import contextmanager
+from functools import wraps
 
 @contextmanager
 def test_dir():
@@ -22,6 +23,7 @@ def test_file(name=None):
     
 def withfile(method):
     """decorator that adds a named temporary file argument"""
+    @wraps(method)
     def wrapper(*args, **kw):
         with test_file() as f:
             args = args + (f,)
