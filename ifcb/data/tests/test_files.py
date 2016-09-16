@@ -14,6 +14,16 @@ class TestFiles(unittest.TestCase):
     def test_list_data_dirs(self):
         for dd in files.list_data_dirs(self.data_dir):
             assert 'adc' in [f[-3:] for f in os.listdir(dd)]
+    def test_list_data_dirs_prune(self):
+        for dd in files.list_data_dirs(self.data_dir):
+            for n in os.listdir(dd):
+                assert 'decoy.adc' not in n
+    def test_list_data_dirs_no_prune(self):
+        for dd in files.list_data_dirs(self.data_dir, prune=False):
+            for n in os.listdir(dd):
+                if 'decoy.adc' in n:
+                    return
+        raise ValueError('decoy not found with prune=False')
     def test_data_directory(self):
         dd = files.DataDirectory(self.data_dir)
         fss = list(dd)

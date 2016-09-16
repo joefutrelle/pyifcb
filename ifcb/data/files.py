@@ -56,24 +56,28 @@ def list_filesets(dirpath, blacklist=['skip'], whitelist=['data'], sort=True, va
                         continue
                 yield dp, basename
 
-def list_data_dirs(dirpath, blacklist=['skip'], sort=True):
-    """return the path of any descendant directory that contains an .adc file
+def list_data_dirs(dirpath, blacklist=['skip'], sort=True, prune=True):
+    """return the path of any descendant directory that contains an .adc file;
     parameters:
     blacklist - list of names to ignore
     sort - whether to sort output (does not guarantee that output
-    is sorted by time"""
+    is sorted by time).
+    prune - whether to skip subdirectories of dirs that contain .adc files
+    """
     dirlist = os.listdir(dirpath)
     if sort:
         dirlist.sort()
     for name in dirlist:
         if name[-3:] == 'adc':
             yield dirpath
-            return
-        elif name not in blacklist:
+            if prune:
+                return
+    for name in dirlist:
+        if name not in blacklist:
             child = os.path.join(dirpath,name)
             if os.path.isdir(child):
                 # yield from recursive
-                for dp in list_data_dirs(child):
+                for dp in list_data_dirs(child, sort=sort, prune=prune):
                     yield dp
 
 def find_fileset(dirpath, lid, whitelist=['data'], blacklist=['skip']):
