@@ -50,6 +50,8 @@ class AdcFile(BaseDictlike):
         self.schema = SCHEMA[self.schema_version]
         if parse:
             self.csv
+    def getsize(self):
+        return os.path.getsize(self.path)
     @property
     @lru_cache()
     def csv(self):

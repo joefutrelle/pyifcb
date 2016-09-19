@@ -112,6 +112,7 @@ class Fileset(object):
     @property
     def roi_path(self):
         return self.basepath + '.roi'
+    # oo interface to files
     @property
     @lru_cache()
     def adc(self):
@@ -142,6 +143,18 @@ class Fileset(object):
         if not os.path.exists(self.roi_path):
             return False
         return True
+    # metrics
+    def getsizes(self):
+        hdr_size = os.path.getsize(self.hdr_path)
+        adc_size = os.path.getsize(self.adc_path)
+        roi_size = os.path.getsize(self.roi_path)
+        return {
+            'hdr': hdr_size,
+            'adc': adc_size,
+            'roi': roi_size
+        }
+    def getsize(self):
+        return sum(self.getsizes().values())
     @property
     def schema(self):
         return self.adc.schema

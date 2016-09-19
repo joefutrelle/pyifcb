@@ -1,3 +1,4 @@
+import os
 from itertools import izip
 from functools32 import lru_cache
 
@@ -30,6 +31,8 @@ class RoiFile(object):
         self.csv = csv
         self.path = roi_path
         self._inroi = None # start with the file closed
+    def getsize(self):
+        return os.path.getsize(self.path)
     @property
     def isopen(self):
         return self._inroi is not None

@@ -6,7 +6,7 @@ import numpy as np
 
 from ifcb.data import files
 
-from .fileset_info import TEST_FILES, data_dir, WHITELIST
+from .fileset_info import TEST_FILES, data_dir, WHITELIST, list_test_filesets
 
 class TestFiles(unittest.TestCase):
     def setUp(self):
@@ -46,3 +46,8 @@ class TestFiles(unittest.TestCase):
         """test with validation off and search"""
         paths = list(files.list_filesets(self.data_dir, whitelist=WHITELIST, validate=False))
         assert len(paths) == 3
+    def test_getsizes(self):
+        for fs in list_test_filesets():
+            sizes = TEST_FILES[fs.lid]['sizes']
+            assert fs.getsizes() == sizes
+            assert fs.getsize() == sum(sizes.values())
