@@ -62,7 +62,8 @@ def list_data_dirs(dirpath, blacklist=['skip'], sort=True, prune=True):
     blacklist - list of names to ignore
     sort - whether to sort output (does not guarantee that output
     is sorted by time).
-    prune - whether to skip subdirectories of dirs that contain .adc files
+    prune - whether, given a dir with an .adc file in it, to skip
+    subdirectories
     """
     dirlist = os.listdir(dirpath)
     if sort:
@@ -163,7 +164,7 @@ class Fileset(object):
         return self.pid.timestamp
     def to_hdf(self, hdf_file, group=None, replace=True, archive=False):
         from .hdf import fileset2hdf
-        fileset2hdf(self, hdf_file, group, replace, archive=archive)
+        fileset2hdf(self, hdf_file, group=group, replace=replace, archive=archive)
     def __repr__(self):
         return '<IFCB Fileset %s>' % self.basepath
     def __str__(self):
@@ -201,6 +202,19 @@ class DataDirectory(object):
         if fs is None:
             raise KeyError('No fileset for %s found at or under %s' % (lid, self.path))
         return fs
+    def __len__(self):
+        """warning: for large datasets, this is very slow"""
+        return sum(1 for _ in self)
+    # subdirectories
+    def list_descendants(self, **kw):
+        """find all 'leaf' data directories and yield DataDirectory
+        objects for each one. Note that this enforces blacklisting
+        but not whitelisting (no fileset path validation is done).'
+        accepts list_data_dirs keywords, except 'blacklist' which
+        takes on the value given in the constructor
+        see list_data_dirs"""
+        for dd in list_data_dirs(self.path, blacklist=self.blacklist, **kw):
+            yield DataDirectory(dd)
     def __repr__(self):
         return '<DataDirectory %s>' % self.path
     def __str__(self):
@@ -224,8 +238,8 @@ class FilesetBin(IterableUserDict, BaseBin):
     @property
     def headers(self):
         return self.fs.hdr
-    def to_hdf(self, path, group=None):
-        self.fs.to_hdf(path, group)
+    def to_hdf(self, path, **kw):
+        self.fs.to_hdf(path, **kw)
     # context manager implementation
     def close(self):
         self.fs.close()

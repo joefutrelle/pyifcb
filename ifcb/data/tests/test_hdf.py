@@ -112,7 +112,7 @@ class TestHdfBin(unittest.TestCase):
         with hdfopen(path, replace=True) as h:
             for fs in list_test_filesets():
                 out_bin = FilesetBin(fs)
-                out_bin.to_hdf(h, out_bin.lid)
+                out_bin.to_hdf(h, group=out_bin.lid)
                 with HdfBin(h, out_bin.lid) as in_bin:
                     assert_bin_equals(in_bin, out_bin)
     @withfile
@@ -120,7 +120,7 @@ class TestHdfBin(unittest.TestCase):
         with hdfopen(path, replace=True) as h:
             for fs in list_test_filesets():
                 out_bin = FilesetBin(fs)
-                out_bin.to_hdf(h, out_bin.lid)
+                out_bin.to_hdf(h, group=out_bin.lid)
         for fs in list_test_filesets():
             out_bin = FilesetBin(fs)
             with HdfBin(path, out_bin.lid) as in_bin:
