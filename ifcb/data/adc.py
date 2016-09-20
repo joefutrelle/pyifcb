@@ -74,6 +74,8 @@ class AdcFile(BaseDictlike):
     def iterkeys(self):
         for k in self.csv.index:
             yield k
+    def __len__(self):
+        return len(self.csv)
     @lru_cache()
     def get_target(self, target_number):
         d = tuple(self.csv[c][target_number] for c in self.csv.columns)

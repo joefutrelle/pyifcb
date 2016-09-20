@@ -1,5 +1,4 @@
 import os
-from UserDict import IterableUserDict
 
 from functools32 import lru_cache
 
@@ -8,7 +7,7 @@ from .adc import AdcFile
 from .hdr import parse_hdr_file
 from .roi import RoiFile
 from .h5utils import hdfopen
-from .bins import BaseBin
+from .bins import BaseBin, BaseDictlike
 
 """
 A well-formed raw data file path relative to some root
@@ -222,9 +221,8 @@ class DataDirectory(object):
 
 # bin interface to Fileset
 
-class FilesetBin(IterableUserDict, BaseBin):
+class FilesetBin(BaseDictlike, BaseBin):
     def __init__(self, fileset):
-        IterableUserDict.__init__(self, fileset.adc)
         self.fs = fileset
     @property
     def pid(self):
@@ -240,6 +238,20 @@ class FilesetBin(IterableUserDict, BaseBin):
         return self.fs.hdr
     def to_hdf(self, path, **kw):
         self.fs.to_hdf(path, **kw)
+    # dict implementation
+    def iterkeys(self):
+        for k in self.fs.adc:
+            yield k
+    def __getitem__(self, ix):
+        return self.fs.adc[ix]
+    def keys(self):
+        return list(self)
+    def has_key(self, k):
+        return k in self.fs.adc
+    def __contains__(self, k):
+        return self.has_key(k)
+    def __len__(self):
+        return len(self.fs.adc)
     # context manager implementation
     def close(self):
         self.fs.close()

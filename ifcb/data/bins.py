@@ -36,7 +36,7 @@ as HDF, zip.
 class BaseDictlike(object):
     """provides as complete a readonly dict interface as possible,
     based on anything that implements iterkeys and __getitem__.
-    when overriding, override has_keys rather than __contains__"""
+    when overriding, override has_key rather than __contains__"""
     def iterkeys(self):
         raise NotImplementedError
     def __getitem__(self, k):
