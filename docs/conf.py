@@ -21,6 +21,15 @@ import os
 #sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('..'))
 
+# now we need mock modules, a suggestion from this post:
+# http://blog.rtwilson.com/how-to-make-your-sphinx-documentation-compile-with-readthedocs-when-youre-using-numpy-and-scipy/
+# the alternative is to make a pip requirements file and install in virtualenv
+import mock
+
+MOCK_MODULES = ['numpy', 'scipy', 'pandas', 'h5py', 'functools32', 'pandas.utils.testing']
+for mod_name in MOCK_MODULES:
+    sys.modules[mod_name] = mock.Mock()
+
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
