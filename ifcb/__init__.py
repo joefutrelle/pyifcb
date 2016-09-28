@@ -1,4 +1,4 @@
-"""this is a module"""
+"""IFCB data API"""
 
 import pkgutil
 

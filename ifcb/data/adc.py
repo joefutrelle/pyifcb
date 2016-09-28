@@ -7,15 +7,17 @@ from functools32 import lru_cache
 from .identifiers import Pid
 from .bins import BaseDictlike
 
+"""Access to ADC files"""
+
 # column names by schema
 # FIXME these are not anywhere in raw data except new-style instruments contain
 # an attribute listing column names
-"""
-COLUMNS = {
-    1: 'trigger processingEndTime fluorescenceLow fluoresenceHigh scatteringLow scatteringHigh comparatorPulse triggerOpenTime frameGrabTime bottom left height width byteOffset valveStatus'.split(' '),
-    2: 'trigger processingEndTime pmtA pmtB pmtC pmtD peakA peakB peakC peakD timeOfFlight grabTimeStart frameGrabTime bottom left height width byteOffset comparatorOut startPoint signalStrength valveStatus'.split(' ')
-}
-"""
+
+#COLUMNS = {
+#    1: 'trigger processingEndTime fluorescenceLow fluoresenceHigh scatteringLow scatteringHigh comparatorPulse triggerOpenTime frameGrabTime bottom left height width byteOffset valveStatus'.split(' '),
+#    2: 'trigger processingEndTime pmtA pmtB pmtC pmtD peakA peakB peakC peakD timeOfFlight grabTimeStart frameGrabTime bottom left height width byteOffset comparatorOut startPoint signalStrength valveStatus'.split(' ')
+#}
+
 
 class SCHEMA_VERSION_1(object):
     name = 'v1'
