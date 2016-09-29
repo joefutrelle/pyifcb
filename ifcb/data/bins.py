@@ -1,17 +1,40 @@
 
 class Bin(object):
-    """factory for Bin objects"""
+    """
+    An abstract factory for Bin objects.
+    """
     @staticmethod
     def from_fileset(fileset):
+        """
+        Create a Bin based on a Fileset.
+
+        :param fileset: the Fileset
+        :type fileset: Fileset
+        :returns FilesetBin: the FilesetBin
+        """
         from ifcb.data.files import FilesetBin
         return FilesetBin(fileset)
     @staticmethod
     def from_files(*files):
+        """
+        Create a Bin from a list of three raw data files:
+        the .adc, .roi, and .hdr files.
+
+        :param files: the paths of the three files (in any order)
+        :returns FilesetBin: the FilesetBin
+        """
         from ifcb.data.files import Fileset
         fs = Fileset(os.path.common_prefix(files))
         return Bin.from_fileset(fs)
     @staticmethod
     def from_hdf(hdf_file, group=None):
+        """
+        Create a Bin from an HDF file.
+
+        :param hdf_file: a pathname to an HDF file, or an open h5.File or h5.Group;
+        :param group: an HDF path below the root containing the Bin's HDF data
+        :returns HdfBin: the HdfBin
+        """
         from ifcb.data.hdf import HdfBin
         return HdfBin(hdf_file, group)
 
