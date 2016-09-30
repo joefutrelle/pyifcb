@@ -3,7 +3,7 @@ import sys
 
 import numpy as np
 
-from ifcb.data import files
+from .. import files
 
 TEST_DATA_DIR=os.path.join('ifcb','data','tests','data')
 
@@ -36,6 +36,13 @@ TEST_FILES = {
                                [206, 207, 205, 206, 208],
                                [208, 208, 208, 208, 209],
                                [206, 206, 205, 207, 207]], dtype=np.uint8),
+        'stitched_roi_number': 3,
+        'stitched_roi_shape': (86, 263),
+        'stitched_roi_coords': [slice(23,27), slice(177,183)],
+        'stitched_roi_slice': np.array([[205, 204, 205, 0, 0, 0],
+                                        [202, 203, 206, 0, 0, 0],
+                                        [205, 206, 205, 204, 202, 202],
+                                        [204, 202, 205, 203, 202, 204]], dtype=np.uint8),
         'sizes': {
             'roi': 71083,
             'hdr': 307,

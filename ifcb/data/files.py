@@ -7,7 +7,8 @@ from .adc import AdcFile
 from .hdr import parse_hdr_file
 from .roi import RoiFile
 from .h5utils import hdfopen
-from .bins import BaseBin, BaseDictlike
+from .utils import BaseDictlike
+from .bins import BaseBin
 
 """
 A well-formed raw data file path relative to some root
@@ -240,6 +241,9 @@ class FilesetBin(BaseDictlike, BaseBin):
     @property
     def headers(self):
         return self.fs.hdr
+    @property
+    def adc(self):
+        return self.fs.adc.csv
     def to_hdf(self, path, **kw):
         self.fs.to_hdf(path, **kw)
     # dict implementation

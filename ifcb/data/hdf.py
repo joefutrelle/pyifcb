@@ -7,7 +7,8 @@ from .h5utils import pd2hdf, hdf2pd, hdfopen, H5_REF_TYPE
 
 from .identifiers import Pid
 from .adc import SCHEMA
-from .bins import BaseBin, BaseDictlike
+from .utils import BaseDictlike
+from .bins import BaseBin
 
 def adc2hdf(adcfile, hdf_file, group=None, replace=True):
     """an ADC file is represented as a Pandas DataFrame
@@ -133,7 +134,7 @@ class HdfBin(BaseBin, BaseDictlike):
     # Dictlike
     @property
     @lru_cache()
-    def csv(self):
+    def adc(self):
         return hdf2pd(self._group['adc'])
     @property
     @lru_cache()
@@ -141,12 +142,13 @@ class HdfBin(BaseBin, BaseDictlike):
         return SCHEMA[self._group['adc'].attrs['schema']]
     @lru_cache()
     def get_target(self, target_number):
-        d = tuple(self.csv[c][target_number] for c in self.csv.columns)
+        # FIXME not covered by test
+        d = tuple(self.adc[c][target_number] for c in self.adc.columns)
         return d
     def __getitem__(self, target_number):
         return self.get_target(target_number)
     def iterkeys(self):
-        for k in self.csv.index:
+        for k in self.adc.index:
             yield k
     @property
     @lru_cache()

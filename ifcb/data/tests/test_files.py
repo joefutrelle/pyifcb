@@ -4,8 +4,7 @@ import sys
 
 import numpy as np
 
-from ifcb.data import files
-
+from .. import files
 from .fileset_info import TEST_FILES, data_dir, WHITELIST, list_test_filesets
 
 class TestListUtils(unittest.TestCase):

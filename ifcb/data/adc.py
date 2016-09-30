@@ -5,7 +5,7 @@ import h5py as h5
 from functools32 import lru_cache
 
 from .identifiers import Pid
-from .bins import BaseDictlike
+from .utils import BaseDictlike
 
 """Access to ADC files"""
 

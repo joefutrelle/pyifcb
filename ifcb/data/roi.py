@@ -56,7 +56,6 @@ class RoiFile(object):
         try:
             bo, width, height = [self.csv[k][roi_number] for k in keys]
         except KeyError:
-            raise # FIXME
             raise KeyError('adc data does not contain a roi #%d' % roi_number)
         if width * height == 0:
             raise KeyError('roi #%d is 0x0' % roi_number)
