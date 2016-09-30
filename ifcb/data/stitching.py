@@ -57,7 +57,7 @@ class Stitcher(BaseDictlike):
         row = self.coordinates.loc[target_number]
         w = row['sx2'] - row['sx1']
         h = row['sy2'] - row['sy1']
-        # create image to hold infill
+        # create composite image
         msk = np.ones((h,w),dtype=np.bool)
         im = np.zeros((h,w),dtype=np.uint8)
         for ab,ij in zip('ab',[target_number, target_number+1]):
