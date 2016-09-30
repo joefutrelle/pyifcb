@@ -63,3 +63,8 @@ class TestDataDirectory(unittest.TestCase):
     def test_descendants(self):
         assert len(list(self.default.list_descendants())) == 3
         assert len(list(self.blacklist.list_descendants())) == 2
+    def test_bin_iter_list_bins(self):
+        for bi in [self.whitelist.bin_iter(), self.whitelist.list_bins()]:
+            assert set(b.lid for b in bi) == set(TEST_FILES.keys())
+
+        
