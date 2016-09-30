@@ -189,6 +189,10 @@ class DataDirectory(object):
             yield Fileset(basepath)
     def find_fileset(self, lid):
         return find_fileset(self.path, lid, whitelist=self.whitelist, blacklist=self.blacklist)
+    def bin_iter(self):
+        return (FilesetBin(fs) for fs in self)
+    def list_bins(self):
+        return list(self.bin_iter())
     def __iter__(self):
         # yield from list_filesets called with no keyword args
         for fs in self.list_filesets():
