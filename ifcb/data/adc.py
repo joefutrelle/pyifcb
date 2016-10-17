@@ -55,6 +55,9 @@ class AdcFile(BaseDictlike):
     def getsize(self):
         return os.path.getsize(self.path)
     @property
+    def lid(self):
+        return self.pid.lid
+    @property
     @lru_cache()
     def csv(self):
         df = pd.read_csv(self.path, header=None, index_col=False)
