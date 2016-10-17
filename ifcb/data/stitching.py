@@ -10,6 +10,7 @@ from .utils import BaseDictlike
 class Stitcher(BaseDictlike):
     """
     Delegate for Bins that stitches images.
+    dictlike, with target numbers as keys and stitched images as values.
     """
     def __init__(self, the_bin):
         """

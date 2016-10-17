@@ -56,6 +56,9 @@ as HDF, zip.
 """
 
 class BaseBin(object):
+    """
+    Abstract base class for Bin implementations.
+    """
     @property
     def pid(self):
         raise NotImplementedError

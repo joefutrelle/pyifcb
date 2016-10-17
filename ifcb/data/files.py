@@ -117,6 +117,11 @@ class Fileset(object):
     @property
     @lru_cache()
     def adc(self):
+        """
+        adc()
+
+        :returns AdcFile: the object representing the ADC file
+        """
         return AdcFile(self.adc_path)
     @property
     def roi(self):

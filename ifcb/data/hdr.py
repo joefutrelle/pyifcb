@@ -28,7 +28,12 @@ HDR_COLUMNS = ['Temp', 'Humidity', 'BinarizeThresh', 'PMT1hv(ssc)', 'PMT2hv(chl)
 CONTEXT = 'context'
 
 def parse_hdr(lines):
-    """Given the lines of a header file, return the properties"""
+    """
+    Given the lines of a header file, return the properties in it.
+
+    :param lines: an iterable of strings, the lines of the file
+    :returns dict: the properties.
+    """
     lines = [line.rstrip() for line in lines]
     props = {}
     if lines[0] == 'Imaging FlowCytobot Acquisition Software version 2.0; May 2010':
@@ -65,5 +70,12 @@ def parse_hdr(lines):
     return props
 
 def parse_hdr_file(path):
+    """
+    Given a path to a header file, return the header properties.
+
+    :param path: a pathname
+    :returns dict: the header properties
+    :see parse_hdr
+    """
     lines = list(fileinput.FileInput(path))
     return parse_hdr(lines)
