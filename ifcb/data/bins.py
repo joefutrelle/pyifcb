@@ -12,7 +12,7 @@ class Bin(object):
         :type fileset: Fileset
         :returns FilesetBin: the FilesetBin
         """
-        from ifcb.data.files import FilesetBin
+        from .files import FilesetBin
         return FilesetBin(fileset)
     @staticmethod
     def from_files(*files):
@@ -23,7 +23,7 @@ class Bin(object):
         :param files: the paths of the three files (in any order)
         :returns FilesetBin: the FilesetBin
         """
-        from ifcb.data.files import Fileset
+        from .files import Fileset
         fs = Fileset(os.path.common_prefix(files))
         return Bin.from_fileset(fs)
     @staticmethod
@@ -35,7 +35,7 @@ class Bin(object):
         :param group: an HDF path below the root containing the Bin's HDF data
         :returns HdfBin: the HdfBin
         """
-        from ifcb.data.hdf import HdfBin
+        from .hdf import HdfBin
         return HdfBin(hdf_file, group)
 
 """Bin API

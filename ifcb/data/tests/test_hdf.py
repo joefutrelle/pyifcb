@@ -5,7 +5,7 @@ import numpy as np
 import h5py as h5
 from pandas.util.testing import assert_frame_equal
 
-from ifcb.tests.utils import withfile, test_dir
+from ...tests.utils import withfile, test_dir
 
 from ..h5utils import hdf2pd, hdfopen
 from ..hdf import roi2hdf, hdr2hdf, adc2hdf, fileset2hdf, hdf2fileset, HdfBin

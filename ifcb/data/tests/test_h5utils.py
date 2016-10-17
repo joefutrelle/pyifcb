@@ -8,7 +8,7 @@ import pandas as pd
 
 from pandas.util.testing import assert_frame_equal
 
-from ifcb.tests.utils import withfile
+from ...tests.utils import withfile
 
 from ..h5utils import hdfopen, clear_h5_group, pd2hdf, hdf2pd
 

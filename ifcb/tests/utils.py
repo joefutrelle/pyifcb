@@ -6,8 +6,7 @@ from functools import wraps
 
 @contextmanager
 def test_dir():
-    """context mgr for tempdir; not sure
-    why this isn't part of tempfile"""
+    """context mgr for tempdir"""
     d = tempfile.mkdtemp()
     try:
         yield d
