@@ -31,6 +31,9 @@ class RoiFile(object):
         self.csv = csv
         self.path = roi_path
         self._inroi = None # start with the file closed
+    @property
+    def lid(self):
+        return self.adc.lid
     def getsize(self):
         return os.path.getsize(self.path)
     @property
