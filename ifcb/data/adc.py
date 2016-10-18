@@ -52,11 +52,31 @@ SCHEMA = {
     SCHEMA_VERSION_2.name: SCHEMA_VERSION_2
 }
 """
-IFCB schemas.
+IFCB schemas
 """
 
 class AdcFile(BaseDictlike):
+    """
+    Represents an IFCB ``.adc`` file.
+
+    Provides a dict-like interface; keys are target numbers,
+    values are target records. Target records are tuples which
+    are indexed according to values in the associated schema
+    (accessible via the ``schema`` property).
+
+    :Example:
+
+    >>> adc = AdcFile('IFCB4_2013_007_123423.adc')
+    >>> adc[23][adc.schema.ROI_WIDTH]
+    135
+
+    """
     def __init__(self, adc_path, parse=False):
+        """
+        :param adc_path: the path of the ``.adc`` file.
+        :param parse: (optional) whether to parse the file
+          (if not, parsing is deferred until data is accessed)
+        """
         self.path = adc_path
         self.pid = Pid(adc_path)
         self.schema_version = self.pid.schema_version
@@ -64,36 +84,64 @@ class AdcFile(BaseDictlike):
         if parse:
             self.csv
     def getsize(self):
+        """
+        :return int: the size of the file
+        """
         return os.path.getsize(self.path)
     @property
     def lid(self):
+        """
+        The bin's LID
+        """
         return self.pid.lid
     @property
     @lru_cache()
     def csv(self):
+        """
+        The underlying CSV data as a ``pandas.DataFrame``
+        """
         df = pd.read_csv(self.path, header=None, index_col=False)
         df.index += 1 # index by 1-based ROI number
         return df
     def to_dataframe(self):
+        """
+        Return the ADC data as a ``pandas.DataFrame``. If the
+        file has not been parsed yet, this opens the file, parses it,
+        and closes it.
+        """
         return self.csv
     def to_dict(self):
+        """
+        Return the ADC data as a dictionary
+        """
         return self.csv.to_dict('series')
     def to_hdf(self, hdf_file, group=None, replace=True, **kw):
         """
-        parameters:
-        hdf_file - hdf file pathname, or h5.File or h5.Group
-        group - optional (sub)group path
-        replace - for files, whether or not to replace file
+        Write the ADC file to an HDF file or group.
+
+        :param hdf_file: the root HDF
+          object (h5.File or h5.Group) in which to write
+          the ADC data
+        :param group (optional): a path below the sub-group
+          to use
+        :param replace: whether to replace any existing data
+          at that location in the HDF file
         """
         from .hdf import adc2hdf
         adc2hdf(self, hdf_file, group, replace=replace, **kw)
     def iterkeys(self):
+        """
+        Yield the target numbers of this ADC file, in order.
+        """
         for k in self.csv.index:
             yield k
     def __len__(self):
         return len(self.csv)
     @lru_cache()
     def get_target(self, target_number):
+        """
+        Get the ADC data for a given target, as a tuple.
+        """
         d = tuple(self.csv[c][target_number] for c in self.csv.columns)
         return d
     def __getitem__(self, target_number):

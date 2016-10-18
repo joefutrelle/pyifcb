@@ -154,15 +154,13 @@ class Fileset(object):
     @lru_cache()
     def adc(self):
         """
-        adc()
-
-        :returns AdcFile: the object representing the ADC file
+        The ``AdcFile`` representing the ``.adc`` file
         """
         return AdcFile(self.adc_path)
     @property
     def roi(self):
         """
-        A ``RoiFile`` object representing the ``.roi`` file.
+        The ``RoiFile`` object representing the ``.roi`` file
         """
         # explicit cache management
         if self._roi is None:
@@ -172,27 +170,27 @@ class Fileset(object):
     @lru_cache()
     def hdr(self):
         """
-        A ``dict`` representing the headers.
+        A ``dict`` representing the headers
         """
         return parse_hdr_file(self.hdr_path)
     @property
     @lru_cache()
     def pid(self):
         """
-        A ``Pid`` object representing the bin PID.
+        A ``Pid`` representing the bin PID
         """
         return Pid(os.path.basename(self.basepath))
     @property
     def lid(self):
         """
-        The bin's LID.
+        The bin's LID
         """
         return self.pid.bin_lid
     def exists(self):
         """
         Checks for existence of all three raw data files.
 
-        :returns bool: whether or not all files exist.
+        :returns bool: whether or not all files exist
         """
         if not os.path.exists(self.adc_path):
             return False
@@ -227,7 +225,7 @@ class Fileset(object):
     @property
     def schema(self):
         """
-        The bin's schema.
+        The bin's schema
         """
         return self.adc.schema
     @property
@@ -259,7 +257,7 @@ class Fileset(object):
     @property
     def isopen(self):
         """
-        :returns bool: is the ``.roi`` file open?
+        Is the ``.roi`` file open?
         """
         return self._roi is not None
     def close(self):
@@ -275,7 +273,7 @@ class DataDirectory(object):
     """
     Represents a directory containing IFCB raw data.
 
-    Provides a dict-like interface allowing access to filesets by lid.
+    Provides a dict-like interface allowing access to filesets by LID.
     """
     def __init__(self, path='.', whitelist=['data'], blacklist=['skip']):
         """
@@ -352,21 +350,39 @@ class FilesetBin(BaseDictlike, BaseBin):
     Bin interface to Fileset.
     """
     def __init__(self, fileset):
+        """
+        :param fileset: the ``Fileset`` to represent
+        """
         self.fs = fileset
     @property
     def pid(self):
+        """
+        The bin's PID
+        """
         return self.fs.pid
     @property
     def schema(self):
+        """
+        The bin's schema
+        """
         return self.fs.schema
     @property
     def images(self):
+        """
+        The images
+        """
         return self.fs.roi
     @property
     def headers(self):
+        """
+        The header dict
+        """
         return self.fs.hdr
     @property
     def adc(self):
+        """
+        The bin's ADC data as a ``pandas.DataFrame``
+        """
         return self.fs.adc.csv
     def to_hdf(self, hdf_file, **kw):
         """
@@ -398,6 +414,9 @@ class FilesetBin(BaseDictlike, BaseBin):
         return len(self.fs.adc)
     # context manager implementation
     def close(self):
+        """
+        Close the underlying fileset.
+        """
         self.fs.close()
     def __exit__(self, *args):
         self.close()

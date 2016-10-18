@@ -185,15 +185,13 @@ class Pid(object):
     """
     Represents the permanent identifier of an IFCB bin.
     Provides a dict-like interface for access to the parsed
-    fields of a pid.
+    fields of a PID. ``Pid``s sort by alpha.
     """
     def __init__(self, pid, parse=True):
         """
         Construct a Pid object from a string.
         Parsing is optional in case it needs
         to be deferred.
-
-        Pid objects sort by alpha.
 
         :param pid: the pid
         :param parse: whether to parse
@@ -203,7 +201,7 @@ class Pid(object):
             self.parsed
     def isvalid(self):
         """
-        Is this a valid pid?
+        Check this PID for validity.
         """
         try:
             self.parsed
@@ -222,13 +220,13 @@ class Pid(object):
     @lru_cache()
     def parsed(self):
         """
-        :returns dict: the parsed PID.
+        The parsed PID
         """
         return parse(self.pid)
     @property
     def timestamp(self):
         """
-        :returns: the timestamp of the bin as a datetime
+        The timestamp of the bin as a ``datetime``
         """
         return pd.to_datetime(self.parsed['timestamp'], format=self.parsed['timestamp_format'], utc=True)
     def __getattr__(self, name):

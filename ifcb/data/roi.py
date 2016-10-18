@@ -57,7 +57,7 @@ class RoiFile(object):
     @property
     def lid(self):
         """
-        :returns str: the bin's LID
+        The bin's LID
         """
         return self.adc.lid
     def getsize(self):
@@ -68,7 +68,7 @@ class RoiFile(object):
     @property
     def isopen(self):
         """
-        :returns bool: if the file is open
+        Flag indicating if the file is open
         """
         return self._inroi is not None
     def _open(self):
@@ -115,8 +115,8 @@ class RoiFile(object):
     @property
     def index(self):
         """
-        :returns array-like: an array containing the target number
-          of each ROI in the file
+        An array-like object containing the target number
+          of each ROI in the file, in order
         """
         return self.csv.index
     def keys(self):
