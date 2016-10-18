@@ -1,3 +1,7 @@
+"""
+Support for reading and writing IFCB data to HDF5.
+"""
+
 import datetime
 
 import numpy as np

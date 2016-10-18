@@ -1,3 +1,7 @@
+"""
+Support for reading images from IFCB ``.roi`` files.
+"""
+
 import os
 from itertools import izip
 from functools32 import lru_cache
@@ -23,18 +27,18 @@ def read_image(inroi, byte_offset, width, height):
 
 class RoiFile(object):
     """
-    Wraps and provides access to an IFCB .roi file.
+    Wraps and provides access to an IFCB ``.roi`` file.
     Provides context manager support for keeping the
-    .roi file open while images are read from it. Also
+    file open while images are read from it. Also
     provides dict-like support including len, iteration,
     and access to images by target number.
 
-    Requires an associated .adc file or AdcFile object.
+    Requires an associated ``.adc`` file or ``AdcFile`` object.
     """
     def __init__(self, adc, roi_path):
         """
-        :param adc: the path of the .adc file, or an AdcFile object
-        :param roi_path: the path to the .roi file
+        :param adc: the path of the ``.adc`` file, or an ``AdcFile`` object
+        :param roi_path: the path to the ``.roi`` file
         """
         # duck type adc argument
         self.adc = None
@@ -58,13 +62,13 @@ class RoiFile(object):
         return self.adc.lid
     def getsize(self):
         """
-        :returns int: the size of the .roi file in bytes
+        :returns int: the size of the file in bytes
         """
         return os.path.getsize(self.path)
     @property
     def isopen(self):
         """
-        :returns bool: if the .roi file is open
+        :returns bool: if the file is open
         """
         return self._inroi is not None
     def _open(self):
@@ -72,10 +76,10 @@ class RoiFile(object):
         self._inroi = open(self.path, 'rb')
     def close(self):
         """
-        Close the .roi file. Note that the .roi file is opened
+        Close the file. Note that the file is opened
         implicitly when any image data is read.
 
-        It is OK to call this even if the .roi file is closed.
+        It is OK to call this even if the file is closed.
         """
         # allow re-closing
         if self.isopen:
@@ -88,7 +92,7 @@ class RoiFile(object):
     @lru_cache(maxsize=2)
     def get_image(self, roi_number):
         """
-        Read an image from the .roi file. Note that the dict-like
+        Read an image from the file. Note that the dict-like
         interface can be used to access images by target number.
 
         :param roi_number: the (1-based) target number for this ROI

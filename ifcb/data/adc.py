@@ -1,3 +1,7 @@
+"""
+Support for parsing and accessing IFCB ADC data.
+"""
+
 import os
 
 import pandas as pd
@@ -6,8 +10,6 @@ from functools32 import lru_cache
 
 from .identifiers import Pid
 from .utils import BaseDictlike
-
-"""Access to ADC files"""
 
 # column names by schema
 # FIXME these are not anywhere in raw data except new-style instruments contain
@@ -20,6 +22,9 @@ from .utils import BaseDictlike
 
 
 class SCHEMA_VERSION_1(object):
+    """
+    IFCB revision 1 schema.
+    """
     name = 'v1'
     TRIGGER = 0
     ROI_X = 9
@@ -29,6 +34,9 @@ class SCHEMA_VERSION_1(object):
     START_BYTE = 13
 
 class SCHEMA_VERSION_2(object):
+    """
+    IFCB revision 2 schema.
+    """
     name = 'v2'
     TRIGGER = 0
     ROI_X = 13
@@ -43,6 +51,9 @@ SCHEMA = {
     SCHEMA_VERSION_1.name: SCHEMA_VERSION_1,
     SCHEMA_VERSION_2.name: SCHEMA_VERSION_2
 }
+"""
+IFCB schemas.
+"""
 
 class AdcFile(BaseDictlike):
     def __init__(self, adc_path, parse=False):

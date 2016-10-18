@@ -1,3 +1,7 @@
+"""
+Convenience utilities for ``h5py``.
+"""
+
 from contextlib import contextmanager
 
 import numpy as np
@@ -8,7 +12,7 @@ H5_REF_TYPE = h5.special_dtype(ref=h5.Reference)
 
 def clear_h5_group(h5group):
     """
-    Delete all keys and attrs from an h5py.Group.
+    Delete all keys and attrs from an ``h5py.Group``.
 
     :param h5group: the h5py.Group.
     """
@@ -60,22 +64,22 @@ class hdfopen(object):
 
 def pd2hdf(group, df, **kw):
     """
-    Write pandas DataFrame to HDF5 file. This differs
+    Write ``pandas.DataFrame`` to HDF5 file. This differs
     from pandas's own HDF5 support by providing a slightly less
     optimized but easier-to-access format. Passes keywords
-    through to each h5py.create_dataset operation.
+    through to each ``h5py.create_dataset`` operation.
 
-    Layout of Pandas DataFrame / Series representation:
+    Layout of Pandas ``DataFrame`` / ``Series`` representation:
 
-    * {path} (group): the group containing the dataframe
-    * {path}.ptype (attribute): 'DataFrame'
-    * {path}/columns (dataset): 1d array of references to column data
-    * {path}/columns.names (attribute, optional): 1d array of column names
-    * {path}/{n} (dataset): 1d array of data for column n
-    * {path}/index (dataset): 1d array of data for dataframe index
-    * {path}/index.name (attribute, optional): name of index
+    * ``{path}`` (group): the group containing the dataframe
+    * ``{path}.ptype`` (attribute): '``DataFrame``'
+    * ``{path}/columns`` (dataset): 1d array of references to column data
+    * ``{path}/columns.names`` (attribute, optional): 1d array of column names
+    * ``{path}/{n}`` (dataset): 1d array of data for column n
+    * ``{path}/index`` (dataset): 1d array of data for dataframe index
+    * ``{path}/index.name`` (attribute, optional): name of index
 
-    :param group: the h5py.Group to write the DataFrame to
+    :param group: the ``h5py.Group`` to write the ``DataFrame`` to
     """
     group.attrs['ptype'] = 'DataFrame'
     refs = []
@@ -90,9 +94,9 @@ def pd2hdf(group, df, **kw):
 
 def hdf2pd(group):
     """
-    Read a pandas DataFrame from an h5py.Group.
+    Read a ``pandas.DataFrame`` from an ``h5py.Group``.
 
-    :param group: the h5py.Group to read from.
+    :param group: the ``h5py.Group`` to read from.
     """
     assert group.attrs['ptype'] == 'DataFrame'
     index = group['index']

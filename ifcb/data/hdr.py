@@ -1,9 +1,11 @@
+"""
+Support for parsing IFCB header files.
+"""
+
 import re
 import fileinput
 
 import ast
-
-"""Header file parsing that is robust to ancient header formats"""
 
 HDR='hdr'
 

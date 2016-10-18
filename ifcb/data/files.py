@@ -1,3 +1,7 @@
+"""
+Access to IFCB raw data files, including directory operations.
+"""
+
 import os
 
 from functools32 import lru_cache

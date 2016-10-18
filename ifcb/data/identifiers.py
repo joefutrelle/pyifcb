@@ -1,3 +1,7 @@
+"""
+Support for parsing IFCB permanent identifiers (a.k.a., pids).
+"""
+
 import re
 
 from functools32 import lru_cache

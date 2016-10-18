@@ -1,7 +1,9 @@
 """
-Support for stitching IFCB rev 1 images.
-Does not infill; produces masked images where the mask indicates missing data.
+Support for stitching IFCB revision 1 images.
+Note that this does not apply to data from commercial
+IFCB instruments.
 """
+
 import numpy as np
 from functools32 import lru_cache
 
