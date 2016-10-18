@@ -69,10 +69,31 @@ def timestamp2regex(pattern):
     
 @lru_cache()
 def c(pattern):
+    """
+    Compile a regex pattern (with caching)
+
+    :param pattern: the pattern
+    :returns: the compiled pattern
+    """
     return re.compile(pattern)
 
 @lru_cache()
 def m(pattern, string):
+    """
+    Match a pattern against a string and return the
+    matching groups. Provides several convenience
+    features that differ from ``re.match``:
+
+    * If the pattern does not match the string, or the
+      string is None, return a tuple of Nones the length
+      of the number of capturing groups.
+    * If there is only one pattern, return a single
+      value instead of a one-element tuple.
+
+    :param pattern: the pattern (as string)
+    :param string: the string to match
+    :returns: a value or tuple of captured groups
+    """
     def col_or_scalar(o):
         if len(o) == 1:
             return o[0]
@@ -200,6 +221,9 @@ class Pid(object):
     @property
     @lru_cache()
     def parsed(self):
+        """
+        :returns dict: the parsed PID.
+        """
         return parse(self.pid)
     @property
     def timestamp(self):

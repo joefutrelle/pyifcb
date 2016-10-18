@@ -15,17 +15,42 @@ from .utils import BaseDictlike
 from .bins import BaseBin
 
 def adc2hdf(adcfile, hdf_file, group=None, replace=True):
-    """an ADC file is represented as a Pandas DataFrame
-    with 'schema' attr naming schema version"""
+    """
+    Store an ``AdcFile`` in an HDF file or group. ADC
+    data is represented as a ``pandas.DataFrame`` with
+    a ``schema`` attribute specifying the name of the
+    ADC schema.
+
+    :param adcfile: the ``AdcFile`` to store
+    :param hdf_file: the root HDF
+      object (h5.File or h5.Group) in which to write
+      the ADC data
+    :param group (optional): a path below the sub-group
+      to use
+    :param replace: whether to replace any existing data
+      at that location in the HDF file
+    """
     with hdfopen(hdf_file, group, replace=replace) as root:
         pd2hdf(root, adcfile.to_dataframe(), compression='gzip')
         root.attrs['schema'] = adcfile.schema.name
 
 def roi2hdf(roifile, hdf_file, group=None, replace=True):
-    """ROI layout given {root}
-    {root}.index (attribute): roi number for each image
-    {root}/images (dataset): references to images keyed by roi number
-    {root}/{n} (dataset): 2d uint8 image (n = str(roi_number))
+    """
+    Store a ``RoiFile`` in an HDF file or group. ROI
+    data is represented as follows in an HDF group:
+
+    * ``{root}.index`` (attribute): target number for each image
+    * ``{root}/images`` (dataset): references to images keyed by target number
+    * ``{root}/{n}`` (dataset): 2d uint8 image (n = ``str(target_number)``)
+
+    :param roifile: the ``RoiFile`` to store
+    :param hdf_file: the root HDF
+      object (h5.File or h5.Group) in which to write
+      the image data and index
+    :param group (optional): a path below the sub-group
+      to use
+    :param replace: whether to replace any existing data
+      at that location in the HDF file
     """
     with hdfopen(hdf_file, group, replace=replace) as root:
         root.attrs['index'] = roifile.index
@@ -36,37 +61,77 @@ def roi2hdf(roifile, hdf_file, group=None, replace=True):
         r = [ d[i].ref if i in d else None for i in range(n) ]
         root.create_dataset('images', data=r, dtype=H5_REF_TYPE)
 
-def hdr2hdf(hdr_dict, hdf_file, group=None, replace=True, archive=False):
-    """hdr is represented as attributes on the group"""
+def hdr2hdf(hdr_dict, hdf_file, group=None, replace=True):
+    """
+    Store a header dict in an HDF file or group. Header data
+    is represented in HDF as a set of attributes on the group.
+
+    :param hdr_dict: the headers
+    :param hdf_file: the root HDF
+      object (h5.File or h5.Group) on which to write
+      the header attributes
+    :param group (optional): a path below the sub-group
+      to use
+    :param replace: whether to replace any existing data
+      at that location in the HDF file
+    """
     with hdfopen(hdf_file, group, replace=replace) as root:
         for k, v in hdr_dict.items():
             root.attrs[k] = v
 
 def file2hdf(hdf_root, ds_name, path, **kw):
-    """write the contents of file (path) to open group (hdf_root)
-    as dataset named (ds_name)"""
+    """
+    Write the contents of a file to an HDF dataset. Keywords are
+    passed through to ``h5py.create_dataset``.
+
+    :param hdf_root: an open ``h5py.File`` or ``h5py.Group`` in which
+      to create the dataset
+    :param ds_name: the name to give the dataset
+    :param path: the file path
+    """
     with open(path,'rb') as infile:
         file_data = infile.read()
     file_array = bytearray(file_data)
     hdf_root.create_dataset(ds_name, data=file_array, **kw)
 
 def hdf2file(hdf_dataset, path):
-    """write the contents of an HDF dataset to a file"""
+    """
+    Write the contents of an HDF dataset to a file. Does not stream,
+    so the entire contents of the dataset must fit in memory.
+
+    :param hdf_dataset: an ``h5py.Dataset`` to read
+    :param path: the path of the file to write
+    """
     file_data = bytearray(hdf_dataset)
     with open(path,'wb') as outfile:
         outfile.write(file_data)
 
 def fileset2hdf(fileset, hdf_file, group=None, replace=True, archive=False):
-    """fileset in HDF is
-    {root}.pid (attribute) - full base pathname
-    {root}.lid (attribute) - bin LID
-    {root}.timestamp (attribute) - bin timestamp in ISO8601 UTC format
-    {root}/hdr (group) - see hdr2hdf
-    {root}/adc (group) - see adc2hdf
-    {root}/roi (group) - see roi2hdf
-    {root}/archive (group) - optional: archived files
-    {root}/archive/adc (dataset) - archived ADC file
-    {root}/archive/hdr (dataset) - archived HDR file
+    """
+    Write a ``Fileset`` to an HDF file.
+
+    A ``Fileset`` is represented in HDF relative to some root path as:
+
+    * ``{root}.pid`` (attribute) - full base pathname
+    * ``{root}.lid`` (attribute) - bin LID
+    * ``{root}.timestamp`` (attribute) - bin timestamp in ISO8601 UTC format
+    * ``{root}/hdr`` (group) - see hdr2hdf
+    * ``{root}/adc`` (group) - see adc2hdf
+    * ``{root}/roi`` (group) - see roi2hdf
+    * ``{root}/archive`` (group) - optional: archived files
+    * ``{root}/archive/adc`` (dataset) - archived ``.adc`` file
+    * ``{root}/archive/hdr`` (dataset) - archived ``.hdr`` file
+
+    :param fileset: the ``Fileset`` to write
+    :param hdf_file: the root HDF
+      object (h5.File or h5.Group) on which to write
+      the IFCB data
+    :param group (optional): a path below the sub-group
+      to use
+    :param replace: whether to replace any existing data
+      at that location in the HDF file
+    :param archive: whether to store copies of the ``.adc`` and ``.hdr``
+      files in the HDF file
     """
     with hdfopen(hdf_file, group, replace=replace) as root:
         root.attrs['pid'] = str(fileset.pid)
@@ -80,6 +145,17 @@ def fileset2hdf(fileset, hdf_file, group=None, replace=True, archive=False):
             file2hdf(root, 'archive/hdr', fileset.hdr_path)
 
 def hdf2fileset(hdf_path, fileset_path, group=None):
+    """
+    Unarchive an archived IFCB fileset from an HDF file. Creates
+    ``.hdr``, ``.adc``, and ``.roi`` files exactly matching the
+    original raw data. This is the inverse operation of
+    ``fileset2hdf`` if it was called with ``archive`` set to True.
+
+    :param hdf_path: the path to the HDF file
+    :param fileset_path: base path for output files
+    :param group: (optional) the path to the HDF group containing
+      the archived IFCB data
+    """
     with hdfopen(hdf_path, group) as root:
         if not 'archive' in root:
             raise ValueError('no archived IFCB data found')
@@ -99,7 +175,13 @@ def hdf2fileset(hdf_path, fileset_path, group=None):
 # bin interface to HDF
 
 class HdfRoi(BaseDictlike):
+    """
+    Dict-like interface to IFCB images stored in an HDF file.
+    """
     def __init__(self, group):
+        """
+        :param group: the ``h5py.Group`` containing the image data
+        """
         self._group = group
     def iterkeys(self):
         for k in self._group.attrs['index']:
@@ -108,11 +190,18 @@ class HdfRoi(BaseDictlike):
         return np.array(self._group[self._group['images'][roi_number]])
         
 class HdfBin(BaseBin, BaseDictlike):
-    """Bin interface to HDF file/group."""
+    """
+    Bin interface to HDF file/group.
+
+    Context manager implementation opens and closes the HDF file.
+    This implementation is caching, so if the HDF file changes during
+    an instance's lifecycle, those changes may not be reflected in
+    subsequent accesses.
+    """
     def __init__(self, hdf_file, group=None):
-        """parameters:
-        hdf_file (str or h5py.Group) - pathname to HDF file, or an open HDF group
-        group (str, optional) - path of subgroup to open (if any)
+        """
+        :param hdf_file: HDF file path or open ``h5py.Group`` containing bin data
+        :param group: (optional) path in HDF file/group containing bin data
         """
         # open the file or group
         self._open_params = (hdf_file, group)
@@ -121,12 +210,19 @@ class HdfBin(BaseBin, BaseDictlike):
     # context manager implementation
     @property
     def isopen(self):
+        """
+        :returns bool: if HDF file is open
+        """
         return self._hdf is not None
     def _open(self):
         assert not self.isopen, 'HdfBin already open'
         self._hdf = hdfopen(*self._open_params)
         self._group = self._hdf.group
     def close(self):
+        """
+        Close the HDF file. Will fail if HDF file is already
+        closed.
+        """
         assert self.isopen, 'HdfBin is already closed'
         self._hdf.close()
         self._hdf = None
