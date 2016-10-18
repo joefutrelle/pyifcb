@@ -32,10 +32,16 @@ def timestamp2regex(pattern):
     * \. - a regex dot (matches any character)
     * any - a regex .*
 
-    Examples:
+    Example patterns:
 
     * "yyyy-mm-ddTHH:MM:SSZ" - a UTC ISO8601 timestamp
     * "yyyyDDD" - year and day of year
+
+    :Example:
+
+    >>> timestamp2regex('Dyyyymm')
+    'D(?P<yyyy>[0-9]{4})(?P<mm>0[1-9]|1[0-2])'
+
     """
     # FIXME handle unfortunate formats such as
     # - non-zero-padded numbers
