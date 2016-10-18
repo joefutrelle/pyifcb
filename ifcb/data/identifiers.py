@@ -87,10 +87,41 @@ def m(pattern, string):
 
 def parse(pid):
     """
-    Parse an IFCB permanent identifier (a.k.a., "pid").
+    Parse an IFCB permanent identifier (a.k.a., "pid"). The
+    passed-in pid may contain either a pathname prefix or
+    a URL prefix, and may include a product identifier and/or
+    extension. It can also include a target number.
+    The pid syntax is specified elsewhere. Extracted fields
+    are returned as a dict.
+
+    :param pid: the pid as a string
+
+    Example pids:
+
+    * ``D20160714T023910_IFCB101``
+    * ``IFCB3_2008_013423.adc``
+    * ``http://mysite.org/data/D20150321T124431_IFCB103``
+    * ``D20160714T023910_IFCB101_00014.png``
+    * ``/my/directory/D20160603T002950_IFCB101_blob.zip``
 
     Fields extracted include:
-    - FIXME list fields
+
+    * pid - the pid, minus any leading path/URL prefix
+    * lid - the pid, minus all prefixes and suffixes
+    * namespace - any leading path/URL prefix
+    * ts_label - for URL patterns, the time series label
+    * year, month, day - the date
+    * hour, minute, second - the time
+    * instrument - the instrument number
+    * timestamp - the complete timestamp
+    * timestamp_format - the format specifier of the timestamp
+    * schema_version - which revision of the instrument
+      (1 for ``IFCB...`` pids, 2 for ``D...`` pids)
+    * yearday - the year and day, concatenated
+    * target - the target number (if any)
+    * extension - the extension, not including the leading ``.``
+    * product - the product type identifier, or 'raw' if
+      not specified
 
     :param pid: the pid
     :returns dict: fields extraced from the pid
