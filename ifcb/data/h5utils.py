@@ -6,18 +6,37 @@ import h5py as h5
 
 H5_REF_TYPE = h5.special_dtype(ref=h5.Reference)
 
+"""
+Convenience utilities for h5py.
+"""
+
 def clear_h5_group(h5group):
-    """delete all keys and attrs from an h5.Group.
-    is this a good idea?"""
+    """
+    Delete all keys and attrs from an h5py.Group.
+
+    :param h5group: the h5py.Group.
+    """
     for k in h5group.keys(): del h5group[k]
     for k in h5group.attrs.keys(): del h5group.attrs[k]
 
 class hdfopen(object):
-    """context mgr: open an hdf5 group from a file or other group
-    parameters:
-    path - path to HDF5 file, or open HDF5 group
-    group - for HDF5 file paths, the group path to return (optional);
-    for groups, a subgroup to require (optional)"""
+    """
+    Context manager that opens an h5py.Group from an h5py.File
+    or other group.
+
+    Parameters:
+
+    * path - path to HDF5 file, or open HDF5 group
+    * group - for HDF5 file paths, the path of the group to return (optional)
+      for groups, a subgroup to require (optional)
+    * replace - whether to replace any existing data
+
+    :Example:
+
+    with hdfopen('myfile.h5','somegroup') as g:
+      g.attrs['my_attr'] = 3
+
+    """
     def __init__(self, path, group=None, replace=None):
         if isinstance(path, h5.Group):
             if group is not None:
@@ -43,21 +62,25 @@ class hdfopen(object):
         self.close()
         pass
 
-"""
-Layout of Pandas DataFrame / Series representation
-- {path} (group): the group containing the dataframe
-- {path}.ptype (attribute): 'DataFrame' / 'Series'
-- {path}/columns (dataset): 1d array of references to column data
-- {path}/columns.names (attribute, optional): 1d array of column names
-- {path}/{n} (dataset): 1d array of data for column n
-- {path}/index (dataset): 1d array of data for dataframe index
-- {path}/index.name (attribute, optional): name of index
-
-Series are represented like single-column DataFrames
-"""
-
 def pd2hdf(group, df, **kw):
-    """kw params used for all dataset creation operations"""
+    """
+    Write pandas DataFrame to HDF5 file. This differs
+    from pandas's own HDF5 support by providing a slightly less
+    optimized but easier-to-access format. Passes keywords
+    through to each h5py.create_dataset operation.
+
+    Layout of Pandas DataFrame / Series representation:
+
+    * {path} (group): the group containing the dataframe
+    * {path}.ptype (attribute): 'DataFrame'
+    * {path}/columns (dataset): 1d array of references to column data
+    * {path}/columns.names (attribute, optional): 1d array of column names
+    * {path}/{n} (dataset): 1d array of data for column n
+    * {path}/index (dataset): 1d array of data for dataframe index
+    * {path}/index.name (attribute, optional): name of index
+
+    :param group: the h5py.Group to write the DataFrame to
+    """
     group.attrs['ptype'] = 'DataFrame'
     refs = []
     for i in range(len(df.columns)):
@@ -70,6 +93,11 @@ def pd2hdf(group, df, **kw):
         ix.attrs['name'] = df.index.name
 
 def hdf2pd(group):
+    """
+    Read a pandas DataFrame from an h5py.Group.
+
+    :param group: the h5py.Group to read from.
+    """
     assert group.attrs['ptype'] == 'DataFrame'
     index = group['index']
     index_name = index.attrs.get('name',None)
