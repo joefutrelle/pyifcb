@@ -7,6 +7,36 @@ import pandas as pd
 
 # supports time-like regexes e.g., IFCB9_yyyy_YYY_HHMMSS
 def timestamp2regex(pattern):
+    """
+    Convert a special "timestamp" expression into a regex pattern.
+    The expression is treated as an ordinary regex except that special
+    patterns are used to define groups that match typical patterns that
+    are found in timestamps and timestamp-related formats.
+
+    Special patterns that define groups that are supported:
+
+    0-9 - where n is any number of digits (e.g., 111, 88) fixed-length
+      decimal number
+    s - any number of s's indicating milliseconds (e.g., sss)
+    yyyy - four-digit year
+    mm - two-digit (left-zero-padded) month
+    dd - two-digit (left-zero-padded) day of month
+    DDD - three-digit (left-zero-padded) day of year
+    HH - two-digit (left-zero-padded) hour of day
+    MM - two-digit (left-zero-padded) minute of hour
+    SS - two-digit (left-zero-padded) second of minute
+    # - any string of digits (non-capturing)
+    i - an "identifier" (e.g., jpg2000) (non-capturing)
+    .ext - a file extension
+    . - a literal dot
+    \. - a regex dot (matches any character)
+    any - a regex .*
+
+    Examples:
+
+    "yyyy-mm-ddTHH:MM:SSZ" - a UTC ISO8601 timestamp
+    "yyyyDDD" - year and day of year
+    """
     # FIXME handle unfortunate formats such as
     # - non-zero-padded numbers
     # - full and abbreviated month names
@@ -50,6 +80,15 @@ def m(pattern, string):
     return col_or_scalar(tuple(m.groups()))
 
 def parse(pid):
+    """
+    Parse an IFCB permanent identifier (a.k.a., "pid").
+
+    Fields extracted include:
+    - FIXME list fields
+
+    :param pid: the pid
+    :returns dict: fields extraced from the pid
+    """
     pid = c(r'^.*\\').sub('',pid) # strip Windows dirs
     namespace, suffix = m('(.*/)?(.*)',pid)
     ts_label = m('(?:.*/)?(.*)/$',namespace)
@@ -81,12 +120,29 @@ def parse(pid):
     return locals()
 
 class Pid(object):
-    """represents the permanent ID of a bin"""
+    """
+    Represents the permanent identifier of an IFCB bin.
+    Provides a dict-like interface for access to the parsed
+    fields of a pid.
+    """
     def __init__(self, pid, parse=True):
+        """
+        Construct a Pid object from a string.
+        Parsing is optional in case it needs
+        to be deferred.
+
+        Pid objects sort by alpha.
+
+        :param pid: the pid
+        :param parse: whether to parse
+        """
         self.pid = pid
         if parse:
             self.parsed
     def isvalid(self):
+        """
+        Is this a valid pid?
+        """
         try:
             self.parsed
             return True
@@ -106,6 +162,9 @@ class Pid(object):
         return parse(self.pid)
     @property
     def timestamp(self):
+        """
+        :returns: the timestamp of the bin as a datetime
+        """
         return pd.to_datetime(self.parsed['timestamp'], format=self.parsed['timestamp_format'], utc=True)
     def __getattr__(self, name):
         if name in ['bin_lid', 'lid', 'instrument', 'namespace', 'product', 'target', 'ts_label', 'schema_version']:

@@ -171,8 +171,9 @@ class RoiFile(object):
         """
         Convert the image data to HDF5.
 
-        :param hdf_file h5.File or h5.Group: the root HDF
-          object in which to write the image data and index
+        :param hdf_file: the root HDF
+          object (h5.File or h5.Group) in which to write
+          the image data and index
         :param group (optional): a path below the sub-group
           to use
         :param replace: whether to replace any existing data
