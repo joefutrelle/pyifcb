@@ -43,7 +43,7 @@ def validate_path(filepath, blacklist=['skip'], whitelist=['data']):
 
 def list_filesets(dirpath, blacklist=['skip'], whitelist=['data'], sort=True, validate=True):
     """
-    Iterate over entire directory tree and return a Fileset
+    Iterate over entire directory tree and yield a Fileset
     object for each .adc/.hdr/.roi fileset found. Warning: for
     large directories, this is slow.
 
@@ -73,11 +73,11 @@ def list_filesets(dirpath, blacklist=['skip'], whitelist=['data'], sort=True, va
 def list_data_dirs(dirpath, blacklist=['skip'], sort=True, prune=True):
     """
     Yield the paths of any descendant directories that contain at least
-    one.adc file.
+    one ``.adc`` file.
 
     :param blacklist: list of directory names to ignore
     :param sort: whether to sort output (sorts by alpha)
-    :param prune: whether, given a dir with an .adc file in it, to skip
+    :param prune: whether, given a dir with an ``.adc`` file in it, to skip
       subdirectories
     """
     dirlist = os.listdir(dirpath)
@@ -102,7 +102,7 @@ def find_fileset(dirpath, lid, whitelist=['data'], blacklist=['skip']):
     given the bin's lid. This assumes that the file's path
     is valid.
 
-    :returns Fileset: the fileset object, or None if it is not found.
+    :returns Fileset: the ``Fileset``, or ``None`` if it is not found.
     """
     dirlist = os.listdir(dirpath)
     for name in dirlist:
@@ -120,7 +120,10 @@ def find_fileset(dirpath, lid, whitelist=['data'], blacklist=['skip']):
 class Fileset(object):
     """
     Represents the three raw data files associated with
-    a single IFCB bin (i.e., the .hdr, .adc, and .roi files).
+    a single IFCB bin (i.e., the ``.hdr``, ``.adc``, and ``.roi`` files).
+
+    Context manager support opens and closes the ``.roi`` file for image
+    access.
     """
     def __init__(self, basepath):
         """
@@ -130,12 +133,21 @@ class Fileset(object):
         self._roi = None
     @property
     def adc_path(self):
+        """
+        The path of the ``.adc`` file.
+        """
         return self.basepath + '.adc'
     @property
     def hdr_path(self):
+        """
+        The path of the ``.hdr`` file.
+        """
         return self.basepath + '.hdr'
     @property
     def roi_path(self):
+        """
+        The path of the ``.roi`` file.
+        """
         return self.basepath + '.roi'
     # oo interface to files
     @property
@@ -149,6 +161,9 @@ class Fileset(object):
         return AdcFile(self.adc_path)
     @property
     def roi(self):
+        """
+        A ``RoiFile`` object representing the ``.roi`` file.
+        """
         # explicit cache management
         if self._roi is None:
             self._roi = RoiFile(self.adc, self.roi_path)
@@ -156,13 +171,22 @@ class Fileset(object):
     @property
     @lru_cache()
     def hdr(self):
+        """
+        A ``dict`` representing the headers.
+        """
         return parse_hdr_file(self.hdr_path)
     @property
     @lru_cache()
     def pid(self):
+        """
+        A ``Pid`` object representing the bin PID.
+        """
         return Pid(os.path.basename(self.basepath))
     @property
     def lid(self):
+        """
+        The bin's LID.
+        """
         return self.pid.bin_lid
     def exists(self):
         """
@@ -202,16 +226,22 @@ class Fileset(object):
         return sum(self.getsizes().values())
     @property
     def schema(self):
+        """
+        The bin's schema.
+        """
         return self.adc.schema
     @property
     def timestamp(self):
+        """
+        The bin's timestamp (as a ``datetime``)
+        """
         return self.pid.timestamp
     def to_hdf(self, hdf_file, group=None, replace=True, archive=False):
         """
         Convert the fileset to HDF.
 
         :param hdf_file: the root HDF
-          object (h5.File or h5.Group) in which to write all raw data
+          object (``h5py.File`` or ``h5py.Group``) in which to write all raw data
         :param group: (optional): a path below the sub-group
           to use
         :param replace: whether to replace any existing data
@@ -228,8 +258,14 @@ class Fileset(object):
     # context management
     @property
     def isopen(self):
+        """
+        :returns bool: is the ``.roi`` file open?
+        """
         return self._roi is not None
     def close(self):
+        """
+        Close the ``.roi`` file, if it is open.
+        """
         if not self.isopen:
             self._roi.close()
     def __exit__(self, *args):
@@ -259,19 +295,20 @@ class DataDirectory(object):
             yield Fileset(basepath)
     def find_fileset(self, lid):
         """
-        Locate a fileset by lid. Returns None if it is not found.
+        Locate a fileset by LID. Returns None if it is not found.
 
+        :param lid: the LID to search for
         :returns Fileset: the fileset, or None if not found
         """
         return find_fileset(self.path, lid, whitelist=self.whitelist, blacklist=self.blacklist)
     def bin_iter(self):
         """
-        Yield Bin objects for each fileset.
+        Yield ``Bin`` objects for each fileset.
         """
         return (FilesetBin(fs) for fs in self)
     def list_bins(self):
         """
-        Equivalent to list(self.bin_iter()). Warning: for large
+        Equivalent to ``list(self.bin_iter())``. Warning: for large
         data directories, this may be slow.
 
         :returns: a list of all bins in the data directory.
@@ -295,10 +332,10 @@ class DataDirectory(object):
     # subdirectories
     def list_descendants(self, **kw):
         """
-        Find all 'leaf' data directories and yield DataDirectory
+        Find all 'leaf' data directories and yield ``DataDirectory``
         objects for each one. Note that this enforces blacklisting
         but not whitelisting (no fileset path validation is done).
-        Accepts list_data_dirs keywords, except 'blacklist' which
+        Accepts ``list_data_dirs`` keywords, except ``blacklist`` which
         takes on the value given in the constructor.
         """
         for dd in list_data_dirs(self.path, blacklist=self.blacklist, **kw):
@@ -331,8 +368,20 @@ class FilesetBin(BaseDictlike, BaseBin):
     @property
     def adc(self):
         return self.fs.adc.csv
-    def to_hdf(self, path, **kw):
-        self.fs.to_hdf(path, **kw)
+    def to_hdf(self, hdf_file, **kw):
+        """
+        Store this bin in an HDF5 file or group.
+
+        :param hdf_file: the root HDF
+          object (``h5py.File`` or ``h5py.Group``) in which to write all raw data
+        :param group: (optional): a path below the sub-group
+          to use
+        :param replace: whether to replace any existing data
+          at that location in the HDF file
+        :param archive: (optional) whether to include the full text of the .hdr
+          and .roi files
+        """
+        self.fs.to_hdf(hdf_file, **kw)
     # dict implementation
     def iterkeys(self):
         for k in self.fs.adc:

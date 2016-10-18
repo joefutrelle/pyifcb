@@ -1,23 +1,7 @@
 """
-Bin API.
-
-Bins are dict like. Keys are target numbers, values are ADC records.
-ADC records are tuples. ``Bin`` provides a ``schema`` attribute indiciating
-which schema is in use.
-
-Attribute ``images`` is dict-like: keys are target numbers, values are
-raw images (no stitching, even for rev 1 IFCBs).
-
-Attribute ``headers`` contains immutable k/v pairs, with type conversion based on
-guessing.
-
-Attribute ``pid`` is a ``Pid`` object.
-
-Various implementations are available, including one that reads
-raw data files.
-
+Bin API. Provides consistent access to IFCB raw data stored
+in various formats.
 """
-
 
 class Bin(object):
     """
@@ -61,24 +45,58 @@ class Bin(object):
 class BaseBin(object):
     """
     Abstract base class for Bin implementations.
+
+    Bins are dict-like. Keys are target numbers, values are ADC records.
+    ADC records are tuples.
+
+    Context manager support is provided for implementations
+    that must open files or other data streams.
     """
     @property
     def pid(self):
+        """
+        :returns Pid: the bin's PID.
+        """
         raise NotImplementedError
     @property
     def lid(self):
+        """
+        :returns str: the bin's LID.
+        """
         return self.pid.bin_lid
     @property
     def timestamp(self):
+        """
+        :returns datetime: the bin's timestamp.
+        """
         return self.pid.timestamp
     @property
     def schema(self):
+        """
+        The IFCB schema in use. Schemas provide indices into
+        ADC records. For example, given a bin ``B`` with a
+        target number 5, the following code retrieves the x
+        position of the target ROI:
+
+        :Example:
+
+        >>> B[5][B.schema.ROI_X]
+        234
+
+        """
         raise NotImplementedError
     @property
     def images(self):
+        """
+        A dict-like property providing access to ROI images
+        indexed by target number.
+        """
         raise NotImplementedError
     @property
     def headers(self):
+        """
+        A dict providing access to header values by key.
+        """
         raise NotImplementedError
     @property
     def adc(self):
