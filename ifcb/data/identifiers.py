@@ -15,27 +15,27 @@ def timestamp2regex(pattern):
 
     Special patterns that define groups that are supported:
 
-    0-9 - where n is any number of digits (e.g., 111, 88) fixed-length
+    * 0-9 - where n is any number of digits (e.g., 111, 88) fixed-length
       decimal number
-    s - any number of s's indicating milliseconds (e.g., sss)
-    yyyy - four-digit year
-    mm - two-digit (left-zero-padded) month
-    dd - two-digit (left-zero-padded) day of month
-    DDD - three-digit (left-zero-padded) day of year
-    HH - two-digit (left-zero-padded) hour of day
-    MM - two-digit (left-zero-padded) minute of hour
-    SS - two-digit (left-zero-padded) second of minute
-    # - any string of digits (non-capturing)
-    i - an "identifier" (e.g., jpg2000) (non-capturing)
-    .ext - a file extension
-    . - a literal dot
-    \. - a regex dot (matches any character)
-    any - a regex .*
+    * s - any number of s's indicating milliseconds (e.g., sss)
+    * yyyy - four-digit year
+    * mm - two-digit (left-zero-padded) month
+    * dd - two-digit (left-zero-padded) day of month
+    * DDD - three-digit (left-zero-padded) day of year
+    * HH - two-digit (left-zero-padded) hour of day
+    * MM - two-digit (left-zero-padded) minute of hour
+    * SS - two-digit (left-zero-padded) second of minute
+    * # - any string of digits (non-capturing)
+    * i - an "identifier" (e.g., jpg2000) (non-capturing)
+    * .ext - a file extension
+    * . - a literal dot
+    * \. - a regex dot (matches any character)
+    * any - a regex .*
 
     Examples:
 
-    "yyyy-mm-ddTHH:MM:SSZ" - a UTC ISO8601 timestamp
-    "yyyyDDD" - year and day of year
+    * "yyyy-mm-ddTHH:MM:SSZ" - a UTC ISO8601 timestamp
+    * "yyyyDDD" - year and day of year
     """
     # FIXME handle unfortunate formats such as
     # - non-zero-padded numbers
