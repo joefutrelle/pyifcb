@@ -6,10 +6,6 @@ import h5py as h5
 
 H5_REF_TYPE = h5.special_dtype(ref=h5.Reference)
 
-"""
-Convenience utilities for h5py.
-"""
-
 def clear_h5_group(h5group):
     """
     Delete all keys and attrs from an h5py.Group.
@@ -21,7 +17,7 @@ def clear_h5_group(h5group):
 
 class hdfopen(object):
     """
-    Context manager that opens an h5py.Group from an h5py.File
+    Context manager that opens an ``h5py.Group`` from an ``h5py.File``
     or other group.
 
     Parameters:
@@ -33,8 +29,8 @@ class hdfopen(object):
 
     :Example:
 
-    with hdfopen('myfile.h5','somegroup') as g:
-      g.attrs['my_attr'] = 3
+    >>> with hdfopen('myfile.h5','somegroup') as g:
+    ...     g.attrs['my_attr'] = 3
 
     """
     def __init__(self, path, group=None, replace=None):
