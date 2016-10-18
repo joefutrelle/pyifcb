@@ -1,9 +1,9 @@
 """
-Utilities
+Utilities for IFCB data API
 """
 
 class BaseDictlike(object):
-    """provides as complete a readonly dict interface as possible,
+    """Provides as complete a readonly dict interface as possible,
     based on anything that implements iterkeys and __getitem__.
     when overriding, override has_key rather than __contains__"""
     def iterkeys(self):

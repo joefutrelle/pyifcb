@@ -7,16 +7,33 @@ import numpy as np
 from .adc import AdcFile
 
 def read_image(inroi, byte_offset, width, height):
-    """inroi is roi file open in random access mode"""
+    """
+    Read an image from raw 8-bit binary data.
+
+    :param inroi: an open file in binary read mode
+    :param byte_offset: the position in the file to seek to
+    :param width: the width of the image in pixels
+    :param height: the height of the image in pixels
+
+    :returns array-like: an 8-bit 2d image
+    """
     length = width * height
     inroi.seek(byte_offset)
     return np.fromstring(inroi.read(length), dtype=np.uint8).reshape((width,height))
 
 class RoiFile(object):
+    """
+    Wraps and provides access to an IFCB .roi file.
+    Features include context manager support for keeping the
+    .roi file open while images are read from it.
+
+    Requires an associated .adc file or AdcFile object.
+    """
     def __init__(self, adc, roi_path):
-        """parameters:
-        adc - path of adc file, Adc object
-        roi_path - path to roi file"""
+        """
+        :param adc: the path of the .adc file, or an AdcFile object
+        :param roi_path: the path to the .roi file
+        """
         # duck type adc argument
         self.adc = None
         try:
@@ -33,26 +50,57 @@ class RoiFile(object):
         self._inroi = None # start with the file closed
     @property
     def lid(self):
+        """
+        :returns str: the bin's LID
+        """
         return self.adc.lid
     def getsize(self):
+        """
+        :returns int: the size of the .roi file in bytes
+        """
         return os.path.getsize(self.path)
     @property
     def isopen(self):
+        """
+        :returns bool: if the .roi file is open
+        """
         return self._inroi is not None
     def _open(self):
         assert not self.isopen, 'RoiFile already open'
         self._inroi = open(self.path, 'rb')
     def close(self):
+        """
+        Close the .roi file. Note that the .roi file is opened
+        implicitly when any image data is read.
+
+        It is OK to call this even if the .roi file is closed.
+        """
         # allow re-closing
         if self.isopen:
             self._inroi.close()
         self._inroi = None
     def __enter__(self):
+        """
+        Context manager support.
+
+        :returns RoiFile: self
+        """
         return self
     def __exit__(self, *args):
+        """
+        Context manager support.
+
+        Closes the .roi file.
+        """
         self.close()
     @lru_cache(maxsize=2)
     def get_image(self, roi_number):
+        """
+        Read an image from the .roi file.
+
+        :param roi_number: the (1-based) target number for this ROI
+        :returns numpy.array: an 8-bit 2d image
+        """
         roi_number = int(roi_number)
         s = self.adc.schema
         keys = [s.START_BYTE, s.ROI_WIDTH, s.ROI_HEIGHT]
@@ -66,31 +114,90 @@ class RoiFile(object):
             self._open()
         return read_image(self._inroi, bo, height, width)
     def __len__(self):
+        """
+        :returns int: number of ROIs in the file
+        """
         return len(self.csv)
     @property
     def index(self):
+        """
+        :returns array-like: an array containing the target number
+        of each ROI in the file
+        """
         return self.csv.index
     def keys(self):
+        """
+        :returns list: a list of the target number of each ROI in
+        the file, in order
+        """
         return list(self.index)
     def __iter__(self):
+        """
+        Iterate over all target numbers.
+
+        :returns iterable: an iterator over the target number of
+        each ROI in the file
+        """
         return iter(self.keys())
     def iteritems(self):
+        """
+        Iterate over all images.
+
+        :returns iterable over pairs: each target number and associated
+        image from the .roi file.
+        """
         for i in self:
             yield i, self[i]
     def items(self):
-        """warning: contains all image data, which can use
-        very large amounts of RAM"""
+        """
+        Return all target numbers and associated images.
+
+        Warning: holds all image data in memory, so for a typical
+        IFCB data file will consume large amounts of memory.
+
+        :returns list of pairs: each target number and associated
+        image from the .roi file.
+        """
         return list(self.iteritems())
     def __contains__(self, roi_number):
+        """
+        :returns bool: is this target number associated with a ROI
+        in this .roi file?
+        """
         return roi_number in self.keys()
     def __getitem__(self, roi_number):
-        """wraps get_image"""
+        """
+        Read an image from the .roi file.
+
+        :param roi_number: the (1-based) target number for this ROI
+        :returns numpy.array: an 8-bit 2d image
+        """
         return self.get_image(roi_number)
     def to_dict(self):
-        """warning: contains all image data, which can use
-        very large amounts of RAM"""
+        """
+        Convert item pairs to a dict.
+
+        Warning: holds all image data in memory, so for a typical
+        IFCB data file will consume large amounts of memory.
+
+        An alternative is to use RoiFile's dict-like interface, as
+        long as you can keep the .roi file open.
+
+        :returns dict: a dict with target numbers as keys and
+        images as values.
+        """
         return dict(self.items())
     def to_hdf(self, hdf_file, group=None, replace=True):
+        """
+        Convert the image data to HDF5.
+
+        :param hdf_file h5.File or h5.Group: the root HDF
+        object in which to write the image data and index
+        :param group (optional): a path below the sub-group
+        to use
+        :param replace: whether to replace any existing data
+        at that location in the HDF file
+        """
         from .hdf import roi2hdf
         roi2hdf(self, hdf_file, group, replace=replace)
     def __repr__(self):
