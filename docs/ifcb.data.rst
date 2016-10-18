@@ -75,6 +75,22 @@ ifcb.data.roi module
     :undoc-members:
     :show-inheritance:
 
+ifcb.data.stitching module
+--------------------------
+
+.. automodule:: ifcb.data.stitching
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+ifcb.data.utils module
+----------------------
+
+.. automodule:: ifcb.data.utils
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 Module contents
 ---------------

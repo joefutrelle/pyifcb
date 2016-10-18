@@ -28,6 +28,14 @@ ifcb.data.tests.test_adc module
     :undoc-members:
     :show-inheritance:
 
+ifcb.data.tests.test_base_dictlike module
+-----------------------------------------
+
+.. automodule:: ifcb.data.tests.test_base_dictlike
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 ifcb.data.tests.test_files module
 ---------------------------------
 
@@ -56,6 +64,14 @@ ifcb.data.tests.test_roi module
 -------------------------------
 
 .. automodule:: ifcb.data.tests.test_roi
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+ifcb.data.tests.test_stitching module
+-------------------------------------
+
+.. automodule:: ifcb.data.tests.test_stitching
     :members:
     :undoc-members:
     :show-inheritance:
