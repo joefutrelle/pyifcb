@@ -65,8 +65,7 @@ class Stitcher(BaseDictlike):
         return target_number in self.coordinates.index
     def iterkeys(self):
         """
-        Iterate over the target numbers of each stitched
-          ROI.
+        Yield the target number of each stitched ROI.
         """
         for k in self.coordinates.index:
             yield k
