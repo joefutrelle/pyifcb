@@ -122,13 +122,13 @@ class RoiFile(object):
     def index(self):
         """
         :returns array-like: an array containing the target number
-        of each ROI in the file
+          of each ROI in the file
         """
         return self.csv.index
     def keys(self):
         """
         :returns list: a list of the target number of each ROI in
-        the file, in order
+          the file, in order
         """
         return list(self.index)
     def __iter__(self):
@@ -136,7 +136,7 @@ class RoiFile(object):
         Iterate over all target numbers.
 
         :returns iterable: an iterator over the target number of
-        each ROI in the file
+          each ROI in the file
         """
         return iter(self.keys())
     def iteritems(self):
@@ -144,7 +144,7 @@ class RoiFile(object):
         Iterate over all images.
 
         :returns iterable over pairs: each target number and associated
-        image from the .roi file.
+          image from the .roi file
         """
         for i in self:
             yield i, self[i]
@@ -156,13 +156,13 @@ class RoiFile(object):
         IFCB data file will consume large amounts of memory.
 
         :returns list of pairs: each target number and associated
-        image from the .roi file.
+          image from the .roi file.
         """
         return list(self.iteritems())
     def __contains__(self, roi_number):
         """
         :returns bool: is this target number associated with a ROI
-        in this .roi file?
+          in this .roi file?
         """
         return roi_number in self.keys()
     def __getitem__(self, roi_number):
@@ -184,7 +184,7 @@ class RoiFile(object):
         long as you can keep the .roi file open.
 
         :returns dict: a dict with target numbers as keys and
-        images as values.
+          images as values.
         """
         return dict(self.items())
     def to_hdf(self, hdf_file, group=None, replace=True):
@@ -192,11 +192,11 @@ class RoiFile(object):
         Convert the image data to HDF5.
 
         :param hdf_file h5.File or h5.Group: the root HDF
-        object in which to write the image data and index
+          object in which to write the image data and index
         :param group (optional): a path below the sub-group
-        to use
+          to use
         :param replace: whether to replace any existing data
-        at that location in the HDF file
+          at that location in the HDF file
         """
         from .hdf import roi2hdf
         roi2hdf(self, hdf_file, group, replace=replace)
