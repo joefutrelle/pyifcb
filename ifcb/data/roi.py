@@ -24,8 +24,10 @@ def read_image(inroi, byte_offset, width, height):
 class RoiFile(object):
     """
     Wraps and provides access to an IFCB .roi file.
-    Features include context manager support for keeping the
-    .roi file open while images are read from it.
+    Provides context manager support for keeping the
+    .roi file open while images are read from it. Also
+    provides dict-like support including len, iteration,
+    and access to images by target number.
 
     Requires an associated .adc file or AdcFile object.
     """
@@ -80,23 +82,14 @@ class RoiFile(object):
             self._inroi.close()
         self._inroi = None
     def __enter__(self):
-        """
-        Context manager support.
-
-        :returns RoiFile: self
-        """
         return self
     def __exit__(self, *args):
-        """
-        Context manager support.
-
-        Closes the .roi file.
-        """
         self.close()
     @lru_cache(maxsize=2)
     def get_image(self, roi_number):
         """
-        Read an image from the .roi file.
+        Read an image from the .roi file. Note that the dict-like
+        interface can be used to access images by target number.
 
         :param roi_number: the (1-based) target number for this ROI
         :returns numpy.array: an 8-bit 2d image
@@ -114,9 +107,6 @@ class RoiFile(object):
             self._open()
         return read_image(self._inroi, bo, height, width)
     def __len__(self):
-        """
-        :returns int: number of ROIs in the file
-        """
         return len(self.csv)
     @property
     def index(self):
@@ -160,18 +150,8 @@ class RoiFile(object):
         """
         return list(self.iteritems())
     def __contains__(self, roi_number):
-        """
-        :returns bool: is this target number associated with a ROI
-          in this .roi file?
-        """
         return roi_number in self.keys()
     def __getitem__(self, roi_number):
-        """
-        Read an image from the .roi file.
-
-        :param roi_number: the (1-based) target number for this ROI
-        :returns numpy.array: an 8-bit 2d image
-        """
         return self.get_image(roi_number)
     def to_dict(self):
         """
@@ -204,11 +184,3 @@ class RoiFile(object):
         return '<ROI file %s>' % self.path
     def __str__(self):
         return self.path
-
-
-
-
-
-
-
-

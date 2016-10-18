@@ -9,8 +9,12 @@ from .utils import BaseDictlike
 
 class Stitcher(BaseDictlike):
     """
-    Delegate for Bins that stitches images.
-    dictlike, with target numbers as keys and stitched images as values.
+    Delegate for Bins that stitches images. Provides a
+    dict-like interface, with target numbers as keys and
+    stitched images as values.
+
+    Stitched images are masked arrays with NaNs where image
+    data is missing.
     """
     def __init__(self, the_bin):
         """
@@ -20,6 +24,11 @@ class Stitcher(BaseDictlike):
     @property
     @lru_cache()
     def coordinates(self):
+        """
+        Compute stitched image metrics.
+
+        :returns: stitched box coordinates of all stitched ROIs.
+        """
         S = self.bin.schema
         cols = [S.TRIGGER, S.ROI_X, S.ROI_Y, S.ROI_WIDTH, S.ROI_HEIGHT]
         # place adc image metrics data side by side with itself
@@ -49,8 +58,16 @@ class Stitcher(BaseDictlike):
         M['sy2'] = np.maximum(M['ay2'], M['by2'])
         return M
     def has_key(self, target_number):
+        """
+        :returns bool: is the ROI with the given target
+          number stitched?
+        """
         return target_number in self.coordinates.index
     def iterkeys(self):
+        """
+        Iterate over the target numbers of each stitched
+          ROI.
+        """
         for k in self.coordinates.index:
             yield k
     @lru_cache(maxsize=2)
