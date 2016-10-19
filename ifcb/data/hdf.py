@@ -22,8 +22,9 @@ def adc2hdf(adcfile, hdf_file, group=None, replace=True):
     ADC schema.
 
     :param adcfile: the ``AdcFile`` to store
+    :type adcfile: AdcFile
     :param hdf_file: the root HDF
-      object (h5.File or h5.Group) in which to write
+      object (h5py.File or h5py.Group) in which to write
       the ADC data
     :param group (optional): a path below the sub-group
       to use
@@ -44,8 +45,9 @@ def roi2hdf(roifile, hdf_file, group=None, replace=True):
     * ``{root}/{n}`` (dataset): 2d uint8 image (n = ``str(target_number)``)
 
     :param roifile: the ``RoiFile`` to store
+    :type roifile: RoiFile
     :param hdf_file: the root HDF
-      object (h5.File or h5.Group) in which to write
+      object (h5py.File or h5py.Group) in which to write
       the image data and index
     :param group (optional): a path below the sub-group
       to use
@@ -67,8 +69,9 @@ def hdr2hdf(hdr_dict, hdf_file, group=None, replace=True):
     is represented in HDF as a set of attributes on the group.
 
     :param hdr_dict: the headers
+    :type hdr_dict: dict
     :param hdf_file: the root HDF
-      object (h5.File or h5.Group) on which to write
+      object (h5py.File or h5py.Group) on which to write
       the header attributes
     :param group (optional): a path below the sub-group
       to use
@@ -123,8 +126,9 @@ def fileset2hdf(fileset, hdf_file, group=None, replace=True, archive=False):
     * ``{root}/archive/hdr`` (dataset) - archived ``.hdr`` file
 
     :param fileset: the ``Fileset`` to write
-    :param hdf_file: the root HDF
-      object (h5.File or h5.Group) on which to write
+    :type fileset: Fileset
+    :param hdf_file: the root HDF file pathname or
+      object (h5py.File or h5py.Group) on which to write
       the IFCB data
     :param group (optional): a path below the sub-group
       to use
@@ -235,14 +239,24 @@ class HdfBin(BaseBin, BaseDictlike):
     @property
     @lru_cache()
     def adc(self):
+        """
+        The bin's ADC data as a ``pandas.DataFrame``
+        """
         return hdf2pd(self._group['adc'])
     @property
     @lru_cache()
     def schema(self):
+        """
+        The bin's schema
+        """
         return SCHEMA[self._group['adc'].attrs['schema']]
     @lru_cache()
     def get_target(self, target_number):
-        # FIXME not covered by test
+        """
+        Retrieve a target record by target number
+
+        :param target_number: the target number
+        """
         d = tuple(self.adc[c][target_number] for c in self.adc.columns)
         return d
     def __getitem__(self, target_number):
@@ -253,11 +267,20 @@ class HdfBin(BaseBin, BaseDictlike):
     @property
     @lru_cache()
     def headers(self):
+        """
+        The bin's headers
+        """
         return dict(self._group['hdr'].attrs)
     @property
     @lru_cache()
     def pid(self):
+        """
+        The bin's ``Pid``
+        """
         return Pid(self._group.attrs['pid'])
     @property
     def images(self):
+        """
+        The bin's images
+        """
         return HdfRoi(self._group['roi'])

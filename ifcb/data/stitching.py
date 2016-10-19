@@ -21,6 +21,7 @@ class Stitcher(BaseDictlike):
     def __init__(self, the_bin):
         """
         :param the_bin: a back reference to the bin
+        :type the_bin: Bin
         """
         self.bin = the_bin
     @property

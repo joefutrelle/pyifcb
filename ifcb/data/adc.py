@@ -119,8 +119,8 @@ class AdcFile(BaseDictlike):
         """
         Write the ADC file to an HDF file or group.
 
-        :param hdf_file: the root HDF
-          object (h5.File or h5.Group) in which to write
+        :param hdf_file: the root HDF file pathname or
+          object (h5py.File or h5py.Group) in which to write
           the ADC data
         :param group (optional): a path below the sub-group
           to use

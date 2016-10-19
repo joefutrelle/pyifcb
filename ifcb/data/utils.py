@@ -21,6 +21,9 @@ class BaseDictlike(object):
         """
         Default implementation raises ``NotImplementedError``.
         This must be overridden for correct behavior.
+
+        :param k: the key
+        :type k: hashable
         """
         raise NotImplementedError
     def __iter__(self):
@@ -38,7 +41,8 @@ class BaseDictlike(object):
         which equality test passes. This method is
         called by the ``__contains__`` special method.
 
-        :param k: the key to test.
+        :param k: the key to test
+        :type k: hashable
         """
         for ek in self.iterkeys():
             if ek == k:
@@ -57,7 +61,7 @@ class BaseDictlike(object):
         """
         Equivalent to ``list(self.iteritems())``.
 
-        :returns: list of key/value pairs
+        :returns list: list of key/value pairs
         """
         return list(self.iteritems())
     def itervalues(self):

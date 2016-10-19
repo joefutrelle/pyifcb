@@ -176,7 +176,7 @@ class RoiFile(object):
         Convert the image data to HDF5.
 
         :param hdf_file: the root HDF
-          object (h5.File or h5.Group) in which to write
+          object (h5py.File or h5py.Group) in which to write
           the image data and index
         :param group (optional): a path below the sub-group
           to use

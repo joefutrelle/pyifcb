@@ -14,7 +14,7 @@ def clear_h5_group(h5group):
     """
     Delete all keys and attrs from an ``h5py.Group``.
 
-    :param h5group: the h5py.Group.
+    :param h5group: the h5py.Group
     """
     for k in h5group.keys(): del h5group[k]
     for k in h5group.attrs.keys(): del h5group.attrs[k]

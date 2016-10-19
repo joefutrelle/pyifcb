@@ -46,6 +46,8 @@ def timestamp2regex(pattern):
     >>> timestamp2regex('Dyyyymm')
     'D(?P<yyyy>[0-9]{4})(?P<mm>0[1-9]|1[0-2])'
 
+    :param pattern: the pattern
+    :type pattern: str
     """
     # FIXME handle unfortunate formats such as
     # - non-zero-padded numbers
@@ -73,6 +75,7 @@ def c(pattern):
     Compile a regex pattern (with caching)
 
     :param pattern: the pattern
+    :type pattern: str
     :returns: the compiled pattern
     """
     return re.compile(pattern)
@@ -90,7 +93,8 @@ def m(pattern, string):
     * If there is only one pattern, return a single
       value instead of a one-element tuple.
 
-    :param pattern: the pattern (as string)
+    :param pattern: the pattern
+    :type pattern: str
     :param string: the string to match
     :returns: a value or tuple of captured groups
     """
@@ -149,6 +153,7 @@ def parse(pid):
       not specified
 
     :param pid: the pid
+    :type pid: str
     :returns dict: fields extraced from the pid
     """
     pid = c(r'^.*\\').sub('',pid) # strip Windows dirs

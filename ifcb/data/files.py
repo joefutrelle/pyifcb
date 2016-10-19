@@ -238,7 +238,7 @@ class Fileset(object):
         """
         Convert the fileset to HDF.
 
-        :param hdf_file: the root HDF
+        :param hdf_file: the root HDF file pathname or
           object (``h5py.File`` or ``h5py.Group``) in which to write all raw data
         :param group: (optional): a path below the sub-group
           to use
@@ -296,6 +296,7 @@ class DataDirectory(object):
         Locate a fileset by LID. Returns None if it is not found.
 
         :param lid: the LID to search for
+        :type lid: str
         :returns Fileset: the fileset, or None if not found
         """
         return find_fileset(self.path, lid, whitelist=self.whitelist, blacklist=self.blacklist)
@@ -388,7 +389,7 @@ class FilesetBin(BaseDictlike, BaseBin):
         """
         Store this bin in an HDF5 file or group.
 
-        :param hdf_file: the root HDF
+        :param hdf_file: the root HDF pathname or
           object (``h5py.File`` or ``h5py.Group``) in which to write all raw data
         :param group: (optional): a path below the sub-group
           to use
