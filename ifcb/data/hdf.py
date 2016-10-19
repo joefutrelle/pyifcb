@@ -240,6 +240,7 @@ class HdfBin(BaseBin, BaseDictlike):
     @lru_cache()
     def adc(self):
         """
+        adc(self)
         The bin's ADC data as a ``pandas.DataFrame``
         """
         return hdf2pd(self._group['adc'])
