@@ -67,6 +67,14 @@ ifcb.data.identifiers module
     :undoc-members:
     :show-inheritance:
 
+ifcb.data.remote module
+-----------------------
+
+.. automodule:: ifcb.data.remote
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 ifcb.data.roi module
 --------------------
 
