@@ -178,7 +178,7 @@ class RoiFile(object):
         :param hdf_file: the root HDF
           object (h5py.File or h5py.Group) in which to write
           the image data and index
-        :param group (optional): a path below the sub-group
+        :param group: a path below the sub-group
           to use
         :param replace: whether to replace any existing data
           at that location in the HDF file

@@ -26,7 +26,7 @@ def adc2hdf(adcfile, hdf_file, group=None, replace=True):
     :param hdf_file: the root HDF
       object (h5py.File or h5py.Group) in which to write
       the ADC data
-    :param group (optional): a path below the sub-group
+    :param group: a path below the sub-group
       to use
     :param replace: whether to replace any existing data
       at that location in the HDF file
@@ -49,7 +49,7 @@ def roi2hdf(roifile, hdf_file, group=None, replace=True):
     :param hdf_file: the root HDF
       object (h5py.File or h5py.Group) in which to write
       the image data and index
-    :param group (optional): a path below the sub-group
+    :param group: a path below the sub-group
       to use
     :param replace: whether to replace any existing data
       at that location in the HDF file
@@ -73,7 +73,7 @@ def hdr2hdf(hdr_dict, hdf_file, group=None, replace=True):
     :param hdf_file: the root HDF
       object (h5py.File or h5py.Group) on which to write
       the header attributes
-    :param group (optional): a path below the sub-group
+    :param group: a path below the sub-group
       to use
     :param replace: whether to replace any existing data
       at that location in the HDF file
@@ -130,7 +130,7 @@ def fileset2hdf(fileset, hdf_file, group=None, replace=True, archive=False):
     :param hdf_file: the root HDF file pathname or
       object (h5py.File or h5py.Group) on which to write
       the IFCB data
-    :param group (optional): a path below the sub-group
+    :param group: a path below the sub-group
       to use
     :param replace: whether to replace any existing data
       at that location in the HDF file

@@ -240,11 +240,11 @@ class Fileset(object):
 
         :param hdf_file: the root HDF file pathname or
           object (``h5py.File`` or ``h5py.Group``) in which to write all raw data
-        :param group: (optional): a path below the sub-group
+        :param group: a path below the sub-group
           to use
         :param replace: whether to replace any existing data
           at that location in the HDF file
-        :param archive: (optional) whether to include the full text of the .hdr
+        :param archive: whether to include the full text of the .hdr
           and .roi files
         """
         from .hdf import fileset2hdf
@@ -278,8 +278,8 @@ class DataDirectory(object):
     def __init__(self, path='.', whitelist=['data'], blacklist=['skip']):
         """
         :param path: the path of the data directory
-        :param whitelist: (optional) a list of directory names to allow
-        :param blacklist: (optional) a list of directory names to disallow
+        :param whitelist: a list of directory names to allow
+        :param blacklist: a list of directory names to disallow
         """
         self.path = path
         self.whitelist = whitelist
@@ -391,11 +391,11 @@ class FilesetBin(BaseDictlike, BaseBin):
 
         :param hdf_file: the root HDF pathname or
           object (``h5py.File`` or ``h5py.Group``) in which to write all raw data
-        :param group: (optional): a path below the sub-group
+        :param group: a path below the sub-group
           to use
         :param replace: whether to replace any existing data
           at that location in the HDF file
-        :param archive: (optional) whether to include the full text of the .hdr
+        :param archive: whether to include the full text of the .hdr
           and .roi files
         """
         self.fs.to_hdf(hdf_file, **kw)

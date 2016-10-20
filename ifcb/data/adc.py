@@ -74,7 +74,7 @@ class AdcFile(BaseDictlike):
     def __init__(self, adc_path, parse=False):
         """
         :param adc_path: the path of the ``.adc`` file.
-        :param parse: (optional) whether to parse the file
+        :param parse: whether to parse the file
           (if not, parsing is deferred until data is accessed)
         """
         self.path = adc_path
@@ -122,7 +122,7 @@ class AdcFile(BaseDictlike):
         :param hdf_file: the root HDF file pathname or
           object (h5py.File or h5py.Group) in which to write
           the ADC data
-        :param group (optional): a path below the sub-group
+        :param group: a path below the sub-group
           to use
         :param replace: whether to replace any existing data
           at that location in the HDF file
