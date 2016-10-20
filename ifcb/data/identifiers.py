@@ -135,21 +135,21 @@ def parse(pid):
 
     Fields extracted include:
 
-    * pid - the pid, minus any leading path/URL prefix
-    * lid - the pid, minus all prefixes and suffixes
-    * namespace - any leading path/URL prefix
-    * ts_label - for URL patterns, the time series label
-    * year, month, day - the date
-    * hour, minute, second - the time
-    * instrument - the instrument number
-    * timestamp - the complete timestamp
-    * timestamp_format - the format specifier of the timestamp
-    * schema_version - which revision of the instrument
+    * ``pid`` - the pid, minus any leading path/URL prefix
+    * ``lid`` - the pid, minus all prefixes and suffixes
+    * ``namespace`` - any leading path/URL prefix
+    * ``ts_label`` - for URL patterns, the time series label
+    * ``year``, ``month``, ``day`` - the date
+    * ``hour``, ``minute``, ``second`` - the time
+    * ``instrument`` - the instrument number
+    * ``timestamp`` - the complete timestamp
+    * ``timestamp_format`` - the format specifier of the timestamp
+    * ``schema_version`` - which revision of the instrument
       (1 for ``IFCB...`` pids, 2 for ``D...`` pids)
-    * yearday - the year and day, concatenated
-    * target - the target number (if any)
-    * extension - the extension, not including the leading ``.``
-    * product - the product type identifier, or 'raw' if
+    * ``yearday`` - the year and day, concatenated
+    * ``target`` - the target number (if any)
+    * ``extension`` - the extension, not including the leading ``.``
+    * ``product`` - the product type identifier, or 'raw' if
       not specified
 
     :param pid: the pid
@@ -191,17 +191,18 @@ def unparse(parsed):
     Unparse a PID. Accepts a parsed PID or anything containing
     the appropriate fields. Minimally, must include
 
-    * schema_version
-    * instrument
-    * either year, month, day; or, year, day
-    * hour, minute, second
+    * ``schema_version``
+    * ``instrument``
+    * either ``year``, ``month``, ``day`` (day-of-month);
+      or, ``year``, ``day`` (day-of-year)
+    * ``hour``, ``minute``, ``second``
 
     May also include
 
-    * namespace
-    * product
-    * extension
-    * target
+    * ``namespace``
+    * ``product``
+    * ``extension``
+    * ``target``
 
     """
     try:
