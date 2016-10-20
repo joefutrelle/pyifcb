@@ -24,10 +24,10 @@ def remote_bin(base_url):
 
 
     """
-    base_url = os.path.splitext(base_url)[0]
     d = tempfile.mkdtemp()
-    base_path = os.path.join(d, Pid(base_url).bin_lid)
     try:
+        base_url = os.path.splitext(base_url)[0]
+        base_path = os.path.join(d, Pid(base_url).bin_lid)
         for ext in ['hdr','adc','roi']:
             url = '%s.%s' % (base_url, ext)
             path = '%s.%s' % (base_path, ext)
