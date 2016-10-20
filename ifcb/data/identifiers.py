@@ -186,6 +186,73 @@ def parse(pid):
     # this might actually be an acceptable use of locals()
     return locals()
 
+def unparse(parsed):
+    """
+    Unparse a PID. Accepts a parsed PID or anything containing
+    the appropriate fields. Minimally, must include
+
+    * schema_version
+    * instrument
+    * either year, month, day; or, year, day
+    * hour, minute, second
+
+    May also include
+
+    * namespace
+    * product
+    * extension
+    * target
+
+    """
+    try:
+        schema_version = int(parsed['schema_version'])
+        instrument = int(parsed['instrument'])
+        year = int(parsed['year'])
+        day = int(parsed['day'])
+        hour = int(parsed['hour'])
+        minute = int(parsed['minute'])
+        second = int(parsed['second'])
+
+        product = parsed.get('product','raw')
+        namespace = parsed.get('namespace')
+
+        if namespace is None:
+            namespace = ''
+            
+        if 'target' in parsed and parsed['target'] is not None:
+            tstring = '_%05d' % int(parsed['target'])
+        else:
+            tstring = ''
+
+        if product == 'raw' or product is None:
+            pstring = ''
+        else:
+            pstring = '_%s' % product
+
+        if 'extension' in parsed and parsed['extension'] is not None:
+            estring = '.%s' % parsed['extension']
+        else:
+            estring = ''
+
+        suffix = '%s%s%s' % (tstring, pstring, estring)
+
+        if schema_version == 1:
+            fmt = '%sIFCB%1d_%4d_%03d_%02d%02d%02d%s'
+            vals = (namespace, instrument, year, day, hour, minute, second, suffix)
+
+        elif schema_version == 2:
+            month = int(parsed['month'])
+            fmt = '%sD%4d%02d%02dT%02d%02d%02d_IFCB%03d%s'
+            vals = (namespace, year, month, day, hour, minute, second, instrument, suffix)
+            
+        else:
+            raise ValueError('unknown schema version %d' % schema_version)
+        
+        return fmt % vals
+
+    except KeyError:
+        raise ValueError('cannot unparse PID')
+        
 class Pid(object):
     """
     Represents the permanent identifier of an IFCB bin.
