@@ -409,8 +409,6 @@ class FilesetBin(BaseDictlike, BaseBin):
         return list(self)
     def has_key(self, k):
         return k in self.fs.adc
-    def __contains__(self, k):
-        return self.has_key(k)
     def __len__(self):
         return len(self.fs.adc)
     # context manager implementation

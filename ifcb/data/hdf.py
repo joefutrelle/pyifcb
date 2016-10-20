@@ -262,6 +262,8 @@ class HdfBin(BaseBin, BaseDictlike):
         return d
     def __getitem__(self, target_number):
         return self.get_target(target_number)
+    def has_key(self, k):
+        return k in self.adc.index
     def iterkeys(self):
         for k in self.adc.index:
             yield k

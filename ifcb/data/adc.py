@@ -135,6 +135,8 @@ class AdcFile(BaseDictlike):
         """
         for k in self.csv.index:
             yield k
+    def has_key(self, k):
+        return k in self.csv.index
     def __len__(self):
         return len(self.csv)
     @lru_cache()
