@@ -10,6 +10,7 @@ import pandas as pd
 ### parsing
 
 # supports time-like regexes e.g., IFCB9_yyyy_YYY_HHMMSS
+@lru_cache()
 def timestamp2regex(pattern):
     """
     Convert a special "timestamp" expression into a regex pattern.
@@ -52,7 +53,15 @@ def timestamp2regex(pattern):
     # FIXME handle unfortunate formats such as
     # - non-zero-padded numbers
     # - full and abbreviated month names
-    pattern = re.sub(r'(([0-9])\2*)',r'(?P<n\2>[0-9]+)',pattern) # fixed-length number eg 111 88
+    # first, do fixed-length numbers (requires some trickery)
+    start, result = 0, ''
+    for m in re.finditer(r'(([0-9])\2*)',pattern):
+        s = m.start()
+        result = result + pattern[start:s]
+        l, n = len(m.groups()[0]), m.groups()[1]
+        result += '(?P<n%s>[0-9]{%d})' % (n, l)
+        start = m.end()
+    pattern = result + pattern[start:]
     pattern = re.sub(r's+','(?P<sss>[0-9]+)',pattern) # milliseconds
     pattern = re.sub(r'yyyy','(?P<yyyy>[0-9]{4})',pattern) # four-digit year
     pattern = re.sub(r'mm','(?P<mm>0[1-9]|1[0-2])',pattern) # two-digit month
@@ -68,7 +77,11 @@ def timestamp2regex(pattern):
     pattern = re.sub(r'\\.','.',pattern) # a regex '.'
     pattern = re.sub(r'any','.*',pattern) # a regex .*
     return pattern
-    
+
+# "timetsamp"-style patterns
+V1_PID_PATTERN = '(IFCB1_(yyyy_DDD_HHMMSS))(any)'
+V2_PID_PATTERN = '(D(yyyymmddTHHMMSS)_IFCB111)(any)'
+
 @lru_cache()
 def c(pattern):
     """
@@ -160,12 +173,14 @@ def parse(pid):
     namespace, suffix = m('(.*/)?(.*)',pid)
     ts_label = m('(?:.*/)?(.*)/$',namespace)
     # try v2 identifier pattern
-    bin_lid, timestamp, year, month, day, hour, minute, second, instrument, tpe = m(timestamp2regex('(D(yyyymmddTHHMMSS)_IFCB111)(any)'),suffix)
+    bin_lid, timestamp, year, month, day, hour, minute, second, instrument, tpe = m(timestamp2regex(V2_PID_PATTERN),suffix)
     # try v1 identifier pattern
     if bin_lid is None:
-        bin_lid, instrument, timestamp, year, day, hour, minute, second, tpe = m(timestamp2regex('(IFCB1_(yyyy_DDD_HHMMSS))(any)'),suffix)
+        bin_lid, instrument, timestamp, year, day, hour, minute, second, tpe = m(timestamp2regex(V1_PID_PATTERN),suffix)
         schema_version = 1
         timestamp_format = '%Y_%j_%H%M%S'
+        if year is None or day is None:
+            raise ValueError('invalid pid: %s' % pid)
         yearday = '_'.join([year, day])
     else:
         schema_version = 2
@@ -174,6 +189,9 @@ def parse(pid):
     if bin_lid is None: # syntax error
         raise ValueError('invalid pid: %s' % pid)
     # now parse target, product, and extension (tpe)
+    # tpe, if not empty, must start with _ or .
+    if tpe and (tpe[:1] not in '._' or len(tpe) < 2):
+        raise ValueError('invalid target, product, or extension: %s' % pid)
     target, product, extension = m(r'(?:_([0-9]+))?(?:_([a-zA-Z][a-zA-Z0-9_]*))?(?:\.([a-zA-Z][a-zA-Z0-9]*))?',tpe)
     if product is None:
         product = 'raw'
@@ -295,7 +313,12 @@ class Pid(object):
         """
         The parsed PID
         """
-        return parse(self.pid)
+        # convert some properties to int
+        p = parse(self.pid)
+        for ip in ['target', 'instrument', 'schema_version']:
+            if p[ip] is not None:
+                setattr(self, ip, int(p[ip]))
+        return p
     @property
     def timestamp(self):
         """
@@ -303,7 +326,7 @@ class Pid(object):
         """
         return pd.to_datetime(self.parsed['timestamp'], format=self.parsed['timestamp_format'], utc=True)
     def __getattr__(self, name):
-        if name in ['bin_lid', 'lid', 'instrument', 'namespace', 'product', 'target', 'ts_label', 'schema_version']:
+        if name in ['bin_lid', 'lid', 'namespace', 'product', 'ts_label']:
             return self.parsed[name]
         else:
             return self.__getattribute__(name)
