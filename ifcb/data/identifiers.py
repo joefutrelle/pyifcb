@@ -58,7 +58,7 @@ def timestamp2regex(pattern):
     for m in re.finditer(r'(([0-9])\2*)',pattern):
         s = m.start()
         result = result + pattern[start:s]
-        l, n = len(m.groups()[0]), m.groups()[1]
+        l, n = len(m.group(0)), m.group(1)
         result += '(?P<n%s>[0-9]{%d})' % (n, l)
         start = m.end()
     pattern = result + pattern[start:]
