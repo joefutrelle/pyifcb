@@ -9,6 +9,7 @@ from functools32 import lru_cache
 import numpy as np
 
 from .adc import AdcFile
+from .utils import BaseDictlike
 
 def read_image(inroi, byte_offset, width, height):
     """
@@ -25,7 +26,7 @@ def read_image(inroi, byte_offset, width, height):
     inroi.seek(byte_offset)
     return np.fromstring(inroi.read(length), dtype=np.uint8).reshape((width,height))
 
-class RoiFile(object):
+class RoiFile(BaseDictlike):
     """
     Wraps and provides access to an IFCB ``.roi`` file.
     Provides context manager support for keeping the
@@ -119,42 +120,11 @@ class RoiFile(object):
           of each ROI in the file, in order
         """
         return self.csv.index
-    def keys(self):
-        """
-        :returns list: a list of the target number of each ROI in
-          the file, in order
-        """
-        return list(self.index)
-    def __iter__(self):
-        """
-        Iterate over all target numbers.
-
-        :returns iterable: an iterator over the target number of
-          each ROI in the file
-        """
-        return iter(self.keys())
-    def iteritems(self):
-        """
-        Iterate over all images.
-
-        :returns iterable over pairs: each target number and associated
-          image from the .roi file
-        """
-        for i in self:
-            yield i, self[i]
-    def items(self):
-        """
-        Return all target numbers and associated images.
-
-        Warning: holds all image data in memory, so for a typical
-        IFCB data file will consume large amounts of memory.
-
-        :returns list of pairs: each target number and associated
-          image from the .roi file.
-        """
-        return list(self.iteritems())
-    def __contains__(self, roi_number):
-        return roi_number in self.keys()
+    def iterkeys(self):
+        for k in self.index:
+            yield k
+    def has_key(self, k):
+        return k in self.keys()
     def __getitem__(self, roi_number):
         return self.get_image(roi_number)
     def to_dict(self):
