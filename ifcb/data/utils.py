@@ -1,6 +1,7 @@
 """
 Utilities for the IFCB data API.
 """
+from itertools import izip
 
 class BaseDictlike(object):
     """
@@ -82,4 +83,13 @@ class BaseDictlike(object):
         for k in self.iterkeys():
             n += 1
         return n
+    def __eq__(self, other):
+        """
+        Test for equality against other dictlike
+        """
+        if len(self) != len(other): return False
+        for k in self:
+            if not k in other: return False
+            if self[k] != other[k]: return False
+        return True
     

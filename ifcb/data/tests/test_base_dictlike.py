@@ -39,5 +39,12 @@ class TestBaseDictlike(unittest.TestCase):
             assert k not in self.bd
     def test_len(self):
         assert len(self.keys) == len(self.bd)
-
-        
+    def test_eq(self):
+        d1 = dict(a=1,b=2,c=3)
+        d2 = dict(a=1,b=2,c=3)
+        d3 = dict(a=3,b=2,c=1)
+        assert MinimalBD(d1) == MinimalBD(d2)
+        assert MinimalBD(d2) == MinimalBD(d1)
+        assert MinimalBD(d1) != MinimalBD(d3)
+        assert MinimalBD(d1) == d2
+        assert MinimalBD(d1) != d3

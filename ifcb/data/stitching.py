@@ -72,6 +72,8 @@ class Stitcher(BaseDictlike):
         """
         for k in self.coordinates.index:
             yield k
+    def __len__(self):
+        return len(self.coordinates.index)
     @lru_cache(maxsize=2)
     def __getitem__(self, target_number):
         row = self.coordinates.loc[target_number]

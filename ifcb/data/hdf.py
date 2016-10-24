@@ -190,6 +190,8 @@ class HdfRoi(BaseDictlike):
     def iterkeys(self):
         for k in self._group.attrs['index']:
             yield k
+    def __len__(self):
+        return len(self._group.attrs['index'])
     def __getitem__(self, roi_number):
         return np.array(self._group[self._group['images'][roi_number]])
         
@@ -267,6 +269,8 @@ class HdfBin(BaseBin, BaseDictlike):
     def iterkeys(self):
         for k in self.adc.index:
             yield k
+    def __len__(self):
+        return len(self.adc.index)
     @property
     @lru_cache()
     def headers(self):
