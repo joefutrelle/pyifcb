@@ -109,8 +109,12 @@ class RoiFile(BaseDictlike):
             raise KeyError('roi #%d is 0x0' % roi_number)
         if not self.isopen():
             self._open()
-            im = read_image(self._inroi, bo, height, width)
-            self.close()
+            try:
+                im = read_image(self._inroi, bo, height, width)
+            except:
+                raise
+            finally:
+                self.close()
         else:
             im = read_image(self._inroi, bo, height, width)
         return im
