@@ -59,5 +59,5 @@ def data_dir():
     raise KeyError('cannot find %s on sys.path' % TEST_DATA_DIR)
 
 def list_test_filesets():
-    for fs in files.DataDirectory(data_dir(), whitelist=WHITELIST):
-        yield fs
+    for b in files.DataDirectory(data_dir(), whitelist=WHITELIST):
+        yield b.fileset

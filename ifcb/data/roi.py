@@ -66,14 +66,13 @@ class RoiFile(BaseDictlike):
         :returns int: the size of the file in bytes
         """
         return os.path.getsize(self.path)
-    @property
     def isopen(self):
         """
         Flag indicating if the file is open
         """
         return self._inroi is not None
     def _open(self):
-        assert not self.isopen, 'RoiFile already open'
+        assert not self.isopen(), 'RoiFile already open'
         self._inroi = open(self.path, 'rb')
     def close(self):
         """
@@ -83,7 +82,7 @@ class RoiFile(BaseDictlike):
         It is OK to call this even if the file is closed.
         """
         # allow re-closing
-        if self.isopen:
+        if self.isopen():
             self._inroi.close()
         self._inroi = None
     def __enter__(self):
@@ -108,9 +107,13 @@ class RoiFile(BaseDictlike):
             raise KeyError('adc data does not contain a roi #%d' % roi_number)
         if width * height == 0:
             raise KeyError('roi #%d is 0x0' % roi_number)
-        if not self.isopen:
+        if not self.isopen():
             self._open()
-        return read_image(self._inroi, bo, height, width)
+            im = read_image(self._inroi, bo, height, width)
+            self.close()
+        else:
+            im = read_image(self._inroi, bo, height, width)
+        return im
     def __len__(self):
         return len(self.csv)
     @property

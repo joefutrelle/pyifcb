@@ -224,14 +224,13 @@ class HdfBin(BaseBin, BaseDictlike):
         self._hdf = None
         self._open()
     # context manager implementation
-    @property
     def isopen(self):
         """
         :returns bool: if HDF file is open
         """
         return self._hdf is not None
     def _open(self):
-        assert not self.isopen, 'HdfBin already open'
+        assert not self.isopen(), 'HdfBin already open'
         self._hdf = hdfopen(*self._open_params)
         self._group = self._hdf.group
     def close(self):
@@ -239,13 +238,13 @@ class HdfBin(BaseBin, BaseDictlike):
         Close the HDF file. Will fail if HDF file is already
         closed.
         """
-        assert self.isopen, 'HdfBin is already closed'
+        assert self.isopen(), 'HdfBin is already closed'
         self._hdf.close()
         self._hdf = None
     def __enter__(self):
         return self
     def __exit__(self, *args):
-        if self.isopen:
+        if self.isopen():
             self.close()
     # Dictlike
     @property

@@ -13,185 +13,10 @@ from .roi import RoiFile
 from .utils import BaseDictlike
 from .bins import BaseBin
 
-def validate_path(filepath, blacklist=['skip'], whitelist=['data']):
-    """
-    Validate an IFCB raw data file path.
-
-    A well-formed raw data file path relative to some root
-    only contains path components that are
-    not blacklisted and either
-    either whitelisted or part of the file's basename (without
-    extension).
-
-    :param filepath: the pathname of the file
-    :param blacklist: directory names to ignore
-    :param whitelist: directory names to include, even if they
-      do not match the path's basename
-    :returns bool: if the pathname is valid
-    """
-    assert set(blacklist).isdisjoint(set(whitelist))
-    dirname, basename = os.path.split(filepath)
-    lid, ext = os.path.splitext(basename)
-    components = dirname.split(os.sep)
-    for c in components:
-        if c in blacklist:
-            return False
-        if c not in whitelist and c not in lid:
-            return False
-    return True
-
-def list_filesets(dirpath, blacklist=['skip'], whitelist=['data'], sort=True, validate=True):
-    """
-    Iterate over entire directory tree and yield a Fileset
-    object for each .adc/.hdr/.roi fileset found. Warning: for
-    large directories, this is slow.
-
-    :param blacklist: list of directory names to ignore
-    :param whitelist: list of directory names to include, even if they
-      do not match a file's basename
-    :param sort: whether to sort output (sorts by alpha)
-    :param validate: whether to validate each path
-    """
-    assert set(blacklist).isdisjoint(set(whitelist))
-    for dp, dirnames, filenames in os.walk(dirpath):
-        for d in dirnames:
-            if d in blacklist:
-                dirnames.remove(d)
-        if sort:
-            dirnames.sort()
-            filenames.sort()
-        for f in filenames:
-            basename, extension = f[:-4], f[-3:]
-            if extension == 'adc' and basename+'.hdr' in filenames and basename+'.roi' in filenames:
-                if validate:
-                    reldir = dp[len(dirpath)+1:]
-                    if not validate_path(os.path.join(reldir,basename), whitelist=whitelist, blacklist=blacklist):
-                        continue
-                yield dp, basename
-
-def list_data_dirs(dirpath, blacklist=['skip'], sort=True, prune=True):
-    """
-    Yield the paths of any descendant directories that contain at least
-    one ``.adc`` file.
-
-    :param blacklist: list of directory names to ignore
-    :param sort: whether to sort output (sorts by alpha)
-    :param prune: whether, given a dir with an ``.adc`` file in it, to skip
-      subdirectories
-    """
-    dirlist = os.listdir(dirpath)
-    if sort:
-        dirlist.sort()
-    for name in dirlist:
-        if name[-3:] == 'adc':
-            yield dirpath
-            if prune:
-                return
-    for name in dirlist:
-        if name not in blacklist:
-            child = os.path.join(dirpath,name)
-            if os.path.isdir(child):
-                # yield from recursive
-                for dp in list_data_dirs(child, sort=sort, prune=prune):
-                    yield dp
-
-def find_fileset(dirpath, lid, whitelist=['data'], blacklist=['skip']):
-    """
-    Find a fileset anywhere below the given directory path
-    given the bin's lid. This assumes that the file's path
-    is valid.
-
-    :returns Fileset: the ``Fileset``, or ``None`` if it is not found.
-    """
-    dirlist = os.listdir(dirpath)
-    for name in dirlist:
-        if name == lid + '.adc':
-            basepath = os.path.join(dirpath,lid)
-            return Fileset(basepath)
-        elif name in whitelist or name in lid:
-            # is the name whitelisted or contains part of the lid?
-            fs = find_fileset(os.path.join(dirpath,name), lid, whitelist=whitelist, blacklist=blacklist)
-            if fs is not None:
-                return fs
-    # not found
-    return None
-
-class DataDirectory(object):
-    """
-    Represents a directory containing IFCB raw data.
-
-    Provides a dict-like interface allowing access to filesets by LID.
-    """
-    def __init__(self, path='.', whitelist=['data'], blacklist=['skip']):
-        """
-        :param path: the path of the data directory
-        :param whitelist: a list of directory names to allow
-        :param blacklist: a list of directory names to disallow
-        """
-        self.path = path
-        self.whitelist = whitelist
-        self.blacklist = blacklist
-    def list_filesets(self):
-        """
-        Yield all filesets.
-        """
-        for dirpath, basename in list_filesets(self.path, whitelist=self.whitelist, blacklist=self.blacklist):
-            basepath = os.path.join(dirpath, basename)
-            yield Fileset(basepath)
-    def find_fileset(self, lid):
-        """
-        Locate a fileset by LID. Returns None if it is not found.
-
-        :param lid: the LID to search for
-        :type lid: str
-        :returns Fileset: the fileset, or None if not found
-        """
-        return find_fileset(self.path, lid, whitelist=self.whitelist, blacklist=self.blacklist)
-    def bin_iter(self):
-        """
-        Yield ``Bin`` objects for each fileset.
-        """
-        return (FilesetBin(fs) for fs in self)
-    def list_bins(self):
-        """
-        Equivalent to ``list(self.bin_iter())``. Warning: for large
-        data directories, this may be slow.
-
-        :returns: a list of all bins in the data directory.
-        """
-        return list(self.bin_iter())
-    def __iter__(self):
-        # yield from list_filesets called with no keyword args
-        for fs in self.list_filesets():
-            yield fs
-    def __contains__(self, lid):
-        # fast contains method that avoids iteration
-        return self.find_fileset(lid) is not None
-    def __getitem__(self, lid):
-        fs = self.find_fileset(lid)
-        if fs is None:
-            raise KeyError('No fileset for %s found at or under %s' % (lid, self.path))
-        return fs
-    def __len__(self):
-        """warning: for large datasets, this is very slow"""
-        return sum(1 for _ in self)
-    # subdirectories
-    def list_descendants(self, **kw):
-        """
-        Find all 'leaf' data directories and yield ``DataDirectory``
-        objects for each one. Note that this enforces blacklisting
-        but not whitelisting (no fileset path validation is done).
-        Accepts ``list_data_dirs`` keywords, except ``blacklist`` which
-        takes on the value given in the constructor.
-        """
-        for dd in list_data_dirs(self.path, blacklist=self.blacklist, **kw):
-            yield DataDirectory(dd)
-    def __repr__(self):
-        return '<DataDirectory %s>' % self.path
-    def __str__(self):
-        return self.path
-
 class Fileset(object):
+    """
+    Represents a set of three raw data files
+    """
     def __init__(self, basepath):
         """
         :param basepath: the base path of the files (no extension)
@@ -371,7 +196,6 @@ class FilesetBin(BaseDictlike, BaseBin):
     def __len__(self):
         return len(self.adc_file)
     # context manager implementation
-    @property
     def isopen(self):
         """
         Is the ``.roi`` file open?
@@ -381,11 +205,179 @@ class FilesetBin(BaseDictlike, BaseBin):
         """
         Close the ``.roi`` file, if it is open.
         """
-        if self.isopen:
+        if self.isopen():
             self._roi.close()
+            self._roi = None
     def __exit__(self, *args):
         self.close()
     def __repr__(self):
         return '<FilesetBin %s>' % self
     def __str__(self):
         return self.fileset.__str__()
+
+# listing and finding raw filesets and associated bin objects
+
+def validate_path(filepath, blacklist=['skip'], whitelist=['data']):
+    """
+    Validate an IFCB raw data file path.
+
+    A well-formed raw data file path relative to some root
+    only contains path components that are
+    not blacklisted and either
+    either whitelisted or part of the file's basename (without
+    extension).
+
+    :param filepath: the pathname of the file
+    :param blacklist: directory names to ignore
+    :param whitelist: directory names to include, even if they
+      do not match the path's basename
+    :returns bool: if the pathname is valid
+    """
+    assert set(blacklist).isdisjoint(set(whitelist))
+    dirname, basename = os.path.split(filepath)
+    lid, ext = os.path.splitext(basename)
+    components = dirname.split(os.sep)
+    for c in components:
+        if c in blacklist:
+            return False
+        if c not in whitelist and c not in lid:
+            return False
+    return True
+
+def list_filesets(dirpath, blacklist=['skip'], whitelist=['data'], sort=True, validate=True):
+    """
+    Iterate over entire directory tree and yield a Fileset
+    object for each .adc/.hdr/.roi fileset found. Warning: for
+    large directories, this is slow.
+
+    :param blacklist: list of directory names to ignore
+    :param whitelist: list of directory names to include, even if they
+      do not match a file's basename
+    :param sort: whether to sort output (sorts by alpha)
+    :param validate: whether to validate each path
+    """
+    assert set(blacklist).isdisjoint(set(whitelist))
+    for dp, dirnames, filenames in os.walk(dirpath):
+        for d in dirnames:
+            if d in blacklist:
+                dirnames.remove(d)
+        if sort:
+            dirnames.sort()
+            filenames.sort()
+        for f in filenames:
+            basename, extension = f[:-4], f[-3:]
+            if extension == 'adc' and basename+'.hdr' in filenames and basename+'.roi' in filenames:
+                if validate:
+                    reldir = dp[len(dirpath)+1:]
+                    if not validate_path(os.path.join(reldir,basename), whitelist=whitelist, blacklist=blacklist):
+                        continue
+                yield dp, basename
+
+def list_data_dirs(dirpath, blacklist=['skip'], sort=True, prune=True):
+    """
+    Yield the paths of any descendant directories that contain at least
+    one ``.adc`` file.
+
+    :param blacklist: list of directory names to ignore
+    :param sort: whether to sort output (sorts by alpha)
+    :param prune: whether, given a dir with an ``.adc`` file in it, to skip
+      subdirectories
+    """
+    dirlist = os.listdir(dirpath)
+    if sort:
+        dirlist.sort()
+    for name in dirlist:
+        if name[-3:] == 'adc':
+            yield dirpath
+            if prune:
+                return
+    for name in dirlist:
+        if name not in blacklist:
+            child = os.path.join(dirpath,name)
+            if os.path.isdir(child):
+                # yield from recursive
+                for dp in list_data_dirs(child, sort=sort, prune=prune):
+                    yield dp
+
+def find_fileset(dirpath, lid, whitelist=['data'], blacklist=['skip']):
+    """
+    Find a fileset anywhere below the given directory path
+    given the bin's lid. This assumes that the file's path
+    is valid.
+
+    :returns Fileset: the ``Fileset``, or ``None`` if it is not found.
+    """
+    dirlist = os.listdir(dirpath)
+    for name in dirlist:
+        if name == lid + '.adc':
+            basepath = os.path.join(dirpath,lid)
+            return Fileset(basepath)
+        elif name in whitelist or name in lid:
+            # is the name whitelisted or contains part of the lid?
+            fs = find_fileset(os.path.join(dirpath,name), lid, whitelist=whitelist, blacklist=blacklist)
+            if fs is not None:
+                return fs
+    # not found
+    return None
+
+class DataDirectory(object):
+    """
+    Represents a directory containing IFCB raw data.
+
+    Provides a dict-like interface allowing access to FilesetBins by LID.
+    """
+    def __init__(self, path='.', whitelist=['data'], blacklist=['skip']):
+        """
+        :param path: the path of the data directory
+        :param whitelist: a list of directory names to allow
+        :param blacklist: a list of directory names to disallow
+        """
+        self.path = path
+        self.whitelist = whitelist
+        self.blacklist = blacklist
+    def list_filesets(self):
+        """
+        Yield all filesets.
+        """
+        for dirpath, basename in list_filesets(self.path, whitelist=self.whitelist, blacklist=self.blacklist):
+            basepath = os.path.join(dirpath, basename)
+            yield Fileset(basepath)
+    def find_fileset(self, lid):
+        """
+        Locate a fileset by LID. Returns None if it is not found.
+
+        :param lid: the LID to search for
+        :type lid: str
+        :returns Fileset: the fileset, or None if not found
+        """
+        return find_fileset(self.path, lid, whitelist=self.whitelist, blacklist=self.blacklist)
+    def __iter__(self):
+        # yield from list_filesets called with no keyword args
+        for fs in self.list_filesets():
+            yield FilesetBin(fs)
+    def has_key(self, lid):
+        # fast contains method that avoids iteration
+        return self.find_fileset(lid) is not None
+    def __getitem__(self, lid):
+        fs = self.find_fileset(lid)
+        if fs is None:
+            raise KeyError('No fileset for %s found at or under %s' % (lid, self.path))
+        return FilesetBin(fs)
+    def __len__(self):
+        """warning: for large datasets, this is very slow"""
+        return sum(1 for _ in self)
+    # subdirectories
+    def list_descendants(self, **kw):
+        """
+        Find all 'leaf' data directories and yield ``DataDirectory``
+        objects for each one. Note that this enforces blacklisting
+        but not whitelisting (no fileset path validation is done).
+        Accepts ``list_data_dirs`` keywords, except ``blacklist`` which
+        takes on the value given in the constructor.
+        """
+        for dd in list_data_dirs(self.path, blacklist=self.blacklist, **kw):
+            yield DataDirectory(dd)
+    def __repr__(self):
+        return '<DataDirectory %s>' % self.path
+    def __str__(self):
+        return self.path
