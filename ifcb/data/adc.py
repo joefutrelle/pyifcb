@@ -3,6 +3,7 @@ Support for parsing and accessing IFCB ADC data.
 """
 
 import os
+from cStringIO import StringIO
 
 import pandas as pd
 import h5py as h5
@@ -152,3 +153,29 @@ class AdcFile(BaseDictlike):
         return '<ADC file %s>' % self.path
     def __str__(self):
         return self.path
+
+class AdcFragment(AdcFile):
+    """
+    Represents a specific range of targets in an ADC file.
+    Skips parsing other lines from the ADC file, for performance
+    reasons.
+    """
+    def __init__(self, adc_path, start=1, end=None, parse=False):
+        self.start = start
+        self.end = end
+        super(AdcFragment, self).__init__(adc_path, parse=parse)
+    @property
+    def csv(self):
+        with open(self.path) as adc_file:
+            n, buf = 1, StringIO()
+            for line in adc_file:
+                if n >= self.start:
+                    buf.write(line)
+                n += 1
+                if n == self.end:
+                    break
+        buf.seek(0)
+        df = pd.read_csv(buf, header=None, index_col=False)
+        df.index += self.start # index by 1-based ROI number
+        return df
+
