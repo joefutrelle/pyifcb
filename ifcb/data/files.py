@@ -116,158 +116,6 @@ def find_fileset(dirpath, lid, whitelist=['data'], blacklist=['skip']):
                 return fs
     # not found
     return None
-                                
-class Fileset(object):
-    """
-    Represents the three raw data files associated with
-    a single IFCB bin (i.e., the ``.hdr``, ``.adc``, and ``.roi`` files).
-
-    Context manager support opens and closes the ``.roi`` file for image
-    access.
-    """
-    def __init__(self, basepath):
-        """
-        :param basepath: the base path of the files (no extension)
-        """
-        self.basepath = basepath
-        self._roi = None
-    @property
-    def adc_path(self):
-        """
-        The path of the ``.adc`` file.
-        """
-        return self.basepath + '.adc'
-    @property
-    def hdr_path(self):
-        """
-        The path of the ``.hdr`` file.
-        """
-        return self.basepath + '.hdr'
-    @property
-    def roi_path(self):
-        """
-        The path of the ``.roi`` file.
-        """
-        return self.basepath + '.roi'
-    # oo interface to files
-    @property
-    @lru_cache()
-    def adc(self):
-        """
-        The ``AdcFile`` representing the ``.adc`` file
-        """
-        return AdcFile(self.adc_path)
-    @property
-    def roi(self):
-        """
-        The ``RoiFile`` object representing the ``.roi`` file
-        """
-        # explicit cache management
-        if self._roi is None:
-            self._roi = RoiFile(self.adc, self.roi_path)
-        return self._roi
-    @property
-    @lru_cache()
-    def hdr(self):
-        """
-        A ``dict`` representing the headers
-        """
-        return parse_hdr_file(self.hdr_path)
-    @property
-    @lru_cache()
-    def pid(self):
-        """
-        A ``Pid`` representing the bin PID
-        """
-        return Pid(os.path.basename(self.basepath))
-    @property
-    def lid(self):
-        """
-        The bin's LID
-        """
-        return self.pid.bin_lid
-    def exists(self):
-        """
-        Checks for existence of all three raw data files.
-
-        :returns bool: whether or not all files exist
-        """
-        if not os.path.exists(self.adc_path):
-            return False
-        if not os.path.exists(self.hdr_path):
-            return False
-        if not os.path.exists(self.roi_path):
-            return False
-        return True
-    # metrics
-    def getsizes(self):
-        """
-        Get the sizes of the files.
-
-        :returns dict: sizes of files with keys
-          'hdr', 'adc', and 'roi'
-        """
-        hdr_size = os.path.getsize(self.hdr_path)
-        adc_size = os.path.getsize(self.adc_path)
-        roi_size = os.path.getsize(self.roi_path)
-        return {
-            'hdr': hdr_size,
-            'adc': adc_size,
-            'roi': roi_size
-        }
-    def getsize(self):
-        """
-        Get the total size of all three files.
-
-        :returns int: the total size of all three files
-        """
-        return sum(self.getsizes().values())
-    @property
-    def schema(self):
-        """
-        The bin's schema
-        """
-        return self.adc.schema
-    @property
-    def timestamp(self):
-        """
-        The bin's timestamp (as a ``datetime``)
-        """
-        return self.pid.timestamp
-    def to_hdf(self, hdf_file, group=None, replace=True, archive=False):
-        """
-        Convert the fileset to HDF.
-
-        :param hdf_file: the root HDF file pathname or
-          object (``h5py.File`` or ``h5py.Group``) in which to write all raw data
-        :param group: a path below the sub-group
-          to use
-        :param replace: whether to replace any existing data
-          at that location in the HDF file
-        :param archive: whether to include the full text of the .hdr
-          and .roi files
-        """
-        from .hdf import fileset2hdf
-        fileset2hdf(self, hdf_file, group=group, replace=replace, archive=archive)
-    def __repr__(self):
-        return '<IFCB Fileset %s>' % self.basepath
-    def __str__(self):
-        return self.basepath
-    # context management
-    @property
-    def isopen(self):
-        """
-        Is the ``.roi`` file open?
-        """
-        return self._roi is not None
-    def close(self):
-        """
-        Close the ``.roi`` file, if it is open.
-        """
-        if not self.isopen:
-            self._roi.close()
-    def __exit__(self, *args):
-        self.close()
 
 class DataDirectory(object):
     """
@@ -343,6 +191,165 @@ class DataDirectory(object):
         return '<DataDirectory %s>' % self.path
     def __str__(self):
         return self.path
+
+class BaseFileset(object):
+    def __init__(self, basepath):
+        """
+        :param basepath: the base path of the files (no extension)
+        """
+        self.basepath = basepath
+        self._roi = None
+    @property
+    def adc_path(self):
+        """
+        The path of the ``.adc`` file.
+        """
+        return self.basepath + '.adc'
+    @property
+    def hdr_path(self):
+        """
+        The path of the ``.hdr`` file.
+        """
+        return self.basepath + '.hdr'
+    @property
+    def roi_path(self):
+        """
+        The path of the ``.roi`` file.
+        """
+        return self.basepath + '.roi'
+    @property
+    @lru_cache()
+    def pid(self):
+        """
+        A ``Pid`` representing the bin PID
+        """
+        return Pid(os.path.basename(self.basepath))
+    @property
+    def lid(self):
+        """
+        The bin's LID
+        """
+        return self.pid.bin_lid
+    def exists(self):
+        """
+        Checks for existence of all three raw data files.
+
+        :returns bool: whether or not all files exist
+        """
+        if not os.path.exists(self.adc_path):
+            return False
+        if not os.path.exists(self.hdr_path):
+            return False
+        if not os.path.exists(self.roi_path):
+            return False
+        return True
+    # metrics
+    def getsizes(self):
+        """
+        Get the sizes of the files.
+
+        :returns dict: sizes of files with keys
+          'hdr', 'adc', and 'roi'
+        """
+        hdr_size = os.path.getsize(self.hdr_path)
+        adc_size = os.path.getsize(self.adc_path)
+        roi_size = os.path.getsize(self.roi_path)
+        return {
+            'hdr': hdr_size,
+            'adc': adc_size,
+            'roi': roi_size
+        }
+    def getsize(self):
+        """
+        Get the total size of all three files.
+
+        :returns int: the total size of all three files
+        """
+        return sum(self.getsizes().values())
+    def __repr__(self):
+        return '<IFCB Fileset %s>' % self.basepath
+    def __str__(self):
+        return self.basepath
+    
+class Fileset(BaseFileset):
+    """
+    Represents the three raw data files associated with
+    a single IFCB bin (i.e., the ``.hdr``, ``.adc``, and ``.roi`` files).
+
+    Context manager support opens and closes the ``.roi`` file for image
+    access.
+    """
+    def __init__(self, basepath):
+        """
+        :param basepath: the base path of the files (no extension)
+        """
+        super(Fileset, self).__init__(basepath)
+    # oo interface to files
+    @property
+    @lru_cache()
+    def adc(self):
+        """
+        The ``AdcFile`` representing the ``.adc`` file
+        """
+        return AdcFile(self.adc_path)
+    @property
+    def roi(self):
+        """
+        The ``RoiFile`` object representing the ``.roi`` file
+        """
+        # explicit cache management
+        if self._roi is None:
+            self._roi = RoiFile(self.adc, self.roi_path)
+        return self._roi
+    @property
+    @lru_cache()
+    def hdr(self):
+        """
+        A ``dict`` representing the headers
+        """
+        return parse_hdr_file(self.hdr_path)
+    @property
+    def schema(self):
+        """
+        The bin's schema
+        """
+        return self.adc.schema
+    @property
+    def timestamp(self):
+        """
+        The bin's timestamp (as a ``datetime``)
+        """
+        return self.pid.timestamp
+    def to_hdf(self, hdf_file, group=None, replace=True, archive=False):
+        """
+        Convert the fileset to HDF.
+
+        :param hdf_file: the root HDF file pathname or
+          object (``h5py.File`` or ``h5py.Group``) in which to write all raw data
+        :param group: a path below the sub-group
+          to use
+        :param replace: whether to replace any existing data
+          at that location in the HDF file
+        :param archive: whether to include the full text of the .hdr
+          and .roi files
+        """
+        from .hdf import fileset2hdf
+        fileset2hdf(self, hdf_file, group=group, replace=replace, archive=archive)
+    # context management
+    @property
+    def isopen(self):
+        """
+        Is the ``.roi`` file open?
+        """
+        return self._roi is not None
+    def close(self):
+        """
+        Close the ``.roi`` file, if it is open.
+        """
+        if not self.isopen:
+            self._roi.close()
+    def __exit__(self, *args):
+        self.close()
 
 # bin interface to Fileset
 
