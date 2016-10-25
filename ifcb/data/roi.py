@@ -76,8 +76,7 @@ class RoiFile(BaseDictlike):
         self._inroi = open(self.path, 'rb')
     def close(self):
         """
-        Close the file. Note that the file is opened
-        implicitly when any image data is read.
+        Close the file.
 
         It is OK to call this even if the file is closed.
         """
@@ -86,6 +85,7 @@ class RoiFile(BaseDictlike):
             self._inroi.close()
         self._inroi = None
     def __enter__(self):
+        self._open()
         return self
     def __exit__(self, *args):
         self.close()
