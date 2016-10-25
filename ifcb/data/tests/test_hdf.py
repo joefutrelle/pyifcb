@@ -8,7 +8,10 @@ from pandas.util.testing import assert_frame_equal
 from ...tests.utils import withfile, test_dir
 
 from ..h5utils import hdf2pd, hdfopen
-from ..hdf import roi2hdf, hdr2hdf, adc2hdf, fileset2hdf, hdf2fileset, HdfBin
+from ..adc import AdcFile
+from ..roi import RoiFile
+from ..hdr import parse_hdr_file
+from ..hdf import roi2hdf, hdr2hdf, adc2hdf, fileset2hdf, hdf2fileset, HdfBin, filesetbin2hdf
 from ..files import FilesetBin
 
 from .fileset_info import list_test_filesets
@@ -38,14 +41,15 @@ class TestAdcHdf(unittest.TestCase):
     @withfile
     def test_roundtrip(self, path):
         for fs in list_test_filesets():
-            adc2hdf(fs.adc, path, replace=True)
-            test_adc_roundtrip(fs.adc, path)
+            adc = AdcFile(fs.adc_path)
+            adc2hdf(adc, path, replace=True)
+            test_adc_roundtrip(adc, path)
 
 class TestRoiHdf(unittest.TestCase):
     @withfile
     def test_roundtrip(self, path):
         for fs in list_test_filesets():
-            with fs.roi as roi:
+            with RoiFile(fs.adc_path, fs.roi_path) as roi:
                 roi2hdf(roi, path)
                 test_roi_roundtrip(roi, path)
 
@@ -53,22 +57,24 @@ class TestHdrHdf(unittest.TestCase):
     @withfile
     def test_roundtrip(self, path):
         for fs in list_test_filesets():
-            hdr2hdf(fs.hdr, path)
-            test_hdr_roundtrip(fs.hdr, path)
+            hdr = parse_hdr_file(fs.hdr_path)
+            hdr2hdf(hdr, path)
+            test_hdr_roundtrip(hdr, path)
 
 class TestFilesetHdf(unittest.TestCase):
     @withfile
     def test_roundtrip(self, path):
         for fs in list_test_filesets():
-            fileset2hdf(fs, path)
-            test_adc_roundtrip(fs.adc, path, 'adc')
-            test_hdr_roundtrip(fs.hdr, path, 'hdr')
-            test_roi_roundtrip(fs.roi, path, 'roi')
-            # now test other aspects
-            with h5.File(path) as h:
-                assert h.attrs['pid'] == str(fs.pid)
-                assert h.attrs['lid'] == fs.lid
-                assert h.attrs['timestamp'] == fs.timestamp.isoformat()
+            with FilesetBin(fs) as fs_bin:
+                filesetbin2hdf(fs_bin, path)
+                test_adc_roundtrip(fs_bin.adc_file, path, 'adc')
+                test_hdr_roundtrip(fs_bin.hdr_attributes, path, 'hdr')
+                test_roi_roundtrip(fs_bin.roi_file, path, 'roi')
+                # now test other aspects
+                with h5.File(path) as h:
+                    assert h.attrs['pid'] == str(fs_bin.pid)
+                    assert h.attrs['lid'] == fs_bin.lid
+                    assert h.attrs['timestamp'] == fs_bin.timestamp.isoformat()
     @unittest.skip('slow')
     @withfile
     def test_archive(self, path):
@@ -103,10 +109,10 @@ class TestHdfBin(unittest.TestCase):
     @withfile
     def test_roundtrip(self, path):
         for fs in list_test_filesets():
-            out_bin = FilesetBin(fs)
-            out_bin.to_hdf(path)
-            with HdfBin(path) as in_bin:
-                assert_bin_equals(in_bin, out_bin)
+            with FilesetBin(fs) as out_bin:
+                out_bin.to_hdf(path)
+                with HdfBin(path) as in_bin:
+                    assert_bin_equals(in_bin, out_bin)
     @withfile
     def test_multiple_open_group(self, path):
         with hdfopen(path, replace=True) as h:

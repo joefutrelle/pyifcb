@@ -13,6 +13,7 @@ from .identifiers import Pid
 from .adc import SCHEMA
 from .utils import BaseDictlike
 from .bins import BaseBin
+from .files import FilesetBin
 
 def adc2hdf(adcfile, hdf_file, group=None, replace=True):
     """
@@ -109,11 +110,11 @@ def hdf2file(hdf_dataset, path):
     with open(path,'wb') as outfile:
         outfile.write(file_data)
 
-def fileset2hdf(fileset, hdf_file, group=None, replace=True, archive=False):
+def filesetbin2hdf(fs_bin, hdf_file, group=None, replace=True, archive=False):
     """
-    Write a ``Fileset`` to an HDF file.
+    Write a ``FilesetBin`` to an HDF file.
 
-    A ``Fileset`` is represented in HDF relative to some root path as:
+    A ``FilesetBin`` is represented in HDF relative to some root path as:
 
     * ``{root}.pid`` (attribute) - full base pathname
     * ``{root}.lid`` (attribute) - bin LID
@@ -125,8 +126,8 @@ def fileset2hdf(fileset, hdf_file, group=None, replace=True, archive=False):
     * ``{root}/archive/adc`` (dataset) - archived ``.adc`` file
     * ``{root}/archive/hdr`` (dataset) - archived ``.hdr`` file
 
-    :param fileset: the ``Fileset`` to write
-    :type fileset: Fileset
+    :param fs_bin: the ``FilesetBin`` to write
+    :type fs_bin: FilesetBin
     :param hdf_file: the root HDF file pathname or
       object (h5py.File or h5py.Group) on which to write
       the IFCB data
@@ -138,15 +139,24 @@ def fileset2hdf(fileset, hdf_file, group=None, replace=True, archive=False):
       files in the HDF file
     """
     with hdfopen(hdf_file, group, replace=replace) as root:
-        root.attrs['pid'] = str(fileset.pid)
-        root.attrs['lid'] = fileset.lid
-        root.attrs['timestamp'] = fileset.timestamp.isoformat()
-        hdr2hdf(fileset.hdr, root, 'hdr', replace=replace)
-        adc2hdf(fileset.adc, root, 'adc', replace=replace)
-        roi2hdf(fileset.roi, root, 'roi', replace=replace)
+        root.attrs['pid'] = str(fs_bin.pid)
+        root.attrs['lid'] = fs_bin.lid
+        root.attrs['timestamp'] = fs_bin.timestamp.isoformat()
+        hdr2hdf(fs_bin.headers, root, 'hdr', replace=replace)
+        adc2hdf(fs_bin.adc_file, root, 'adc', replace=replace)
+        roi2hdf(fs_bin.roi_file, root, 'roi', replace=replace)
         if archive:
-            file2hdf(root, 'archive/adc', fileset.adc_path, compression='gzip')
-            file2hdf(root, 'archive/hdr', fileset.hdr_path)
+            file2hdf(root, 'archive/adc', fs_bin.fileset.adc_path, compression='gzip')
+            file2hdf(root, 'archive/hdr', fs_bin.fileset.hdr_path)
+        
+def fileset2hdf(fileset, hdf_file, group=None, replace=True, archive=False):
+    """
+    Write a fileset to HDF.
+
+    :see filesetbin2hdf
+    """
+    with FilesetBin(fileset) as fs_bin:
+        filesetbin2hdf(fs_bin, hdf_file, group=group, replace=replace, archive=archive)
 
 def hdf2fileset(hdf_path, fileset_path, group=None):
     """

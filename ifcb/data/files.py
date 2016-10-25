@@ -10,7 +10,6 @@ from .identifiers import Pid
 from .adc import AdcFile
 from .hdr import parse_hdr_file
 from .roi import RoiFile
-from .h5utils import hdfopen
 from .utils import BaseDictlike
 from .bins import BaseBin
 
@@ -192,13 +191,12 @@ class DataDirectory(object):
     def __str__(self):
         return self.path
 
-class BaseFileset(object):
+class Fileset(object):
     def __init__(self, basepath):
         """
         :param basepath: the base path of the files (no extension)
         """
         self.basepath = basepath
-        self._roi = None
     @property
     def adc_path(self):
         """
@@ -270,50 +268,46 @@ class BaseFileset(object):
         return '<IFCB Fileset %s>' % self.basepath
     def __str__(self):
         return self.basepath
-    
-class Fileset(BaseFileset):
+
+# bin interface to Fileset
+
+class FilesetBin(BaseDictlike, BaseBin):
     """
-    Represents the three raw data files associated with
-    a single IFCB bin (i.e., the ``.hdr``, ``.adc``, and ``.roi`` files).
+    Bin interface to Fileset.
 
     Context manager support opens and closes the ``.roi`` file for image
     access.
     """
-    def __init__(self, basepath):
+    def __init__(self, fileset):
         """
-        :param basepath: the base path of the files (no extension)
+        :param fileset: the ``Fileset`` to represent
         """
-        super(Fileset, self).__init__(basepath)
-    # oo interface to files
+        self.fileset = fileset
+        self._roi = None
+    # oo interface to fileset
     @property
     @lru_cache()
-    def adc(self):
+    def adc_file(self):
         """
         The ``AdcFile`` representing the ``.adc`` file
         """
-        return AdcFile(self.adc_path)
+        return AdcFile(self.fileset.adc_path)
     @property
-    def roi(self):
+    def roi_file(self):
         """
         The ``RoiFile`` object representing the ``.roi`` file
         """
         # explicit cache management
         if self._roi is None:
-            self._roi = RoiFile(self.adc, self.roi_path)
+            self._roi = RoiFile(self.adc_file, self.fileset.roi_path)
         return self._roi
     @property
     @lru_cache()
-    def hdr(self):
+    def hdr_attributes(self):
         """
         A ``dict`` representing the headers
         """
-        return parse_hdr_file(self.hdr_path)
-    @property
-    def schema(self):
-        """
-        The bin's schema
-        """
-        return self.adc.schema
+        return parse_hdr_file(self.fileset.hdr_path)
     @property
     def timestamp(self):
         """
@@ -333,9 +327,50 @@ class Fileset(BaseFileset):
         :param archive: whether to include the full text of the .hdr
           and .roi files
         """
-        from .hdf import fileset2hdf
-        fileset2hdf(self, hdf_file, group=group, replace=replace, archive=archive)
-    # context management
+        from .hdf import filesetbin2hdf
+        filesetbin2hdf(self, hdf_file, group=group, replace=replace, archive=archive)
+    # bin interface
+    @property
+    def pid(self):
+        """
+        The bin's PID
+        """
+        return self.fileset.pid
+    @property
+    def schema(self):
+        """
+        The bin's schema
+        """
+        return self.adc_file.schema
+    @property
+    def images(self):
+        """
+        The images
+        """
+        return self.roi_file
+    @property
+    def headers(self):
+        """
+        The header dict
+        """
+        return self.hdr_attributes
+    @property
+    def adc(self):
+        """
+        The bin's ADC data as a ``pandas.DataFrame``
+        """
+        return self.adc_file.csv
+    # dict implementation
+    def iterkeys(self):
+        for k in self.adc_file:
+            yield k
+    def __getitem__(self, ix):
+        return self.adc_file[ix]
+    def has_key(self, k):
+        return k in self.adc_file
+    def __len__(self):
+        return len(self.adc_file)
+    # context manager implementation
     @property
     def isopen(self):
         """
@@ -346,87 +381,11 @@ class Fileset(BaseFileset):
         """
         Close the ``.roi`` file, if it is open.
         """
-        if not self.isopen:
+        if self.isopen:
             self._roi.close()
-    def __exit__(self, *args):
-        self.close()
-
-# bin interface to Fileset
-
-class FilesetBin(BaseDictlike, BaseBin):
-    """
-    Bin interface to Fileset.
-    """
-    def __init__(self, fileset):
-        """
-        :param fileset: the ``Fileset`` to represent
-        """
-        self.fs = fileset
-    @property
-    def pid(self):
-        """
-        The bin's PID
-        """
-        return self.fs.pid
-    @property
-    def schema(self):
-        """
-        The bin's schema
-        """
-        return self.fs.schema
-    @property
-    def images(self):
-        """
-        The images
-        """
-        return self.fs.roi
-    @property
-    def headers(self):
-        """
-        The header dict
-        """
-        return self.fs.hdr
-    @property
-    def adc(self):
-        """
-        The bin's ADC data as a ``pandas.DataFrame``
-        """
-        return self.fs.adc.csv
-    def to_hdf(self, hdf_file, **kw):
-        """
-        Store this bin in an HDF5 file or group.
-
-        :param hdf_file: the root HDF pathname or
-          object (``h5py.File`` or ``h5py.Group``) in which to write all raw data
-        :param group: a path below the sub-group
-          to use
-        :param replace: whether to replace any existing data
-          at that location in the HDF file
-        :param archive: whether to include the full text of the .hdr
-          and .roi files
-        """
-        self.fs.to_hdf(hdf_file, **kw)
-    # dict implementation
-    def iterkeys(self):
-        for k in self.fs.adc:
-            yield k
-    def __getitem__(self, ix):
-        return self.fs.adc[ix]
-    def keys(self):
-        return list(self)
-    def has_key(self, k):
-        return k in self.fs.adc
-    def __len__(self):
-        return len(self.fs.adc)
-    # context manager implementation
-    def close(self):
-        """
-        Close the underlying fileset.
-        """
-        self.fs.close()
     def __exit__(self, *args):
         self.close()
     def __repr__(self):
         return '<FilesetBin %s>' % self
     def __str__(self):
-        return self.fs.__str__()
+        return self.fileset.__str__()
