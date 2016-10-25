@@ -40,18 +40,17 @@ class TestDataDirectory(unittest.TestCase):
         fss = list(self.whitelist)
         assert len(fss) == 2 # including whitelisted one
     def test_exists(self):
-        fss = list(self.whitelist)
+        fss = [b.fileset for b in self.whitelist]
         for fs in fss:
             assert fs.exists()
             assert os.path.exists(fs.adc_path)
             assert os.path.exists(fs.hdr_path)
             assert os.path.exists(fs.roi_path)
     def test_lids(self):
-        fss = list(self.whitelist)
+        fss = [b.fileset for b in self.whitelist]
         lids = [fs.lid for fs in fss]
         for lid in TEST_FILES:
             assert lid in lids
-            assert lid in self.whitelist
         for fs in fss:
             assert self.whitelist[fs.lid].lid == fs.lid
     def test_getsizes(self):
@@ -62,8 +61,5 @@ class TestDataDirectory(unittest.TestCase):
     def test_descendants(self):
         assert len(list(self.default.list_descendants())) == 3
         assert len(list(self.blacklist.list_descendants())) == 2
-    def test_bin_iter_list_bins(self):
-        for bi in [self.whitelist.bin_iter(), self.whitelist.list_bins()]:
-            assert set(b.lid for b in bi) == set(TEST_FILES.keys())
 
         

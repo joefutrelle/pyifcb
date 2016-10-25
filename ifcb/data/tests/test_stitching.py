@@ -11,7 +11,7 @@ class TestStitcher(unittest.TestCase):
         dd = DataDirectory(TEST_DATA_DIR)
         for lid, tf in TEST_FILES.items():
             if 'stitched_roi_number' in tf: # does this have stitching data?
-                b = FilesetBin(dd[lid])
+                b = dd[lid]
                 s = Stitcher(b)
                 target = tf['stitched_roi_number']
                 coords = tf['stitched_roi_coords']

@@ -26,10 +26,14 @@ class TestRoi(unittest.TestCase):
     def test_with(self):
         for lid, info, roi in self.fsinfo():
             with roi as o:
-                assert not o.isopen
+                assert o.isopen()
                 _ = o[o.keys()[0]]
-                assert o.isopen
-            assert not roi.isopen
+            assert not roi.isopen()
+    def test_not_with(self):
+        for lid, info, roi in self.fsinfo():
+            assert not roi.isopen()
+            assert roi[roi.keys()[0]] is not None
+            assert not roi.isopen()
     def test_dictlike(self):
         for lid, info, roi in self.fsinfo():
             rn = info['roi_numbers']
