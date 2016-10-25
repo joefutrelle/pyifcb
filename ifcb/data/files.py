@@ -108,24 +108,9 @@ class FilesetBin(BaseDictlike, BaseBin):
         :param fileset: the ``Fileset`` to represent
         """
         self.fileset = fileset
-        self._roi = None
+        self.adc_file = AdcFile(fileset.adc_path)
+        self.roi_file = RoiFile(self.adc_file, fileset.roi_path)
     # oo interface to fileset
-    @property
-    @lru_cache()
-    def adc_file(self):
-        """
-        The ``AdcFile`` representing the ``.adc`` file
-        """
-        return AdcFile(self.fileset.adc_path)
-    @property
-    def roi_file(self):
-        """
-        The ``RoiFile`` object representing the ``.roi`` file
-        """
-        # explicit cache management
-        if self._roi is None:
-            self._roi = RoiFile(self.adc_file, self.fileset.roi_path)
-        return self._roi
     @property
     @lru_cache()
     def hdr_attributes(self):
@@ -200,14 +185,13 @@ class FilesetBin(BaseDictlike, BaseBin):
         """
         Is the ``.roi`` file open?
         """
-        return self._roi is not None
+        return self.roi_file.isopen()
     def close(self):
         """
         Close the ``.roi`` file, if it is open.
         """
         if self.isopen():
-            self._roi.close()
-            self._roi = None
+            self.roi_file.close()
     def __exit__(self, *args):
         self.close()
     def __repr__(self):
