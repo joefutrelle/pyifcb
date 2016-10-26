@@ -20,25 +20,25 @@ class TestH5Utils(unittest.TestCase):
         for group in [None, 'g']:
             with hdfopen(F, group, replace=True) as f:
                 f.attrs[attr] = v1
-            assert os.path.exists(F)
+            assert os.path.exists(F), 'failed to create HDF file'
             with hdfopen(F, group) as f:
-                assert f.attrs[attr] == v1
+                assert f.attrs[attr] == v1, 'attribute value wrong'
             with hdfopen(F, group, replace=True) as f:
                 f.attrs[attr] = v2
             with hdfopen(F, group) as f:
-                assert f.attrs[attr] == v2
+                assert f.attrs[attr] == v2, 'replacing attribute failed'
     @withfile
     def test_clear_h5_group(self, F):
         with h5.File(F) as f:
             f['foo/bar'] = [1,2,3]
             f.attrs['baz'] = 5
         with h5.File(F) as f:
-            assert 'foo' in f.keys()
-            assert 'baz' in f.attrs.keys()
+            assert 'foo' in f.keys(), 'missing key'
+            assert 'baz' in f.attrs.keys(), 'missing attribute'
             clear_h5_group(f)
         with h5.File(F) as f:
-            assert not f.keys()
-            assert not f.attrs.keys()
+            assert not f.keys(), 'failed to clear group'
+            assert not f.attrs.keys(), 'failed to clear attributes'
     @withfile
     def test_df_h5_roundtrip(self, F):
         r = np.random.RandomState(0) # seed

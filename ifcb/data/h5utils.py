@@ -98,7 +98,7 @@ def hdf2pd(group):
 
     :param group: the ``h5py.Group`` to read from.
     """
-    assert group.attrs['ptype'] == 'DataFrame'
+    assert group.attrs['ptype'] == 'DataFrame', 'unrecognized HDF format'
     index = group['index']
     index_name = index.attrs.get('name',None)
     col_refs = group['columns']

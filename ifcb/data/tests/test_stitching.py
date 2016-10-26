@@ -15,7 +15,7 @@ class TestStitcher(unittest.TestCase):
                 s = Stitcher(b)
                 target = tf['stitched_roi_number']
                 coords = tf['stitched_roi_coords']
-                assert target in s
-                assert s[target].shape == tf['stitched_roi_shape']
-                assert np.all(s[target][coords] == tf['stitched_roi_slice'])
+                assert target in s, 'stitched target missing'
+                assert s[target].shape == tf['stitched_roi_shape'], 'stitched roi shape wrong'
+                assert np.all(s[target][coords] == tf['stitched_roi_slice']), 'stitched roi data wrong'
             

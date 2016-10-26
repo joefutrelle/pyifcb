@@ -42,26 +42,26 @@ class DestroyPid(object):
                 
 class TestIdentifiers(unittest.TestCase):
     def test_schema_version(self):
-        assert Pid(GOOD_V1).schema_version == 1
-        assert Pid(GOOD_V2).schema_version == 2
+        assert Pid(GOOD_V1).schema_version == 1, 'expected schema version 1'
+        assert Pid(GOOD_V2).schema_version == 2, 'expected schema version 2'
     def test_unparse(self):
         for pid in GOOD:
             assert ids.unparse(Pid(pid).parsed) == pid
     def test_timestamp(self):
         for pid in GOOD:
             dt = Pid(pid).timestamp
-            assert dt.year == 2000
-            assert dt.month == 1
-            assert dt.day == 1
-            assert dt.hour == 12
-            assert dt.minute == 34
-            assert dt.second == 56
+            assert dt.year == 2000, 'year wrong'
+            assert dt.month == 1, 'month wrong'
+            assert dt.day == 1, 'day wrong'
+            assert dt.hour == 12, 'hour wrong'
+            assert dt.minute == 34, 'minute wrong'
+            assert dt.second == 56, 'second wrong'
     def test_target(self):
         target = 123
         target_string = '%05d' % target
         for pid in GOOD:
             target_pid = '%s_%s' % (pid, target_string)
-            assert Pid(target_pid).target == target
+            assert Pid(target_pid).target == target, 'target wrong'
     def test_destroy(self):
         for pid in GOOD:
             d = DestroyPid(pid)

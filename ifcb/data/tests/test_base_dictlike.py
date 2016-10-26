@@ -32,19 +32,19 @@ class TestBaseDictlike(unittest.TestCase):
         assert set(self.values) == set(self.bd.values())
     def test_contains(self):
         for k in self.keys:
-            assert self.bd.has_key(k)
-            assert k in self.bd
+            assert self.bd.has_key(k), 'missing key'
+            assert k in self.bd, 'has_key does not agree with __contains__'
         for k in self.bad_keys:
-            assert not self.bd.has_key(k)
-            assert k not in self.bd
+            assert not self.bd.has_key(k), 'spurious key'
+            assert k not in self.bd, 'has_key does not agree with __contains__'
     def test_len(self):
-        assert len(self.keys) == len(self.bd)
+        assert len(self.keys) == len(self.bd), 'inconsistent lengths'
     def test_eq(self):
         d1 = dict(a=1,b=2,c=3)
         d2 = dict(a=1,b=2,c=3)
         d3 = dict(a=3,b=2,c=1)
-        assert MinimalBD(d1) == MinimalBD(d2)
-        assert MinimalBD(d2) == MinimalBD(d1)
-        assert MinimalBD(d1) != MinimalBD(d3)
-        assert MinimalBD(d1) == d2
-        assert MinimalBD(d1) != d3
+        assert MinimalBD(d1) == MinimalBD(d2), '__eq__ failed'
+        assert MinimalBD(d2) == MinimalBD(d1), '__eq__ failed'
+        assert MinimalBD(d1) != MinimalBD(d3), '__ne__ failed'
+        assert MinimalBD(d1) == d2, '__eq__ failed'
+        assert MinimalBD(d1) != d3, '__ne__ failed'

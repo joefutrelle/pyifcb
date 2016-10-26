@@ -217,7 +217,7 @@ def validate_path(filepath, blacklist=['skip'], whitelist=['data']):
       do not match the path's basename
     :returns bool: if the pathname is valid
     """
-    assert set(blacklist).isdisjoint(set(whitelist))
+    assert set(blacklist).isdisjoint(set(whitelist)), 'whitelist and blacklist must be disjoint'
     dirname, basename = os.path.split(filepath)
     lid, ext = os.path.splitext(basename)
     components = dirname.split(os.sep)
@@ -240,7 +240,7 @@ def list_filesets(dirpath, blacklist=['skip'], whitelist=['data'], sort=True, va
     :param sort: whether to sort output (sorts by alpha)
     :param validate: whether to validate each path
     """
-    assert set(blacklist).isdisjoint(set(whitelist))
+    assert set(blacklist).isdisjoint(set(whitelist)), 'whitelist and blacklist must be disjoint'
     for dp, dirnames, filenames in os.walk(dirpath):
         for d in dirnames:
             if d in blacklist:
