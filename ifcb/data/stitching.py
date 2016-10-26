@@ -42,8 +42,8 @@ class Stitcher(BaseDictlike):
         M = M[M['ax2'] != 0]
         # now roll one side backwards to place adjacent pairs on same row
         M.iloc[:,5:] = np.roll(M.iloc[:,5:], -1, axis=0)
-        # handle case where we're only looking at two rows
-        M.iloc[-1]['bt'] = 0
+        # bottom row is always spurious because of roll operation, remove
+        M = M[:-1]
         # only consider pairs where trigger is the same
         M = M[M['at'] == M['bt']]
         # convert w/h to second corner coordinates
