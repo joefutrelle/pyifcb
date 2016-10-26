@@ -89,7 +89,6 @@ class RoiFile(BaseDictlike):
         return self
     def __exit__(self, *args):
         self.close()
-    @lru_cache(maxsize=2)
     def get_image(self, roi_number):
         """
         Read an image from the file. Note that the dict-like

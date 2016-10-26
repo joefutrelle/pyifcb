@@ -140,7 +140,6 @@ class AdcFile(BaseDictlike):
         return k in self.csv.index
     def __len__(self):
         return len(self.csv)
-    @lru_cache()
     def get_target(self, target_number):
         """
         Get the ADC data for a given target, as a tuple.

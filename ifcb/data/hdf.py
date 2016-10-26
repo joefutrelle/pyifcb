@@ -262,7 +262,6 @@ class HdfBin(BaseBin, BaseDictlike):
         The bin's schema
         """
         return SCHEMA[self._group['adc'].attrs['schema']]
-    @lru_cache()
     def get_target(self, target_number):
         """
         Retrieve a target record by target number

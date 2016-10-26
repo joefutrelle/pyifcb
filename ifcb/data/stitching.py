@@ -144,7 +144,6 @@ class Infiller(BaseDictlike):
           number stitched?
         """
         return target_number in self.stitcher
-    @lru_cache(maxsize=2)
     def __getitem__(self, target_number):
         # get the raw stitch
         raw_stitch = self.stitcher[target_number]
@@ -183,7 +182,6 @@ class InfilledImages(BaseDictlike):
         in_bin = target_number in self.bin
         excluded = target_number in self.stitcher.excluded_targets()
         return in_bin and not excluded
-    @lru_cache(maxsize=2)
     def __getitem__(self, target_number):
         if target_number in self.stitcher:
             # stitch the images
