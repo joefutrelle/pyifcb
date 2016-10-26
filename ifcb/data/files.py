@@ -89,6 +89,11 @@ class Fileset(object):
         :returns int: the total size of all three files
         """
         return sum(self.getsizes().values())
+    def as_bin(self):
+        """
+        :returns: a Bin view of this fileset.
+        """
+        return FilesetBin(self)
     def __repr__(self):
         return '<IFCB Fileset %s>' % self.basepath
     def __str__(self):
