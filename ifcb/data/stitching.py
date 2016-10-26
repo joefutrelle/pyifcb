@@ -62,6 +62,16 @@ class Stitcher(BaseDictlike):
         M['sx2'] = np.maximum(M['ax2'], M['bx2'])
         M['sy2'] = np.maximum(M['ay2'], M['by2'])
         return M
+    @lru_cache()
+    def excluded_targets(self):
+        """
+        Returns the target numbers of the targets that should
+        be ignored in the original raw bin, because those targets
+        are the second of a pair of stitched ROIs.
+
+        This is just each included key + 1.
+        """
+        return [x + 1 for x in self.keys()]
     def has_key(self, target_number):
         """
         :returns bool: is the ROI with the given target
@@ -92,3 +102,96 @@ class Stitcher(BaseDictlike):
             msk[ry1:ry2,rx1:rx2] = False
             im[ry1:ry2,rx1:rx2] = self.bin.images[ij]
         return np.ma.array(im, mask=msk)
+
+class Infiller(BaseDictlike):
+    """
+    Wraps ``Bin`` to perform infilling of stitched images.
+
+    Provides dict-like interface; keys are target numbers,
+    each value is a masked infill image that can be added to
+    the raw stitched image to produce a complete image.
+
+    Simply adding the raw stitch and infill images will fail
+    by producing a completely masked image. Instead, use
+    the InfilledImages utility class:
+    following:
+
+    >>> i = InfilledImages(my_bin)
+    >>> infilled = i[target]
+
+    which is equivalent to this:
+
+    >>> s = Stitcher(my_bin)
+    >>> i = Infiller(my_bin)
+    >>> infilled = s[target].filled(0) + i[target].filled(0)
+
+    """
+    def __init__(self, the_bin):
+        """
+        :param the_bin: the bin to delegate to
+        :type the_bin: Bin
+        """
+        self.stitcher = Stitcher(the_bin)
+    def iterkeys(self):
+        """
+        Yield the target number of each stitched ROI.
+        """
+        for k in self.stitcher:
+            yield k
+    def has_key(self, target_number):
+        """
+        :returns bool: is the ROI with the given target
+          number stitched?
+        """
+        return target_number in self.stitcher
+    @lru_cache(maxsize=2)
+    def __getitem__(self, target_number):
+        # get the raw stitch
+        raw_stitch = self.stitcher[target_number]
+        # compute the fill value (median of pixel values)
+        fill_value = np.ma.median(raw_stitch)
+        # construct an image containing the fill value
+        fill_image = np.full(raw_stitch.shape, dtype=np.uint8, fill_value=fill_value)
+        # now return the masked version of that image
+        return np.ma.array(fill_image, mask=np.logical_not(raw_stitch.mask))
+
+class InfilledImages(BaseDictlike):
+    """
+    Wraps a bin's "images" property and provides access to infilled
+    images. Images that are not infilled are passed through.
+
+    Dict-like interface excludes from its keys target numbers that
+    refer to the second ROI in a stitched pair.
+    """
+    def __init__(self, the_bin):
+        self.bin = the_bin
+        self.stitcher = Stitcher(the_bin)
+        self.infiller = Infiller(the_bin)
+    def iterkeys(self):
+        """
+        Yield the target number of each ROI that is not the second
+        ROI in a stitched pair.
+        """
+        for k in self.stitcher:
+            if k not in self.stitcher.excluded_targets():
+                yield k
+    def has_key(self, target_number):
+        """
+        Exclude each target number from the bin's images that is
+        second ROI from a stitched pair.
+        """
+        in_bin = target_number in self.bin
+        excluded = target_number in self.stitcher.excluded_targets()
+        return in_bin and not excluded
+    @lru_cache(maxsize=2)
+    def __getitem__(self, target_number):
+        if target_number in self.stitcher:
+            # stitch the images
+            raw_stitch = self.stitcher[target_number]
+            # construct infill
+            infill = self.infiller[target_number]
+            # sum the stitched and infill images
+            return raw_stitch.filled(0) + infill.filled(0)
+        else:
+            # this is not a stitched image
+            return self.bin.images[target_number]
