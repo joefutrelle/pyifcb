@@ -56,6 +56,18 @@ SCHEMA = {
 IFCB schemas
 """
 
+def parse_adc_file(adc_file):
+    """
+    Parse an ADC file and return it as a Pandas
+    DataFrame, indexed by target number.
+
+    :param adc_file: the pathname or URL of the ADC file,
+      or a buffer containing the ADC data
+    """
+    df = pd.read_csv(adc_file, header=None, index_col=False)
+    df.index += 1 # index by 1-based ROI number
+    return df
+    
 class AdcFile(BaseDictlike):
     """
     Represents an IFCB ``.adc`` file.
@@ -101,9 +113,7 @@ class AdcFile(BaseDictlike):
         """
         The underlying CSV data as a ``pandas.DataFrame``
         """
-        df = pd.read_csv(self.path, header=None, index_col=False)
-        df.index += 1 # index by 1-based ROI number
-        return df
+        return parse_adc_file(self.path)
     def to_dataframe(self):
         """
         Return the ADC data as a ``pandas.DataFrame``. If the

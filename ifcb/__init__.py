@@ -6,6 +6,7 @@ __path__ = pkgutil.extend_path(__path__, __name__)
 
 # names we want to export from the data package
 
+from .data.adc import parse_adc_file, SCHEMA_VERSION_1, SCHEMA_VERSION_2
 from .data.files import DataDirectory, Fileset
 from .data.hdr import parse_hdr_file
 from .data.identifiers import Pid
