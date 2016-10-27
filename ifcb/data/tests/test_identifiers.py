@@ -40,6 +40,7 @@ class DestroyPid(object):
                 if c == pc: continue
                 yield self.pid[:i] + c + self.pid[i+1:]
                 
+# FIXME test cmp
 class TestIdentifiers(unittest.TestCase):
     def test_schema_version(self):
         assert Pid(GOOD_V1).schema_version == 1, 'expected schema version 1'
@@ -120,6 +121,15 @@ class TestIdentifiers(unittest.TestCase):
             pid.extension = e
             expected = '%s_%05d_%s.%s' % (spid, t, p, e)
             assert pid.pid == expected
+    def test_eq(self):
+        for spid in GOOD:
+            assert Pid(spid) == Pid(spid)
+            assert Pid(spid) == spid
+    def test_ne(self):
+        for spid in GOOD:
+            diff = spid + '.foo'
+            assert Pid(spid) != Pid(diff)
+            assert Pid(spid) != diff
 
 class TestV1Identifiers(unittest.TestCase):
     def test_timestamp_validation(self):

@@ -275,7 +275,7 @@ def unparse(parsed):
 class Pid(object):
     """
     Represents the permanent identifier of an IFCB bin.
-    Provides a dict-like interface for access to the parsed
+    Provides attribute-based access to the relevant parsed
     fields of a PID. ``Pid``s sort by alpha.
     """
     def __init__(self, pid, parse=True):
@@ -302,12 +302,23 @@ class Pid(object):
             pass
         return False
     def __cmp__(self, other):
-        if self.pid < other.pid:
-            return -1
-        elif self.pid > other.pid:
-            return 1
+        try:
+            if self.pid < other.pid:
+                return -1
+            elif self.pid > other.pid:
+                return 1
+        except AttributeError:
+            if self.pid < other:
+                return -1
+            elif self.pid > other:
+                return 1
         else:
             return 0
+    def __eq__(self, other):
+        try:
+            return self.pid == other.pid
+        except AttributeError:
+            return self.pid == other
     @property
     def parsed(self):
         """
