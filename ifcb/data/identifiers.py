@@ -338,6 +338,30 @@ class Pid(object):
                     super(Pid, self).__setattr__(ip, int(p[ip]))
             self._parsed = p
         return self._parsed
+    def with_target(self, target_number, namespace=True):
+        """
+        Add a target number to the pid's bin_lid. Does not
+        include product or extension. Optionally includes
+        namespace prefix. This is more efficient than the
+        following approach, which will preserve product
+        and extension:
+
+        >>> my_pid = Pid('IFCB1_2000_001_123456_blob')
+        >>> new_pid = my_pid.copy()
+        >>> new_pid.target = 927
+        >>> new_pid
+        <pid IFCB1_2000_001_123456_00927_blob>
+
+        :param target_number: the target number
+        :type target_number: int
+        :param namespace: whether to include the namespace prefix
+        :type namespace: bool
+        :returns: the target ID (as a string)
+        """
+        ns = ''
+        if namespace and self.namespace is not None:
+            ns = self.namespace
+        return ns + self.bin_lid + '_%05d' % target_number
     @property
     def timestamp(self):
         """

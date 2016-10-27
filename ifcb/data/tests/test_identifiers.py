@@ -99,6 +99,12 @@ class TestIdentifiers(unittest.TestCase):
             target = 27
             pid = Pid('%s_%05d' % (spid, target))
             assert pid.target == target
+    def test_with_target(self):
+        for spid in GOOD:
+            pid = Pid(spid)
+            target = 27
+            expected = spid + '_%05d' % 27
+            assert pid.with_target(target) == expected
     def test_product(self):
         for spid in GOOD:
             product = 'foo'
