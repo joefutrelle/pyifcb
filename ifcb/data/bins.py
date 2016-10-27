@@ -53,12 +53,6 @@ class BaseBin(object):
     that must open files or other data streams.
     """
     @property
-    def pid(self):
-        """
-        :returns Pid: the bin's PID.
-        """
-        raise NotImplementedError
-    @property
     def lid(self):
         """
         :returns str: the bin's LID.
@@ -84,26 +78,8 @@ class BaseBin(object):
         234
 
         """
-        raise NotImplementedError
-    @property
-    def images(self):
-        """
-        A dict-like property providing access to ROI images
-        indexed by target number.
-        """
-        raise NotImplementedError
-    @property
-    def headers(self):
-        """
-        A dict providing access to header values by key.
-        """
-        raise NotImplementedError
-    @property
-    def adc(self):
-        """
-        :returns pandas.DataFrame: ADC data as ``pandas.DataFrame``
-        """
-        raise NotImplementedError
+        from .adc import SCHEMA
+        return SCHEMA[self.pid.schema_version]
     # context manager default implementation
     def __enter__(self):
         return self
