@@ -10,6 +10,7 @@ ways to mess up an identifier:
 * insert any character anywhere
 * delete any character anywhere
 * change any letter to a letter other than 'D', 'T', 'I', 'F', 'C', or 'B'
+* add two extensions, products, or targets
 
 """
 
@@ -75,6 +76,24 @@ class TestIdentifiers(unittest.TestCase):
             for p in d.mod_letter():
                 with self.assertRaises(ValueError):
                     Pid(p).parsed
+    @unittest.skip('failing')
+    def test_two_extensions(self):
+        for spid in GOOD:
+            with self.assertRaises(ValueError):
+                Pid(spid + '.foo.bar').parsed
+                print Pid(spid + '.foo.bar')._parsed
+    @unittest.skip('failing')
+    def test_two_products(self):
+        for spid in GOOD:
+            with self.assertRaises(ValueError):
+                Pid(spid + '_foo_bar').parsed
+                print Pid(spid + '_foo_bar')._parsed
+    @unittest.skip('failing')
+    def test_two_targets(self):
+        for spid in GOOD:
+            with self.assertRaises(ValueError):
+                Pid(spid + '_00001_00007').parsed
+                print Pid(spid + '_00001_00007')._parsed
     def test_target(self):
         for spid in GOOD:
             target = 27
