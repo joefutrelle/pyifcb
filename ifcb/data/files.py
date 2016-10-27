@@ -173,7 +173,6 @@ class FilesetBin(BaseDictlike, BaseBin):
     def adc(self):
         """
         The bin's ADC data as a ``pandas.DataFrame``
-        Note that 0x0 ROIs are removed
         """
         return self.adc_file.csv
     # dict implementation
