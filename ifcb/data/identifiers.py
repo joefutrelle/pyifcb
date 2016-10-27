@@ -296,7 +296,7 @@ class Pid(object):
         Check this PID for validity.
         """
         try:
-            self.parsed
+            self.parsed # parse if not already
             return True
         except ValueError:
             pass
@@ -304,6 +304,7 @@ class Pid(object):
     def copy(self):
         new_pid = Pid(self.pid, parse=False)
         if self._parsed is not None:
+            # avoid re-parsing
             new_pid._parsed = self._parsed.copy()
         return new_pid
     def __cmp__(self, other):
