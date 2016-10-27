@@ -288,6 +288,7 @@ class Pid(object):
         :param parse: whether to parse
         """
         self.pid = pid
+        self._parsed = None
         if parse:
             self.parsed
     def isvalid(self):
@@ -308,17 +309,18 @@ class Pid(object):
         else:
             return 0
     @property
-    @lru_cache()
     def parsed(self):
         """
         The parsed PID
         """
-        # convert some properties to int
-        p = parse(self.pid)
-        for ip in ['target', 'instrument', 'schema_version']:
-            if p[ip] is not None:
-                setattr(self, ip, int(p[ip]))
-        return p
+        if self._parsed is None:
+            # convert some properties to int
+            p = parse(self.pid)
+            for ip in ['target', 'instrument', 'schema_version']:
+                if p[ip] is not None:
+                    super(Pid, self).__setattr__(ip, int(p[ip]))
+            self._parsed = p
+        return self._parsed
     @property
     def timestamp(self):
         """
@@ -326,10 +328,21 @@ class Pid(object):
         """
         return pd.to_datetime(self.parsed['timestamp'], format=self.parsed['timestamp_format'], utc=True)
     def __getattr__(self, name):
-        if name in ['bin_lid', 'lid', 'namespace', 'product', 'ts_label']:
+        if name in ['bin_lid', 'lid', 'namespace', 'product', 'extension', 'ts_label']:
             return self.parsed[name]
         else:
-            return self.__getattribute__(name)
+            return super(Pid, self).__getattribute__(name)
+    def __setattr__(self, name, value):
+        if name == 'target':
+            self.parsed # ensure parsing is complete
+            self._parsed.update({ name: int(value) })
+            self.pid = unparse(self._parsed)
+        elif name in ['product', 'extension']:
+            self.parsed # ensure parsing is complete
+            self._parsed.update({ name: value })
+            self.pid = unparse(self._parsed)
+        else:
+            super(Pid, self).__setattr__(name, value)
     def __repr__(self):
         return '<pid %s>' % self.pid
     def __str__(self):

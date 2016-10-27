@@ -74,6 +74,52 @@ class TestIdentifiers(unittest.TestCase):
             for p in d.mod_letter():
                 with self.assertRaises(ValueError):
                     Pid(p).parsed
+    def test_target(self):
+        for spid in GOOD:
+            target = 27
+            pid = Pid('%s_%05d' % (spid, target))
+            assert pid.target == target
+    def test_product(self):
+        for spid in GOOD:
+            product = 'foo'
+            pid = Pid('%s_%s' % (spid, product))
+            assert pid.product == product
+    def test_extension(self):
+        for spid in GOOD:
+            extension = 'bar'
+            pid = Pid('%s.%s' % (spid, extension))
+            assert pid.extension == extension
+    def test_tpe(self):
+        for spid in GOOD:
+            t, p, e = 927, 'baz', 'quux'
+            pid = Pid('%s_%05d_%s.%s' % (spid, t, p, e))
+            assert pid.target == t, 'target wrong'
+            assert pid.product == p, 'product wrong'
+            assert pid.extension == e, 'extension wrong'
+    def test_set_target(self):
+        for spid in GOOD:
+            pid, target = Pid(spid), 7
+            pid.target = target
+            assert pid.pid == '%s_%05d' % (spid, target)
+    def test_set_product(self):
+        for spid in GOOD:
+            pid, product = Pid(spid), 'foo'
+            pid.product = product
+            assert pid.pid == '%s_%s' % (spid, product)
+    def test_set_extension(self):
+        for spid in GOOD:
+            pid, extension = Pid(spid), 'foo'
+            pid.extension = extension
+            assert pid.pid == '%s.%s' % (spid, extension)
+    def test_set_spe(self):
+        for spid in GOOD:
+            pid = Pid(spid)
+            t, p, e = 1, 'foo', 'bar'
+            pid.target = t
+            pid.product = p
+            pid.extension = e
+            expected = '%s_%05d_%s.%s' % (spid, t, p, e)
+            assert pid.pid == expected
 
 class TestV1Identifiers(unittest.TestCase):
     def test_timestamp_validation(self):
