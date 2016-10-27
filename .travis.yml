@@ -7,7 +7,7 @@ before_install:
   - sudo apt-get -qq update
   - sudo apt-get install python-dev libhdf5-serial-dev
 install:
-  - pip install functools32 'pandas<=0.14.1' 'h5py<=2.2.1' 'requests<=2.4.3'
+  - pip install functools32 'pandas<=0.14.1' 'h5py<=2.2.1' 'requests<=2.4.3' 'Pillow<=2.6.1'
 script:
   - python -m unittest discover
 branches:
