@@ -149,6 +149,20 @@ class TestIdentifiers(unittest.TestCase):
             diff = spid + '.foo'
             assert Pid(spid) != Pid(diff)
             assert Pid(spid) != diff
+    def test_copy_unparsed(self):
+        for spid in GOOD:
+            # create invalid, unparsed pid
+            pid = Pid('_' + spid, parse=False)
+            # copy it
+            copy = pid.copy()
+            # now parse it, expecting ValueError
+            with self.assertRaises(ValueError):
+                copy.parsed
+    def test_copy(self):
+        for spid in GOOD:
+            pid = Pid(spid)
+            copy = pid.copy()
+            assert pid == copy
 
 class TestV1Identifiers(unittest.TestCase):
     def test_timestamp_validation(self):

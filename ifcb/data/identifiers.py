@@ -301,6 +301,11 @@ class Pid(object):
         except ValueError:
             pass
         return False
+    def copy(self):
+        new_pid = Pid(self.pid, parse=False)
+        if self._parsed is not None:
+            new_pid._parsed = self._parsed.copy()
+        return new_pid
     def __cmp__(self, other):
         try:
             if self.pid < other.pid:
