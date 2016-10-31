@@ -12,9 +12,11 @@ WHITELIST = ['data','white']
 TEST_FILES = {
     'D20130526T095207_IFCB013': {
         'n_rois': 19,
+        'n_targets': 118,
         'roi_numbers': [7, 11, 13, 21, 32, 33, 47, 49, 54, 61, 66, 68, 73, 78, 80, 92, 99, 102, 114],
         'roi_number': 99,
         'roi_shape': (34, 64),
+        'roi_slice_coords': [slice(0,5), slice(0,5)],
         'roi_slice': np.array([[172, 168, 172, 166, 171],
                                [168, 170, 172, 171, 170],
                                [167, 174, 171, 175, 168],
@@ -28,9 +30,11 @@ TEST_FILES = {
     },
     'IFCB5_2012_028_081515': {
         'n_rois': 6,
+        'n_targets': 7,
         'roi_numbers': [1, 2, 3, 4, 5, 6],
         'roi_number': 1,
         'roi_shape': (45, 96),
+        'roi_slice_coords': [slice(0,5), slice(0,5)],
         'roi_slice': np.array([[208, 207, 206, 206, 207],
                                [206, 206, 206, 207, 206],
                                [206, 207, 205, 206, 208],
@@ -58,8 +62,14 @@ def data_dir():
             return fp
     raise KeyError('cannot find %s on sys.path' % TEST_DATA_DIR)
 
+def _dd():
+    return files.DataDirectory(data_dir(), whitelist=WHITELIST)
+
+def get_fileset_bin(lid):
+    return _dd()[lid]
+
 def list_test_bins():
-    return list(files.DataDirectory(data_dir(), whitelist=WHITELIST))
+    return list(_dd())
     
 def list_test_filesets():
     return [b.fileset for b in list_test_bins()]
