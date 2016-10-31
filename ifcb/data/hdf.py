@@ -264,23 +264,6 @@ class HdfBin(BaseBin, BaseDictlike):
         The bin's schema
         """
         return SCHEMA[self._group['adc'].attrs['schema']]
-    def get_target(self, target_number):
-        """
-        Retrieve a target record by target number
-
-        :param target_number: the target number
-        """
-        d = tuple(self.adc[c][target_number] for c in self.adc.columns)
-        return d
-    def __getitem__(self, target_number):
-        return self.get_target(target_number)
-    def has_key(self, k):
-        return k in self.adc.index
-    def iterkeys(self):
-        for k in self.adc.index:
-            yield k
-    def __len__(self):
-        return len(self.adc.index)
     @property
     @lru_cache()
     def headers(self):

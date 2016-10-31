@@ -115,12 +115,3 @@ class ZipBin(BaseBin, BaseDictlike):
         arcname = self.lid + HEADERS_ARCNAME_SUFFIX
         j = self._zip.read(arcname)
         return json.loads(j)
-    # dictlike interface
-    def iterkeys(self):
-        for k in self.adc.index:
-            yield k
-    def has_key(self, k):
-        return k in self.adc.index
-    def __getitem__(self, target_number):
-        d = tuple(self.adc[c][target_number] for c in self.adc.columns)
-        return d

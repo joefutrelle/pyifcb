@@ -49,6 +49,10 @@ class BaseBin(object):
     Bins are dict-like. Keys are target numbers, values are ADC records.
     ADC records are tuples.
 
+    Also supports an "adc" property that is a Pandas DataFrame containing
+    ADC data. Subclasses are required to provide this. The default dictlike
+    implementation uses that property.
+
     Context manager support is provided for implementations
     that must open files or other data streams.
     """
@@ -85,3 +89,25 @@ class BaseBin(object):
         return self
     def __exit__(self, *args):
         pass
+    # dictlike interface
+    def iterkeys(self):
+        for k in self.adc.index:
+            yield k
+    def has_key(self, k):
+        return k in self.adc.index
+    def keys(self):
+        return list(self.adc.index)
+    def __len__(self):
+        return len(self.adc.index)
+    def get_target(self, target_number):
+        """
+        Retrieve a target record by target number
+
+        :param target_number: the target number
+        """
+        d = tuple(self.adc[c][target_number] for c in self.adc.columns)
+        return d
+    def __getitem__(self, target_number):
+        d = tuple(self.adc[c][target_number] for c in self.adc.columns)
+        return d
+    
