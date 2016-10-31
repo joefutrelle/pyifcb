@@ -45,7 +45,7 @@ def roi2hdf(roifile, hdf_file, group=None, replace=True):
     * ``{root}/images`` (dataset): references to images keyed by target number
     * ``{root}/{n}`` (dataset): 2d uint8 image (n = ``str(target_number)``)
 
-    :param roifile: the ``RoiFile`` to store
+    :param roifile: the ``RoiFile`` to store (or similar dictlike)
     :type roifile: RoiFile
     :param hdf_file: the root HDF
       object (h5py.File or h5py.Group) in which to write
@@ -56,7 +56,7 @@ def roi2hdf(roifile, hdf_file, group=None, replace=True):
       at that location in the HDF file
     """
     with hdfopen(hdf_file, group, replace=replace) as root:
-        root.attrs['index'] = roifile.index
+        root.attrs['index'] = roifile.keys()
         # create image datasets and map them to roi numbers
         d = { n: root.create_dataset(str(n), data=im) for n, im in roifile.iteritems() }
         # now create sparse array of references keyed by roi number
@@ -110,11 +110,11 @@ def hdf2file(hdf_dataset, path):
     with open(path,'wb') as outfile:
         outfile.write(file_data)
 
-def filesetbin2hdf(fs_bin, hdf_file, group=None, replace=True, archive=False):
+def bin2hdf(b, hdf_file, group=None, replace=True):
     """
-    Write a ``FilesetBin`` to an HDF file.
+    Write a ``Bin`` to an HDF file.
 
-    A ``FilesetBin`` is represented in HDF relative to some root path as:
+    A ``Bin`` is represented in HDF relative to some root HDF path as:
 
     * ``{root}.pid`` (attribute) - full base pathname
     * ``{root}.lid`` (attribute) - bin LID
@@ -122,6 +122,34 @@ def filesetbin2hdf(fs_bin, hdf_file, group=None, replace=True, archive=False):
     * ``{root}/hdr`` (group) - see hdr2hdf
     * ``{root}/adc`` (group) - see adc2hdf
     * ``{root}/roi`` (group) - see roi2hdf
+
+    :param fs_bin: the ``FilesetBin`` to write
+    :type fs_bin: FilesetBin
+    :param hdf_file: the root HDF file pathname or
+      object (h5py.File or h5py.Group) on which to write
+      the IFCB data
+    :param group: a path below the sub-group
+      to use
+    :param replace: whether to replace any existing data
+      at that location in the HDF file
+    """
+    with hdfopen(hdf_file, group, replace=replace) as root:
+        root.attrs['pid'] = str(b.pid)
+        root.attrs['lid'] = b.lid
+        root.attrs['timestamp'] = b.timestamp.isoformat()
+        hdr2hdf(b.headers, root, 'hdr', replace=replace)
+        with hdfopen(root, 'adc') as adc:
+            pd2hdf(adc, b.adc, compression='gzip')
+            adc.attrs['schema'] = b.schema.name
+        roi2hdf(b.images, root, 'roi', replace=replace)
+
+def filesetbin2hdf(fs_bin, hdf_file, group=None, replace=True, archive=False):
+    """
+    Write a ``FilesetBin`` to an HDF file.
+
+    A ``FilesetBin`` is represented in HDF as in ``bin2hdf``, with
+    the following additional HDF objects:
+
     * ``{root}/archive`` (group) - optional: archived files
     * ``{root}/archive/adc`` (dataset) - archived ``.adc`` file
     * ``{root}/archive/hdr`` (dataset) - archived ``.hdr`` file
@@ -139,12 +167,7 @@ def filesetbin2hdf(fs_bin, hdf_file, group=None, replace=True, archive=False):
       files in the HDF file
     """
     with hdfopen(hdf_file, group, replace=replace) as root:
-        root.attrs['pid'] = str(fs_bin.pid)
-        root.attrs['lid'] = fs_bin.lid
-        root.attrs['timestamp'] = fs_bin.timestamp.isoformat()
-        hdr2hdf(fs_bin.headers, root, 'hdr', replace=replace)
-        adc2hdf(fs_bin.adc_file, root, 'adc', replace=replace)
-        roi2hdf(fs_bin.roi_file, root, 'roi', replace=replace)
+        bin2hdf(fs_bin, root)
         if archive:
             file2hdf(root, 'archive/adc', fs_bin.fileset.adc_path, compression='gzip')
             file2hdf(root, 'archive/hdr', fs_bin.fileset.hdr_path)

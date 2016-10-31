@@ -11,7 +11,7 @@ from ..h5utils import hdf2pd, hdfopen
 from ..adc import AdcFile
 from ..roi import RoiFile
 from ..hdr import parse_hdr_file
-from ..hdf import roi2hdf, hdr2hdf, adc2hdf, fileset2hdf, hdf2fileset, HdfBin, filesetbin2hdf
+from ..hdf import roi2hdf, hdr2hdf, adc2hdf, fileset2hdf, hdf2fileset, HdfBin, filesetbin2hdf, bin2hdf
 from ..files import FilesetBin
 
 from .fileset_info import list_test_filesets, list_test_bins
@@ -110,7 +110,7 @@ class TestHdfBin(unittest.TestCase):
     def test_roundtrip(self, path):
         for fs in list_test_filesets():
             with FilesetBin(fs) as out_bin:
-                out_bin.to_hdf(path)
+                bin2hdf(out_bin, path)
                 with HdfBin(path) as in_bin:
                     assert_bin_equals(in_bin, out_bin)
     @withfile
