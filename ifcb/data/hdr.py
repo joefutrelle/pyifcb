@@ -57,7 +57,7 @@ def parse_hdr(lines):
                 pass
     else:
         # "context" is what the text on lines 2-4 is called in the header file
-        props = { CONTEXT: [line.strip('"') for line in lines[:-2]] }
+        props = { CONTEXT: '\n'.join([line.strip('"') for line in lines[:-2]]) }
         # now handle format variants
         if len(lines) >= 6: # don't fail on original header format
             columns = re.split(' +',re.sub('"','',lines[-2])) # columns of metadata in CSV format
