@@ -58,6 +58,8 @@ def data_dir():
             return fp
     raise KeyError('cannot find %s on sys.path' % TEST_DATA_DIR)
 
+def list_test_bins():
+    return list(files.DataDirectory(data_dir(), whitelist=WHITELIST))
+    
 def list_test_filesets():
-    for b in files.DataDirectory(data_dir(), whitelist=WHITELIST):
-        yield b.fileset
+    return [b.fileset for b in list_test_bins()]
