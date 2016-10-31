@@ -46,6 +46,9 @@ class BaseBin(object):
     """
     Abstract base class for Bin implementations.
 
+    The bin PID is available as a Pid object via the "pid" property.
+    Subclasses must implement this.
+
     Bins are dict-like. Keys are target numbers, values are ADC records.
     ADC records are tuples.
 
