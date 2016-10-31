@@ -48,13 +48,16 @@ class RoiFile(BaseDictlike):
             self.adc = adc
         except AttributeError:
             self.adc = AdcFile(adc)
-        # now remove 0x0 rois from adc data
-        csv = self.adc.csv
-        s = self.adc.schema
-        csv = csv[csv[s.ROI_WIDTH] != 0]
-        self.csv = csv
         self.path = roi_path
         self._inroi = None # start with the file closed
+    @property
+    @lru_cache()
+    def csv(self):
+        """adc data with non-ROI targets removed"""
+        # remove 0x0 rois from adc data
+        csv = self.adc.csv
+        s = self.adc.schema
+        return csv[csv[s.ROI_WIDTH] != 0]
     @property
     def lid(self):
         """
@@ -126,6 +129,8 @@ class RoiFile(BaseDictlike):
           of each ROI in the file, in order
         """
         return self.csv.index
+    def keys(self):
+        return self.index
     def iterkeys(self):
         for k in self.index:
             yield k
