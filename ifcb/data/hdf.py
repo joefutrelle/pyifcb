@@ -230,7 +230,8 @@ class HdfBin(BaseBin, BaseDictlike):
         """
         return self._hdf is not None
     def _open(self):
-        assert not self.isopen(), 'HdfBin already open'
+        if self.isopen():
+            raise ValueError('HdfBin already open')
         self._hdf = hdfopen(*self._open_params)
         self._group = self._hdf.group
     def close(self):
@@ -238,7 +239,8 @@ class HdfBin(BaseBin, BaseDictlike):
         Close the HDF file. Will fail if HDF file is already
         closed.
         """
-        assert self.isopen(), 'HdfBin is already closed'
+        if not self.isopen():
+            raise ValueError('HdfBin is already closed')
         self._hdf.close()
         self._hdf = None
     def __enter__(self):

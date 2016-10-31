@@ -81,10 +81,12 @@ class ZipBin(BaseBin, BaseDictlike):
     def isopen(self):
         return self._zip is not None
     def _open(self):
-        assert not self.isopen(), 'zip file already open'
+        if self.isopen():
+            raise ValueError('zip file already open')
         self._zip = ZipFile(self.zip_path, 'r')
     def close(self):
-        assert self.isopen(), 'zip file not open'
+        if not self.isopen():
+            raise ValueError('zip file not open')
         self._zip.close()
         self._zip = None
     def __enter__(self):

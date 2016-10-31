@@ -75,7 +75,8 @@ class RoiFile(BaseDictlike):
         """
         return self._inroi is not None
     def _open(self):
-        assert not self.isopen(), 'RoiFile already open'
+        if self.isopen():
+            raise ValueError('RoiFile already open')
         self._inroi = open(self.path, 'rb')
     def close(self):
         """
