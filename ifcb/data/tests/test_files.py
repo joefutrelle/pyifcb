@@ -5,7 +5,7 @@ import sys
 import numpy as np
 
 from .. import files
-from .fileset_info import TEST_FILES, data_dir, WHITELIST, list_test_filesets
+from .fileset_info import TEST_FILES, data_dir, WHITELIST, list_test_filesets, list_test_bins
 
 class TestListUtils(unittest.TestCase):
     def setUp(self):
@@ -63,4 +63,52 @@ class TestDataDirectory(unittest.TestCase):
         assert len(list(self.blacklist.list_descendants())) == 2
 
 class TestFilesetBin(unittest.TestCase):
-    pass
+    def _bins(self):
+        for b in list_test_bins():
+            yield b, TEST_FILES[b.lid]
+    def test_len(self):
+        for b, d in self._bins():
+            assert len(b) == d['n_targets'], 'wrong number of targets'
+    def test_image_index(self):
+        for b, d in self._bins():
+            assert len(b.images) == d['n_rois'], 'wrong number of ROIs'
+            assert set(b.images) == set(d['roi_numbers']), 'wrong ROI numbers'
+    def test_shape(self):
+        for b, d in self._bins():
+            roi_number = d['roi_number']
+            roi_shape = d['roi_shape']
+            with b:
+                assert b.images[roi_number].shape == roi_shape, 'wrong ROI shape'
+    def test_image(self):
+        for b, d in self._bins():
+            roi_number = d['roi_number']
+            roi_slice = d['roi_slice']
+            c = d['roi_slice_coords']
+            with b:
+                assert np.all(b.images[roi_number][c] == roi_slice), 'wrong image data'
+
+class TestFilesetFragmentBin(TestFilesetBin):
+    def _bins(self):
+        for b in list_test_bins():
+            d = TEST_FILES[b.lid]
+            yield b.as_single(d['roi_number']), d
+    def test_open_state(self):
+        for b in list_test_bins():
+            d = TEST_FILES[b.lid]
+            s = b.as_single(d['roi_number'])
+            assert not b.isopen(), 'bin should not be open'
+    def test_open_fail(self):
+        for b in list_test_bins():
+            d = TEST_FILES[b.lid]
+            with b.images as images: # this will close bin on exit
+                assert b.isopen(), 'bin is not open'
+                with self.assertRaises(ValueError):
+                    # this should fail because bin is open
+                    b.as_single(d['roi_number'])
+    def test_len(self):
+        for b, d in self._bins():
+            assert len(b) == 2, 'fragment too long'
+    def test_image_index(self):
+        # pass this test, which would fail because superclass
+        # test expects the image index to be complete
+        pass

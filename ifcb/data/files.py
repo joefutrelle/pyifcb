@@ -7,7 +7,7 @@ import os
 from functools32 import lru_cache
 
 from .identifiers import Pid
-from .adc import AdcFile
+from .adc import AdcFile, AdcFragment
 from .hdr import parse_hdr_file
 from .roi import RoiFile
 from .utils import BaseDictlike
@@ -199,10 +199,27 @@ class FilesetBin(BaseDictlike, BaseBin):
             self.roi_file.close()
     def __exit__(self, *args):
         self.close()
+    # support for single image reading
+    def as_single(self, target):
+        """Return a new FilesetBin that only provides access to
+        a single target. If called immediately upon construction
+        (before accessing any data) this will avoid parsing the
+        entire ADC file. Otherwise it will raise ValueError."""
+        if self.isopen():
+            raise ValueError('as_single must be called before opening FilesetBin')
+        return FilesetFragmentBin(self.fileset, target)
     def __repr__(self):
         return '<FilesetBin %s>' % self
     def __str__(self):
         return self.fileset.__str__()
+
+# special fileset bin subclass for reading one image fast
+
+class FilesetFragmentBin(FilesetBin):
+    def __init__(self, fileset, target):
+        self.fileset = fileset
+        self.adc_file = AdcFragment(fileset.adc_path, target, target+2)
+        self.roi_file = RoiFile(self.adc_file, fileset.roi_path)
 
 # listing and finding raw filesets and associated bin objects
 
