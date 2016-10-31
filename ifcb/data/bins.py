@@ -2,45 +2,6 @@
 Bin API. Provides consistent access to IFCB raw data stored
 in various formats.
 """
-
-class Bin(object):
-    """
-    An abstract factory for ``Bin`` objects.
-    """
-    @staticmethod
-    def from_fileset(fileset):
-        """
-        Create a ``Bin`` based on a ``Fileset``.
-
-        :param fileset: the ``Fileset``
-        :type fileset: Fileset
-        :returns FilesetBin: the ``FilesetBin``
-        """
-        from .files import FilesetBin
-        return FilesetBin(fileset)
-    @staticmethod
-    def from_files(*files):
-        """
-        Create a ``Bin`` from a list of three raw data files:
-        the ``.adc``, ``.roi``, and ``.hdr`` files.
-
-        :param files: the paths of the three files (in any order)
-        :returns FilesetBin: the FilesetBin
-        """
-        from .files import Fileset
-        fs = Fileset(os.path.common_prefix(files))
-        return Bin.from_fileset(fs)
-    @staticmethod
-    def from_hdf(hdf_file, group=None):
-        """
-        Create a ``Bin`` from an HDF5 file.
-
-        :param hdf_file: a pathname to an HDF file, or an open ``h5py.File`` or ``h5py.Group``
-        :param group: an HDF path below the root containing the ``Bin``'s HDF data
-        :returns HdfBin: the ``HdfBin``
-        """
-        from .hdf import HdfBin
-        return HdfBin(hdf_file, group)
     
 class BaseBin(object):
     """
@@ -114,5 +75,13 @@ class BaseBin(object):
         return d
     def __getitem__(self, target_number):
         return self.get_target(target_number)
-
-    
+    # convenience APIs for writing in different formats
+    def to_hdf(self, hdf_file, group=None, replace=True):
+        from .hdf import bin2hdf
+        bin2hdf(self, hdf_file, group=group, replace=replace)
+    def to_zip(self, zip_path):
+        from .zip import bin2zip
+        bin2zip(self, zip_path)
+    def to_mat(self, mat_path):
+        from .matlab import bin2mat
+        bin2mat(self, mat_path)
