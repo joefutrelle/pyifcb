@@ -91,7 +91,7 @@ class AdcFile(BaseDictlike):
           (if not, parsing is deferred until data is accessed)
         """
         self.path = adc_path
-        self.pid = Pid(adc_path)
+        self.pid = Pid(adc_path, parse=parse)
         self.schema_version = self.pid.schema_version
         self.schema = SCHEMA[self.schema_version]
         if parse:

@@ -369,6 +369,8 @@ class Pid(object):
         """
         return pd.to_datetime(self.parsed['timestamp'], format=self.parsed['timestamp_format'], utc=True)
     def __getattr__(self, name):
+        if name != 'parsed':
+            self.parsed # force lazily-evaluated parsing to occur
         if name in ['bin_lid', 'lid', 'namespace', 'product', 'extension', 'ts_label']:
             return self.parsed[name]
         else:
