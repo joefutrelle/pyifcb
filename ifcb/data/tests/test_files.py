@@ -86,6 +86,15 @@ class TestFilesetBin(unittest.TestCase):
             c = d['roi_slice_coords']
             with b:
                 assert np.all(b.images[roi_number][c] == roi_slice), 'wrong image data'
+    def test_bin_open_state(self):
+        for b, d in self._bins():
+            with b:
+                assert not b.isopen(), 'entering with on FilesetBin should not open it'
+                b[d['roi_number']] # this will open and close the bin
+                assert not b.isopen(), 'after reading single image, FilesetBin should be closed'
+            with b.images:
+                assert b.isopen(), 'context mgr on images should leave it open'
+            assert not b.isopen(), 'context mgr should close bin on exit'
 
 class TestFilesetFragmentBin(TestFilesetBin):
     def _bins(self):
