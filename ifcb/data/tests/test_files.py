@@ -62,4 +62,5 @@ class TestDataDirectory(unittest.TestCase):
         assert len(list(self.default.list_descendants())) == 3
         assert len(list(self.blacklist.list_descendants())) == 2
 
-        
+class TestFilesetBin(unittest.TestCase):
+    pass

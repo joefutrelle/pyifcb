@@ -14,7 +14,7 @@ from ..hdr import parse_hdr_file
 from ..hdf import roi2hdf, hdr2hdf, adc2hdf, fileset2hdf, hdf2fileset, HdfBin, filesetbin2hdf
 from ..files import FilesetBin
 
-from .fileset_info import list_test_filesets
+from .fileset_info import list_test_filesets, list_test_bins
 from .bins import assert_bin_equals
 
 def test_adc_roundtrip(adc, path, group=None):
@@ -116,18 +116,15 @@ class TestHdfBin(unittest.TestCase):
     @withfile
     def test_multiple_open_group(self, path):
         with hdfopen(path, replace=True) as h:
-            for fs in list_test_filesets():
-                out_bin = FilesetBin(fs)
+            for out_bin in list_test_bins():
                 out_bin.to_hdf(h, group=out_bin.lid)
                 with HdfBin(h, out_bin.lid) as in_bin:
                     assert_bin_equals(in_bin, out_bin)
     @withfile
     def test_multiple_closed_group(self, path):
         with hdfopen(path, replace=True) as h:
-            for fs in list_test_filesets():
-                out_bin = FilesetBin(fs)
+            for out_bin in list_test_bins():
                 out_bin.to_hdf(h, group=out_bin.lid)
-        for fs in list_test_filesets():
-            out_bin = FilesetBin(fs)
+        for out_bin in list_test_bins():
             with HdfBin(path, out_bin.lid) as in_bin:
                 assert_bin_equals(in_bin, out_bin)
