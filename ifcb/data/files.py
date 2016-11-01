@@ -187,6 +187,10 @@ class FilesetBin(BaseBin):
         """
         if self.isopen():
             self.roi_file.close()
+    def __enter__(self):
+        if not self.isopen():
+            self.roi_file._open()
+        return self
     def __exit__(self, *args):
         self.close()
     # support for single image reading
