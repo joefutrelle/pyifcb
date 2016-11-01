@@ -101,7 +101,7 @@ class Fileset(object):
 
 # bin interface to Fileset
 
-class FilesetBin(BaseDictlike, BaseBin):
+class FilesetBin(BaseBin, BaseDictlike):
     """
     Bin interface to Fileset.
 
@@ -175,16 +175,6 @@ class FilesetBin(BaseDictlike, BaseBin):
         The bin's ADC data as a ``pandas.DataFrame``
         """
         return self.adc_file.csv
-    # dict implementation
-    def iterkeys(self):
-        for k in self.adc_file:
-            yield k
-    def __getitem__(self, ix):
-        return self.adc_file[ix]
-    def has_key(self, k):
-        return k in self.adc_file
-    def __len__(self):
-        return len(self.adc_file)
     # context manager implementation
     def isopen(self):
         """
