@@ -28,11 +28,20 @@ class SCHEMA_VERSION_1(object):
     """
     name = 'v1'
     TRIGGER = 0
+    PROCESSING_END_TIME = 1
+    FLUORESCENCE_LOW = 2
+    FLUORESCENCE_HIGH = 3
+    SCATTERING_LOW = 4
+    SCATTERING_HIGH = 5
+    COMPARATOR_PULSE = 6
+    TRIGGER_OPEN_TIME = 7
+    FRAME_GRAB_TIME = 8
     ROI_X = 9
     ROI_Y = 10
     ROI_WIDTH = 11
     ROI_HEIGHT = 12
     START_BYTE = 13
+    VALVE_STATUS = 14
 
 class SCHEMA_VERSION_2(object):
     """
@@ -40,11 +49,29 @@ class SCHEMA_VERSION_2(object):
     """
     name = 'v2'
     TRIGGER = 0
+    ADC_TIME = 1
+    PMT_A = 2
+    PMT_B = 3
+    PMT_C = 4
+    PMT_D = 5
+    PEAK_A = 6
+    PEAK_B = 7
+    PEAK_C = 8
+    PEAK_D = 9
+    TIME_OF_FLIGHT = 10
+    GRAB_TIME_START = 11
+    GRAB_TIME_END = 12
     ROI_X = 13
     ROI_Y = 14
     ROI_WIDTH = 15
     ROI_HEIGHT = 16
     START_BYTE = 17
+    COMPARATOR_OUT = 18
+    START_POINT = 19
+    SIGNAL_LENGTH = 20
+    STATUS = 21
+    RUN_TIME = 22
+    INHIBIT_TIME = 23
 
 SCHEMA = {
     1: SCHEMA_VERSION_1,
