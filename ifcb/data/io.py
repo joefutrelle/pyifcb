@@ -14,7 +14,9 @@ def load(*files):
     Typically, just pass the pathname of the ADC file.
     """
     from .files import Fileset, FilesetBin
-    fs = Fileset(os.path.common_prefix(files))
+    basepath = os.path.commonprefix(files)
+    basepath, _ = os.path.splitext(basepath)
+    fs = Fileset(basepath)
     return FilesetBin(fs)
 
 def load_hdf(hdf_path, group=None):
