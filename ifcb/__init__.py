@@ -20,7 +20,3 @@ from .data.remote import load_url
 from .data.adc import parse_adc_file
 from .data.hdr import parse_hdr_file
 from .data.roi import read_image
-
-# support for IFCB v1 files (stitching)
-
-from .data.stitching import InfilledImages

@@ -18,7 +18,6 @@ class TestToplevelAPI(unittest.TestCase):
         ifcb.parse_adc_file
         ifcb.parse_hdr_file
         ifcb.read_image
-        ifcb.InfilledImages
     def test_schemas(self):
         assert ifcb.SCHEMA_VERSION_1 is data.adc.SCHEMA_VERSION_1
         assert ifcb.SCHEMA_VERSION_2 is data.adc.SCHEMA_VERSION_2
