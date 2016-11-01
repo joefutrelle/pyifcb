@@ -13,10 +13,7 @@ def assert_bin_equals(in_bin, out_bin):
     # test ADC data
     for k in in_bin.keys():
         for a, b in zip(in_bin[k], out_bin[k]):
-            if np.isnan(a) and np.isnan(b):
-                pass
-            else: # assert almost equal numbers
-                assert np.abs(a - b) < 0.00000001
+            assert np.isclose(a, b, equal_nan=True)
     # pid
     assert in_bin.pid == out_bin.pid, 'pid mismatch'
     assert in_bin.lid == out_bin.lid, 'lid mismatch'
