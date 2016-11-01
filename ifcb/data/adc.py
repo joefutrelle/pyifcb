@@ -26,7 +26,7 @@ class SCHEMA_VERSION_1(object):
     """
     IFCB revision 1 schema.
     """
-    name = 'v1'
+    _name = 'v1'
     TRIGGER = 0
     PROCESSING_END_TIME = 1
     FLUORESCENCE_LOW = 2
@@ -47,7 +47,7 @@ class SCHEMA_VERSION_2(object):
     """
     IFCB revision 2 schema.
     """
-    name = 'v2'
+    _name = 'v2'
     TRIGGER = 0
     ADC_TIME = 1
     PMT_A = 2
@@ -76,8 +76,8 @@ class SCHEMA_VERSION_2(object):
 SCHEMA = {
     1: SCHEMA_VERSION_1,
     2: SCHEMA_VERSION_2,
-    SCHEMA_VERSION_1.name: SCHEMA_VERSION_1,
-    SCHEMA_VERSION_2.name: SCHEMA_VERSION_2
+    SCHEMA_VERSION_1._name: SCHEMA_VERSION_1,
+    SCHEMA_VERSION_2._name: SCHEMA_VERSION_2
 }
 """
 IFCB schemas

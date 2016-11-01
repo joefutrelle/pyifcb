@@ -101,7 +101,7 @@ class Fileset(object):
 
 # bin interface to Fileset
 
-class FilesetBin(BaseBin, BaseDictlike):
+class FilesetBin(BaseBin):
     """
     Bin interface to Fileset.
 

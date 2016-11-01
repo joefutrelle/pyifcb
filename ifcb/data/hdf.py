@@ -34,7 +34,7 @@ def adc2hdf(adcfile, hdf_file, group=None, replace=True):
     """
     with hdfopen(hdf_file, group, replace=replace) as root:
         pd2hdf(root, adcfile.to_dataframe(), compression='gzip')
-        root.attrs['schema'] = adcfile.schema.name
+        root.attrs['schema'] = adcfile.schema._name
 
 def roi2hdf(roifile, hdf_file, group=None, replace=True):
     """
@@ -140,7 +140,7 @@ def bin2hdf(b, hdf_file, group=None, replace=True):
         hdr2hdf(b.headers, root, 'hdr', replace=replace)
         with hdfopen(root, 'adc') as adc:
             pd2hdf(adc, b.adc, compression='gzip')
-            adc.attrs['schema'] = b.schema.name
+            adc.attrs['schema'] = b.schema._name
         roi2hdf(b.images, root, 'roi', replace=replace)
 
 def filesetbin2hdf(fs_bin, hdf_file, group=None, replace=True, archive=False):
@@ -199,7 +199,7 @@ def hdf2fileset(hdf_path, fileset_path, group=None):
         hdf2file(root['archive/adc'], fileset_path + '.adc')
         hdf2file(root['archive/hdr'], fileset_path + '.hdr')
         with open(fileset_path + '.roi', 'wb') as outroi:
-            schema1 = root['adc'].attrs['schema'] == SCHEMA[1].name
+            schema1 = root['adc'].attrs['schema'] == SCHEMA[1]._name
             if schema1:
                 outroi.write("\0")
             imref = root['roi/images']
@@ -228,7 +228,7 @@ class HdfRoi(BaseDictlike):
     def __getitem__(self, roi_number):
         return np.array(self._group[self._group['images'][roi_number]])
         
-class HdfBin(BaseBin, BaseDictlike):
+class HdfBin(BaseBin):
     """
     Bin interface to HDF file/group.
 

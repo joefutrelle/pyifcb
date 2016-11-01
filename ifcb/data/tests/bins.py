@@ -31,5 +31,4 @@ def assert_bin_equals(in_bin, out_bin):
     assert set(in_bin.images) == set(out_bin.images), 'image target numbers mismatch'
     for k in in_bin.images:
         assert np.all(in_bin.images[k] == out_bin.images[k]), 'image data mismatch'
-        
 

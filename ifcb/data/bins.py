@@ -2,8 +2,11 @@
 Bin API. Provides consistent access to IFCB raw data stored
 in various formats.
 """
-    
-class BaseBin(object):
+from .adc import SCHEMA
+
+from .utils import BaseDictlike
+
+class BaseBin(BaseDictlike):
     """
     Abstract base class for Bin implementations.
 
@@ -46,8 +49,16 @@ class BaseBin(object):
         234
 
         """
-        from .adc import SCHEMA
         return SCHEMA[self.pid.schema_version]
+    # schema keys as attributes
+    def __getattr__(self, attr_name):
+        if attr_name not in ['name']:
+            try:
+                return getattr(self.schema, attr_name)
+            except AttributeError:
+                # don't raise misleading AttributeError
+                pass
+        raise AttributeError
     # context manager default implementation
     def __enter__(self):
         return self

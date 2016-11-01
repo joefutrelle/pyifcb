@@ -20,7 +20,7 @@ from .bins import assert_bin_equals
 def test_adc_roundtrip(adc, path, group=None):
     with hdfopen(path, group) as h:
         csv = hdf2pd(h)
-        assert h.attrs['schema'] == adc.schema.name
+        assert h.attrs['schema'] == adc.schema._name
     assert_frame_equal(csv, adc.csv)
 
 def test_hdr_roundtrip(hdr, path, group=None):

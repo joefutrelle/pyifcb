@@ -71,7 +71,7 @@ class _ZipBinImages(BaseDictlike):
     def has_key(self, k):
         return k in self.index
     
-class ZipBin(BaseBin, BaseDictlike):    
+class ZipBin(BaseBin):
     def __init__(self, zip_path):
         self.zip_path = zip_path
         self._zip = None
