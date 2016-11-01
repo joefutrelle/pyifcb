@@ -76,24 +76,29 @@ class TestIdentifiers(unittest.TestCase):
             for p in d.mod_letter():
                 with self.assertRaises(ValueError):
                     Pid(p).parsed
+    def test_pathname(self):
+        path_prefixes = ['\\foo\\bar\\', 'C:\\foo\\bar\\', '/foo/bar/']
+        for pid in GOOD:
+            for pp in path_prefixes:
+                Pid(pp + pid).parsed
     @unittest.skip('failing')
     def test_two_extensions(self):
         for spid in GOOD:
             with self.assertRaises(ValueError):
+                # does not fail, returns extension 'foo'
                 Pid(spid + '.foo.bar').parsed
-                print Pid(spid + '.foo.bar')._parsed
     @unittest.skip('failing')
     def test_two_products(self):
         for spid in GOOD:
             with self.assertRaises(ValueError):
+                # does not fail, returns product 'foo_bar'
                 Pid(spid + '_foo_bar').parsed
-                print Pid(spid + '_foo_bar')._parsed
     @unittest.skip('failing')
     def test_two_targets(self):
         for spid in GOOD:
             with self.assertRaises(ValueError):
+                # does not fail, returns target '00001'
                 Pid(spid + '_00001_00007').parsed
-                print Pid(spid + '_00001_00007')._parsed
     def test_target(self):
         for spid in GOOD:
             target = 27
