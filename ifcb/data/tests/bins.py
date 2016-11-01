@@ -24,9 +24,8 @@ def assert_bin_equals(in_bin, out_bin):
     # headers
     assert set(in_bin.headers) == set(out_bin.headers), 'header keys mismatch'
     for k in in_bin.headers.keys():
-        # it's ok if lists come back as arrays, use np.all so
-        # that tests won't spuriously fail in that case
-        assert np.all(in_bin.headers[k] == out_bin.headers[k]), 'header values mismatch'
+        # headers should all have same names and values
+        assert in_bin.headers[k] == out_bin.headers[k], 'header values mismatch'
     # images
     assert set(in_bin.images) == set(out_bin.images), 'image target numbers mismatch'
     for k in in_bin.images:
