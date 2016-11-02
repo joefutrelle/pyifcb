@@ -75,7 +75,7 @@ class BaseBin(BaseDictlike):
     def __getitem__(self, target_number):
         return self.get_target(target_number)
     # convenience APIs for writing in different formats
-    def load_all(self):
+    def read(self):
         new_bin = BaseBin()
         new_bin.pid = self.pid.copy()
         new_bin.headers = self.headers.copy()

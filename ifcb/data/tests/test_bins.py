@@ -1,5 +1,10 @@
 import unittest
+import os
+import shutil
 
+from ...tests.utils import test_dir
+
+from .. import io as ifcbio
 from ..bins import BaseBin
 from ..identifiers import Pid
 from ..adc import SCHEMA
@@ -27,12 +32,22 @@ class TestBaseBin(unittest.TestCase):
         test_schema_attrs(b)
 
 class TestMemoryBin(unittest.TestCase):
-    def test_load_all_cmgr(self):
+    def test_read_cmgr(self):
         for a in list_test_bins():
             with a:
-                b = a.load_all()
+                b = a.read()
             assert_bin_equals(a, b)
-    def test_load_all(self):
+    def test_read(self):
         for a in list_test_bins():
-            b = a.load_all()
+            b = a.read()
             assert_bin_equals(a, b)
+    def test_read_del(self):
+        for a in list_test_bins():
+            with test_dir() as d:
+                shutil.copy(a.fileset.adc_path, d)
+                shutil.copy(a.fileset.roi_path, d)
+                shutil.copy(a.fileset.hdr_path, d)
+                p = os.path.join(d, os.path.basename(a.fileset.adc_path))
+                with ifcbio.load(p) as b:
+                    c = b.read()
+            assert_bin_equals(a, c)
