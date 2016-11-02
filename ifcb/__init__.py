@@ -12,8 +12,8 @@ from .data.identifiers import Pid
 
 # I/O helper functions
 
-from .data.io import load, load_hdf, load_zip, load_mat
-from .data.remote import load_url
+from .data.io import open_raw, open_hdf, open_zip, open_mat
+from .data.remote import open_url
 
 # low-level API
 

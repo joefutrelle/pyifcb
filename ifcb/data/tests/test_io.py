@@ -1,6 +1,6 @@
 import unittest
 
-from ..io import load, load_hdf, load_zip, load_mat
+from ..io import open_raw, open_hdf, open_zip, open_mat
 
 from ...tests.utils import withfile
 
@@ -13,31 +13,31 @@ class TestFormatConversionAPI(unittest.TestCase):
         for out_bin in list_test_bins():
             with out_bin:
                 out_bin.to_hdf(path)
-                with load_hdf(path) as in_bin:
+                with open_hdf(path) as in_bin:
                     assert_bin_equals(in_bin, out_bin)
     @withfile
     def test_zip_roundtrip(self, path):
         for out_bin in list_test_bins():
             with out_bin:
                 out_bin.to_zip(path)
-                with load_zip(path) as in_bin:
+                with open_zip(path) as in_bin:
                     assert_bin_equals(in_bin, out_bin)
     @withfile
     def test_mat_roundtrip(self, path):
         for out_bin in list_test_bins():
             with out_bin:
                 out_bin.to_mat(path)
-                with load_mat(path) as in_bin:
+                with open_mat(path) as in_bin:
                     assert_bin_equals(in_bin, out_bin)
 
-class TestLoadIdioms(unittest.TestCase):
-    def test_load(self):
+class TestOpenIdioms(unittest.TestCase):
+    def test_open_raw(self):
         for a in list_test_bins():
             adc_path = a.fileset.adc_path
-            b = load(adc_path)
+            b = open_raw(adc_path)
             assert_bin_equals(a, b)
-    def test_load_cmgr(self):
+    def test_open_cmgr(self):
         for a in list_test_bins():
             adc_path = a.fileset.adc_path
-            with load(adc_path) as b:
+            with open_raw(adc_path) as b:
                 assert_bin_equals(a, b)

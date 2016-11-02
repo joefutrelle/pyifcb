@@ -10,11 +10,11 @@ class TestToplevelAPI(unittest.TestCase):
         ifcb.SCHEMA_VERSION_2
         ifcb.DataDirectory
         ifcb.Pid
-        ifcb.load
-        ifcb.load_hdf
-        ifcb.load_zip
-        ifcb.load_mat
-        ifcb.load_url
+        ifcb.open_raw
+        ifcb.open_hdf
+        ifcb.open_zip
+        ifcb.open_mat
+        ifcb.open_url
         ifcb.parse_adc_file
         ifcb.parse_hdr_file
         ifcb.read_image

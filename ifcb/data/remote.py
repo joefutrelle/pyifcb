@@ -9,7 +9,7 @@ from .identifiers import Pid
 from .files import Fileset, FilesetBin
 
 @contextmanager
-def load_url(base_url, images=True):
+def open_url(base_url, images=True):
     """
     Context manager for remote access to a bin. Stages
     files to a temporary directory and creates a ``FilesetBin``

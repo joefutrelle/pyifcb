@@ -4,7 +4,7 @@ import shutil
 
 from ...tests.utils import test_dir
 
-from .. import io as ifcbio
+from ..io import open_raw
 from ..bins import BaseBin
 from ..identifiers import Pid
 from ..adc import SCHEMA
@@ -48,6 +48,6 @@ class TestMemoryBin(unittest.TestCase):
                 shutil.copy(a.fileset.roi_path, d)
                 shutil.copy(a.fileset.hdr_path, d)
                 p = os.path.join(d, os.path.basename(a.fileset.adc_path))
-                with ifcbio.load(p) as b:
+                with open_raw(p) as b:
                     c = b.read()
             assert_bin_equals(a, c)

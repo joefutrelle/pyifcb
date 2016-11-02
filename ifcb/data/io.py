@@ -1,11 +1,11 @@
 """
-Utilities for loading and saving IFCB data.
+Utilities for opening and saving IFCB data.
 """
 import os
 
-def load(*files):
+def open_raw(*files):
     """
-    Load raw IFCB data.
+    Open raw IFCB data.
 
     Takes one or more raw data filenames (only one is required)
     which should all be in the same directory and differ
@@ -19,17 +19,17 @@ def load(*files):
     fs = Fileset(basepath)
     return FilesetBin(fs)
 
-def load_hdf(hdf_path, group=None):
+def open_hdf(hdf_path, group=None):
     """
-    Load IFCB data from an HDF file.
+    Open IFCB data from an HDF file.
     """
     from .hdf import HdfBin
     return HdfBin(hdf_path, group=group)
 
-def load_zip(zip_path):
+def open_zip(zip_path):
     from .zip import ZipBin
     return ZipBin(zip_path)
 
-def load_mat(mat_path):
+def open_mat(mat_path):
     from .matlab import MatBin
     return MatBin(mat_path)
