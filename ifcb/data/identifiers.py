@@ -335,9 +335,14 @@ class Pid(object):
             p = parse(self.pid)
             for ip in ['target', 'instrument', 'schema_version']:
                 if p[ip] is not None:
-                    super(Pid, self).__setattr__(ip, int(p[ip]))
+                    p[ip] = int(p[ip])
             self._parsed = p
         return self._parsed
+    def __getattr__(self, name):
+        try:
+            return self.parsed[name]
+        except KeyError:
+            raise AttributeError
     def with_target(self, target_number, namespace=True):
         """
         Add a target number to the pid's bin_lid. Does not
@@ -368,13 +373,6 @@ class Pid(object):
         The timestamp of the bin as a ``datetime``
         """
         return pd.to_datetime(self.parsed['timestamp'], format=self.parsed['timestamp_format'], utc=True)
-    def __getattr__(self, name):
-        if name != 'parsed':
-            self.parsed # force lazily-evaluated parsing to occur
-        if name in ['bin_lid', 'lid', 'namespace', 'product', 'extension', 'ts_label']:
-            return self.parsed[name]
-        else:
-            return super(Pid, self).__getattribute__(name)
     def __setattr__(self, name, value):
         if name == 'target':
             self.parsed # ensure parsing is complete

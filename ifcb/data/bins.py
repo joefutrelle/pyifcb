@@ -35,29 +35,17 @@ class BaseBin(BaseDictlike):
         :returns datetime: the bin's timestamp.
         """
         return self.pid.timestamp
-    @property
-    def schema(self):
-        """
-        The IFCB schema in use. Schemas provide indices into
-        ADC records. For example, given a bin ``B`` with a
-        target number 5, the following code retrieves the x
-        position of the target ROI:
-
-        :Example:
-
-        >>> B[5][B.schema.ROI_X]
-        234
-
-        """
-        return SCHEMA[self.pid.schema_version]
     # schema keys as attributes
     def __getattr__(self, attr_name):
-        if attr_name not in ['name']:
+        if attr_name not in ['schema']:
             try:
                 return getattr(self.schema, attr_name)
             except AttributeError:
                 # don't raise misleading AttributeError
                 pass
+        elif attr_name == 'schema':
+            self.schema = SCHEMA[self.pid.schema_version]
+            return self.schema
         raise AttributeError
     # context manager default implementation
     def __enter__(self):
@@ -87,6 +75,13 @@ class BaseBin(BaseDictlike):
     def __getitem__(self, target_number):
         return self.get_target(target_number)
     # convenience APIs for writing in different formats
+    def load_all(self):
+        new_bin = BaseBin()
+        new_bin.pid = self.pid.copy()
+        new_bin.headers = self.headers.copy()
+        new_bin.adc = self.adc
+        new_bin.images = { k:v for k,v in self.images.iteritems() }
+        return new_bin
     def to_hdf(self, hdf_file, group=None, replace=True):
         from .hdf import bin2hdf
         bin2hdf(self, hdf_file, group=group, replace=replace)
