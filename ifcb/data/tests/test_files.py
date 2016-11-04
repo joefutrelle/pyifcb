@@ -95,6 +95,14 @@ class TestFilesetBin(unittest.TestCase):
                 assert b.isopen(), 'context mgr on should open bin on enter'
             assert not b.isopen(), 'context mgr should close bin on exit'
 
+class TestImagesAdc(unittest.TestCase):
+    def test_images_adc(self):
+        for b in list_test_bins():
+            d = TEST_FILES[b.lid]
+            ia = b.images_adc
+            roi_numbers = d['roi_numbers']
+            assert np.all(ia.index == roi_numbers)
+            
 class TestFilesetFragmentBin(TestFilesetBin):
     def _bins(self):
         for b in list_test_bins():

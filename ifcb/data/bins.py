@@ -30,6 +30,13 @@ class BaseBin(BaseDictlike):
         """
         return self.pid.bin_lid
     @property
+    def images_adc(self):
+        """
+        :returns pandas.DataFrame: the ADC data, minus targets that
+          are not associated with images
+        """
+        return self.adc[self.adc[self.ROI_WIDTH] > 0]
+    @property
     def timestamp(self):
         """
         :returns datetime: the bin's timestamp.
