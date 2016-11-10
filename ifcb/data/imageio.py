@@ -1,6 +1,6 @@
 from cStringIO import StringIO
-from PIL import Image
 
+from PIL import Image
 import numpy as np
 
 PIL_FORMATS_BY_MIME_TYPE = {
@@ -12,14 +12,6 @@ PIL_FORMATS_BY_MIME_TYPE = {
     'image/x-portable-pixmap': 'PPM',
     'image/x-xbitmap': 'XBM'
 }
-
-def array_as_pil(array):
-    if array.dtype == np.bool:
-        pil = Image.fromarray(array, mode='1')
-    else:
-        print array
-        pil = Image.fromarray(array)
-    return pil
 
 def format_image(array, mimetype='image/png'):
     """
@@ -34,8 +26,14 @@ def format_image(array, mimetype='image/png'):
     """
     fmt = PIL_FORMATS_BY_MIME_TYPE[mimetype]
     buf = StringIO()
-    pil = array_as_pil(array)
-    pil.save(buf, fmt)
+    if array.dtype == np.bool:
+        array = array.astype(np.uint8)
+        array *= 255
+        pil = Image.fromarray(array)
+        pil.save(buf, fmt)
+    else:
+        pil = Image.fromarray(array)
+        pil.save(buf, fmt)
     buf.seek(0)
     return buf
 
