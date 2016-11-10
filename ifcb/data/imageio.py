@@ -13,6 +13,14 @@ PIL_FORMATS_BY_MIME_TYPE = {
     'image/x-xbitmap': 'XBM'
 }
 
+def array_as_pil(array):
+    if array.dtype == np.bool:
+        pil = Image.fromarray(array, mode='1')
+    else:
+        print array
+        pil = Image.fromarray(array)
+    return pil
+
 def format_image(array, mimetype='image/png'):
     """
     Represent the image in the given format and
@@ -26,7 +34,7 @@ def format_image(array, mimetype='image/png'):
     """
     fmt = PIL_FORMATS_BY_MIME_TYPE[mimetype]
     buf = StringIO()
-    pil = Image.fromarray(array)
+    pil = array_as_pil(array)
     pil.save(buf, fmt)
     buf.seek(0)
     return buf
