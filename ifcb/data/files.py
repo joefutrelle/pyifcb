@@ -13,6 +13,9 @@ from .roi import RoiFile
 from .utils import BaseDictlike
 from .bins import BaseBin
 
+DEFAULT_BLACKLIST = ['skip','beads']
+DEFAULT_WHITELIST = ['data']
+
 class Fileset(object):
     """
     Represents a set of three raw data files
@@ -217,7 +220,7 @@ class FilesetFragmentBin(FilesetBin):
 
 # listing and finding raw filesets and associated bin objects
 
-def validate_path(filepath, blacklist=['skip'], whitelist=['data']):
+def validate_path(filepath, blacklist=DEFAULT_BLACKLIST, whitelist=DEFAULT_WHITELIST):
     """
     Validate an IFCB raw data file path.
 
@@ -245,7 +248,7 @@ def validate_path(filepath, blacklist=['skip'], whitelist=['data']):
             return False
     return True
 
-def list_filesets(dirpath, blacklist=['skip'], whitelist=['data'], sort=True, validate=True):
+def list_filesets(dirpath, blacklist=DEFAULT_BLACKLIST, whitelist=DEFAULT_WHITELIST, sort=True, validate=True):
     """
     Iterate over entire directory tree and yield a Fileset
     object for each .adc/.hdr/.roi fileset found. Warning: for
@@ -275,7 +278,7 @@ def list_filesets(dirpath, blacklist=['skip'], whitelist=['data'], sort=True, va
                         continue
                 yield dp, basename
 
-def list_data_dirs(dirpath, blacklist=['skip'], sort=True, prune=True):
+def list_data_dirs(dirpath, blacklist=DEFAULT_BLACKLIST, sort=True, prune=True):
     """
     Yield the paths of any descendant directories that contain at least
     one ``.adc`` file.
@@ -301,7 +304,7 @@ def list_data_dirs(dirpath, blacklist=['skip'], sort=True, prune=True):
                 for dp in list_data_dirs(child, sort=sort, prune=prune):
                     yield dp
 
-def find_fileset(dirpath, lid, whitelist=['data'], blacklist=['skip']):
+def find_fileset(dirpath, lid, whitelist=['data'], blacklist=['skip','beads']):
     """
     Find a fileset anywhere below the given directory path
     given the bin's lid. This assumes that the file's path
@@ -328,7 +331,7 @@ class DataDirectory(object):
 
     Provides a dict-like interface allowing access to FilesetBins by LID.
     """
-    def __init__(self, path='.', whitelist=['data'], blacklist=['skip']):
+    def __init__(self, path='.', whitelist=DEFAULT_WHITELIST, blacklist=DEFAULT_BLACKLIST):
         """
         :param path: the path of the data directory
         :param whitelist: a list of directory names to allow
