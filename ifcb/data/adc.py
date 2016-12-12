@@ -6,7 +6,6 @@ import os
 from cStringIO import StringIO
 
 import pandas as pd
-import h5py as h5
 from functools32 import lru_cache
 
 from .identifiers import Pid
