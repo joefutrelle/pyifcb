@@ -41,6 +41,7 @@ TEST_FILES = {
                                [208, 208, 208, 208, 209],
                                [206, 206, 205, 207, 207]], dtype=np.uint8),
         'stitched_roi_number': 3,
+        'roi_numbers_stitched': [1, 2, 3, 5, 6],
         'stitched_roi_shape': (86, 263),
         'stitched_roi_coords': [slice(23,27), slice(177,183)],
         'stitched_roi_slice': np.array([[205, 204, 205, 0, 0, 0],
