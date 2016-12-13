@@ -18,4 +18,6 @@ class TestStitcher(unittest.TestCase):
                 assert target in s, 'stitched target missing'
                 assert s[target].shape == tf['stitched_roi_shape'], 'stitched roi shape wrong'
                 assert np.all(s[target][coords] == tf['stitched_roi_slice']), 'stitched roi data wrong'
+    def test_infilled_keys(self):
+        # FIXME make sure list of stitched keys from InfilledImages is correct
             

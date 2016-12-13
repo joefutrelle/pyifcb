@@ -171,7 +171,7 @@ class InfilledImages(BaseDictlike):
         Yield the target number of each ROI that is not the second
         ROI in a stitched pair.
         """
-        for k in self.stitcher:
+        for k in self.bin.images:
             if k not in self.stitcher.excluded_targets():
                 yield k
     def has_key(self, target_number):
