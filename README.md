@@ -12,6 +12,6 @@ Joe Futrelle (jfutrelle@whoi.edu) - Woods Hole Oceanographic Institution
 
 ## Status
 
-As of 2016-09-05 this is an incomplete and experimental module and should not be considered ready to be used in production applications. The APIs are subject to change at any time and so are undocumented. There is currently no planned release date.
+As of 2017-01-04 this is mostly complete and the APIs are not likely to change much, but there is no stable release yet so APIs may still change. The Wiki and code-level documentation is up to date.
 
 [![Build Status](https://travis-ci.org/joefutrelle/pyifcb.svg?branch=master)](https://travis-ci.org/joefutrelle/pyifcb)
