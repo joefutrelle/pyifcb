@@ -35,25 +35,16 @@ class BaseBin(BaseDictlike):
         :returns pandas.DataFrame: the ADC data, minus targets that
           are not associated with images
         """
-        return self.adc[self.adc[self.ROI_WIDTH] > 0]
+        return self.adc[self.adc[self.schema.ROI_WIDTH] > 0]
     @property
     def timestamp(self):
         """
         :returns datetime: the bin's timestamp.
         """
         return self.pid.timestamp
-    # schema keys as attributes
-    def __getattr__(self, attr_name):
-        if attr_name not in ['schema']:
-            try:
-                return getattr(self.schema, attr_name)
-            except AttributeError:
-                # don't raise misleading AttributeError
-                pass
-        elif attr_name == 'schema':
-            self.schema = SCHEMA[self.pid.schema_version]
-            return self.schema
-        raise AttributeError
+    @property
+    def schema(self):
+        return SCHEMA[self.pid.schema_version]
     # context manager default implementation
     def __enter__(self):
         return self
