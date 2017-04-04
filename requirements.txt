@@ -1,0 +1,6 @@
+functools32
+scipy
+pandas
+h5py
+requests
+Pillow
