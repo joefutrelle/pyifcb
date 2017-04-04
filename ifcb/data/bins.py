@@ -51,11 +51,12 @@ class BaseBin(BaseDictlike):
     def __exit__(self, *args):
         pass
     # dictlike interface
-    def iterkeys(self):
+    def keys(self):
         for k in self.adc.index:
             yield k
     def __iter__(self):
-        return self.iterkeys()
+        for k in self.keys():
+            yield k
     def has_key(self, k):
         return k in self.adc.index
     def keys(self):
@@ -78,7 +79,7 @@ class BaseBin(BaseDictlike):
         new_bin.pid = self.pid.copy()
         new_bin.headers = self.headers.copy()
         new_bin.adc = self.adc
-        new_bin.images = { k:v for k,v in self.images.iteritems() }
+        new_bin.images = { k:v for k,v in self.images.items() }
         return new_bin
     def to_hdf(self, hdf_file, group=None, replace=True):
         from .hdf import bin2hdf

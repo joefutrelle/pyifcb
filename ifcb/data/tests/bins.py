@@ -1,4 +1,3 @@
-from itertools import izip
 
 import numpy as np
 

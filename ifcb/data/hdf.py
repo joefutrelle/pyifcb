@@ -5,7 +5,7 @@ Support for reading and writing IFCB data to HDF5.
 import datetime
 
 import numpy as np
-from functools32 import lru_cache
+from functools import lru_cache
 
 from .h5utils import pd2hdf, hdf2pd, hdfopen, H5_REF_TYPE
 
@@ -58,7 +58,7 @@ def roi2hdf(roifile, hdf_file, group=None, replace=True):
     with hdfopen(hdf_file, group, replace=replace) as root:
         root.attrs['index'] = roifile.keys()
         # create image datasets and map them to roi numbers
-        d = { n: root.create_dataset(str(n), data=im) for n, im in roifile.iteritems() }
+        d = { n: root.create_dataset(str(n), data=im) for n, im in roifile.items() }
         # now create sparse array of references keyed by roi number
         n = max(d.keys())+1
         r = [ d[i].ref if i in d else None for i in range(n) ]
@@ -220,7 +220,7 @@ class HdfRoi(BaseDictlike):
         :param group: the ``h5py.Group`` containing the image data
         """
         self._group = group
-    def iterkeys(self):
+    def keys(self):
         for k in self._group.attrs['index']:
             yield k
     def __len__(self):

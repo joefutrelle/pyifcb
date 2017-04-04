@@ -1,8 +1,8 @@
 from zipfile import ZipFile, ZIP_STORED
 import json
-from cStringIO import StringIO
+from io import StringIO, BytesIO
 
-from functools32 import lru_cache
+from functools import lru_cache
 import pandas as pd
 
 from .identifiers import Pid
@@ -45,11 +45,10 @@ class ZipImages(BaseDictlike):
         self._zip = open_zip_file
     def __getitem__(self, arcname):
         # must use temp buffer because PIL seeks to 0
-        buf = StringIO(self._zip.read(arcname))
+        buf = BytesIO(self._zip.read(arcname))
         return read_image(buf)
-    def iterkeys(self):
-        for arcname in self._zip.namelist():
-            yield arcname
+    def keys(self):
+        return self._zip.namelist()
     def has_key(self, arcname):
         return arcname in self._zip.namelist()
 
@@ -65,9 +64,8 @@ class _ZipBinImages(BaseDictlike):
         return self.b.pid.with_target(target) + '.png'
     def __getitem__(self, target):
         return self.zi[self.arcname(target)]
-    def iterkeys(self):
-        for k in self.index:
-            yield k
+    def keys(self):
+        return self.index
     def has_key(self, k):
         return k in self.index
     

@@ -1,4 +1,4 @@
-from cStringIO import StringIO
+from io import BytesIO
 
 from PIL import Image
 import numpy as np
@@ -25,7 +25,7 @@ def format_image(array, mimetype='image/png'):
       seek position at 0
     """
     fmt = PIL_FORMATS_BY_MIME_TYPE[mimetype]
-    buf = StringIO()
+    buf = BytesIO()
     if array.dtype == np.bool:
         array = array.astype(np.uint8)
         array *= 255

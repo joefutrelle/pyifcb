@@ -87,7 +87,10 @@ def pd2hdf(group, df, **kw):
         c = group.create_dataset(str(i), data=df.iloc[:,i], **kw)
         refs.append(c.ref)
     cols = group.create_dataset('columns', data=refs, dtype=H5_REF_TYPE)
-    cols.attrs['names'] = list(df.columns)
+    if df.columns.dtype == np.int64:
+        cols.attrs['names'] = [int(col) for col in df.columns]
+    else:
+        cols.attrs['names'] = [str(str(col).encode('utf8')) for col in df.columns]
     ix = group.create_dataset('index', data=df.index, **kw)
     if df.index.name is not None:
         ix.attrs['name'] = df.index.name
