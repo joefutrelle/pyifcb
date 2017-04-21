@@ -94,7 +94,7 @@ class ZipBin(BaseBin):
             self.close()
     def _parse_metadata(self):
         j = self._zip.read(METADATA_ARCNAME)
-        md = json.loads(j)
+        md = json.loads(j.decode('utf8'))
         self._pid = Pid(md['lid'])
     @property
     def pid(self):
@@ -112,4 +112,4 @@ class ZipBin(BaseBin):
     def headers(self):
         arcname = self.lid + HEADERS_ARCNAME_SUFFIX
         j = self._zip.read(arcname)
-        return json.loads(j)
+        return json.loads(j.decode('utf8'))
