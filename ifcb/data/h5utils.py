@@ -107,8 +107,9 @@ def hdf2pd(group):
     index_name = index.attrs.get('name',None)
     col_refs = group['columns']
     col_data = [np.array(group[r]) for r in col_refs]
-    # note: the below assumes that no column names mean use numeric oness
-    col_names = col_refs.attrs.get('names', range(len(col_refs)))
+    col_names = col_refs.attrs.get('names')
+    if type(col_names[0]) == np.bytes_:
+        col_names = [str(cn,'utf8') for cn in col_names]
     data = { k: v for k, v in zip(col_names, col_data) }
     index = pd.Series(index, name=index_name)
     return pd.DataFrame(data=data, index=index, columns=col_names)
