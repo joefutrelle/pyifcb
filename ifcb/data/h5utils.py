@@ -90,7 +90,8 @@ def pd2hdf(group, df, **kw):
     if df.columns.dtype == np.int64:
         cols.attrs['names'] = [int(col) for col in df.columns]
     else:
-        cols.attrs['names'] = [str(str(col).encode('utf8')) for col in df.columns]
+        print(df.columns)
+        cols.attrs['names'] = [col.encode('utf8') for col in df.columns]
     ix = group.create_dataset('index', data=df.index, **kw)
     if df.index.name is not None:
         ix.attrs['name'] = df.index.name
