@@ -341,6 +341,8 @@ class Pid(object):
             self._parsed = p
         return self._parsed
     def __getattr__(self, name):
+        if name in ['pid','_parsed','parsed']:
+            raise AttributeError
         try:
             return self.parsed[name]
         except KeyError:
