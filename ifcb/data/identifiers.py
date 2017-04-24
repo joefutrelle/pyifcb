@@ -182,10 +182,12 @@ def parse(pid):
         if year is None or day is None:
             raise ValueError('invalid pid: %s' % pid)
         yearday = '_'.join([year, day])
+        day_prefix = 'IFCB{}_{}'.format(instrument, yearday)
     else:
         schema_version = 2
         timestamp_format = '%Y%m%dT%H%M%S'
         yearday = ''.join([year, month, day])
+        day_prefix = 'D{}'.format(yearday)
     if bin_lid is None: # syntax error
         raise ValueError('invalid pid: %s' % pid)
     # now parse target, product, and extension (tpe)

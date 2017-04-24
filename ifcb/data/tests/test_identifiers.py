@@ -187,6 +187,8 @@ class TestV1Identifiers(unittest.TestCase):
             ids.parse('IFCB1_2000_001_000099')
     def test_instrument(self):
         assert Pid(GOOD_V1).instrument == 1
+    def test_day_prefix(self):
+        assert Pid(GOOD_V1).day_prefix == 'IFCB1_2000_001'
 
 class TestV2Identifiers(unittest.TestCase):
     def test_timestamp_validation(self):
@@ -202,3 +204,5 @@ class TestV2Identifiers(unittest.TestCase):
             ids.parse('D20000101T000099_IFCB001')
     def test_instrument(self):
         assert Pid(GOOD_V2).instrument == 1
+    def test_day_prefix(self):
+        assert Pid(GOOD_V2).day_prefix == 'D20000101'
