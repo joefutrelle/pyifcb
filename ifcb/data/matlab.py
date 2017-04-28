@@ -36,16 +36,14 @@ def bin2mat(b, mat_path):
 class _MatBinImages(BaseDictlike):
     def __init__(self, mat):
         self._mat = mat
-    def iterkeys(self):
+    def keys(self):
         for k in self._mat[ROI_NUMBERS_VAR]:
             yield k
-    def keys(self):
-        return list(self._mat[ROI_NUMBERS_VAR])
     def has_key(self, k):
         return k in self._mat[ROI_NUMBERS_VAR]
     def __getitem__(self, roi_number):
         i = 0
-        for k in self.iterkeys():
+        for k in self.keys():
             if k == roi_number:
                 return self._mat[IMAGES_VAR][i]
             i += 1 

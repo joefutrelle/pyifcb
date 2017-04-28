@@ -5,7 +5,7 @@ IFCB instruments.
 """
 
 import numpy as np
-from functools32 import lru_cache
+from functools import lru_cache
 
 from .utils import BaseDictlike
 
@@ -78,7 +78,7 @@ class Stitcher(BaseDictlike):
           number stitched?
         """
         return target_number in self.coordinates.index
-    def iterkeys(self):
+    def keys(self):
         """
         Yield the target number of each stitched ROI.
         """
@@ -132,7 +132,7 @@ class Infiller(BaseDictlike):
         :type the_bin: Bin
         """
         self.stitcher = Stitcher(the_bin)
-    def iterkeys(self):
+    def keys(self):
         """
         Yield the target number of each stitched ROI.
         """
@@ -166,7 +166,7 @@ class InfilledImages(BaseDictlike):
         self.bin = the_bin
         self.stitcher = Stitcher(the_bin)
         self.infiller = Infiller(the_bin)
-    def iterkeys(self):
+    def keys(self):
         """
         Yield the target number of each ROI that is not the second
         ROI in a stitched pair.

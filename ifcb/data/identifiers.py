@@ -4,7 +4,7 @@ Support for parsing IFCB permanent identifiers (a.k.a., pids).
 
 import re
 
-from functools32 import lru_cache
+from functools import lru_cache
 import pandas as pd
 
 ### parsing

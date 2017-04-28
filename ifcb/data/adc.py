@@ -3,10 +3,10 @@ Support for parsing and accessing IFCB ADC data.
 """
 
 import os
-from cStringIO import StringIO
+from io import BytesIO
 
 import pandas as pd
-from functools32 import lru_cache
+from functools import lru_cache
 
 from .identifiers import Pid
 from .utils import BaseDictlike
@@ -166,7 +166,7 @@ class AdcFile(BaseDictlike):
         """
         from .hdf import adc2hdf
         adc2hdf(self, hdf_file, group, replace=replace, **kw)
-    def iterkeys(self):
+    def keys(self):
         """
         Yield the target numbers of this ADC file, in order.
         """
@@ -202,10 +202,10 @@ class AdcFragment(AdcFile):
     @property
     def csv(self):
         with open(self.path) as adc_file:
-            n, buf = 1, StringIO()
+            n, buf = 1, BytesIO()
             for line in adc_file:
                 if n >= self.start:
-                    buf.write(line)
+                    buf.write(line.encode('utf8'))
                 n += 1
                 if n == self.end:
                     break

@@ -4,7 +4,7 @@ Access to IFCB raw data files, including directory operations.
 
 import os
 
-from functools32 import lru_cache
+from functools import lru_cache
 
 from .identifiers import Pid
 from .adc import AdcFile, AdcFragment

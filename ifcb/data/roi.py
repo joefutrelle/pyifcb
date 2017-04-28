@@ -3,8 +3,7 @@ Support for reading images from IFCB ``.roi`` files.
 """
 
 import os
-from itertools import izip
-from functools32 import lru_cache
+from functools import lru_cache
 
 import numpy as np
 
@@ -132,9 +131,6 @@ class RoiFile(BaseDictlike):
         return self.csv.index
     def keys(self):
         return self.index
-    def iterkeys(self):
-        for k in self.index:
-            yield k
     def has_key(self, k):
         return k in self.keys()
     def __getitem__(self, roi_number):
