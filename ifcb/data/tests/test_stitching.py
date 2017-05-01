@@ -26,3 +26,22 @@ class TestStitcher(unittest.TestCase):
                 rns = tf['roi_numbers_stitched']
                 ii = InfilledImages(b)
                 assert set(rns) == set(ii.keys())
+    def test_infill_values(self):
+        dd = DataDirectory(TEST_DATA_DIR)
+        for lid, tf in TEST_FILES.items():
+            if 'roi_numbers_stitched' in tf:
+                b = dd[lid]
+                rns = tf['roi_numbers_stitched']
+                roi_corners = tf['stitched_corners']
+                iis = InfilledImages(b)
+                corners = {}
+                for rn in rns:
+                    ii = iis[rn]
+                    c1 = ii[0,0]
+                    c2 = ii[0,-1]
+                    c3 = ii[-1,0]
+                    c4 = ii[-1,-1]
+                    corners = [c1, c2, c3, c4]
+                    assert roi_corners[rn] == corners
+
+        
