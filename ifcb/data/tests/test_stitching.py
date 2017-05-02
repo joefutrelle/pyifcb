@@ -34,7 +34,6 @@ class TestStitcher(unittest.TestCase):
                 rns = tf['roi_numbers_stitched']
                 roi_corners = tf['stitched_corners']
                 iis = InfilledImages(b)
-                corners = {}
                 for rn in rns:
                     ii = iis[rn]
                     c1 = ii[0,0]
