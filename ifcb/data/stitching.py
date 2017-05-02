@@ -4,10 +4,14 @@ Note that this does not apply to data from commercial
 IFCB instruments.
 """
 
-import numpy as np
 from functools import lru_cache
 
+import numpy as np
+from scipy import ndimage as ndi
+
 from .utils import BaseDictlike
+
+### Stitching
 
 class Stitcher(BaseDictlike):
     """
@@ -103,6 +107,44 @@ class Stitcher(BaseDictlike):
             im[ry1:ry2,rx1:rx2] = self.bin.images[ij]
         return np.ma.array(im, mask=msk)
 
+### Infilling
+
+def apply_kernel(B,kernel):
+    B = np.array(B).astype(np.bool) * 1
+    return ndi.correlate(B,kernel,mode='constant') > 0
+
+def dilate(B):
+    S = np.array([[0, 1, 0],
+                  [1, 1, 1],
+                  [0, 1, 0]])
+    return apply_kernel(B,S)
+
+def find_boundary(B):
+    """find boundaries via erosion and logical and,
+    using four-connectivity"""
+    S = np.array([[ 0,-1, 0],
+                  [-1, 4,-1],
+                  [ 0,-1, 0]])
+    return apply_kernel(B,S)
+
+def chop_boundary_edges(boundary):
+    boundary[:,0] = boundary[:,1]
+    boundary[:,-1] = boundary[:,-2]
+    boundary[0,:] = boundary[1,:]
+    boundary[-1,:] = boundary[-2,:]
+    return boundary
+
+def infill_image(raw_stitch):
+    """given a raw stitch image (stitched image where NaNs indicate
+    missing data), compute the infill region (values where the NaNs
+    are in the raw_stitch, NaNs elsewhere)"""
+    boundary = find_boundary(dilate(raw_stitch.mask))
+    boundary = chop_boundary_edges(boundary)
+    infill_value = int(round(np.mean(raw_stitch[boundary])))
+    fill_image = np.full(raw_stitch.shape, dtype=np.uint8, fill_value=infill_value)
+    infill = np.ma.array(fill_image, mask=np.logical_not(raw_stitch.mask))
+    return infill
+    
 class Infiller(BaseDictlike):
     """
     Wraps ``Bin`` to perform infilling of stitched images.
@@ -147,12 +189,7 @@ class Infiller(BaseDictlike):
     def __getitem__(self, target_number):
         # get the raw stitch
         raw_stitch = self.stitcher[target_number]
-        # compute the fill value (median of pixel values)
-        fill_value = np.ma.median(raw_stitch)
-        # construct an image containing the fill value
-        fill_image = np.full(raw_stitch.shape, dtype=np.uint8, fill_value=fill_value)
-        # now return the masked version of that image
-        return np.ma.array(fill_image, mask=np.logical_not(raw_stitch.mask))
+        return infill_image(raw_stitch)
 
 class InfilledImages(BaseDictlike):
     """
