@@ -55,11 +55,12 @@ class Stitcher(BaseDictlike):
         M['ay2'] += M['ay1']
         M['bx2'] += M['bx1']
         M['by2'] += M['by1']
-        # remove everything that doesn't overlap
-        M = M[(M['ax1'] < M['bx2']) & \
-              (M['ax2'] > M['bx1']) & \
-              (M['ay1'] < M['by2']) & \
-              (M['ay2'] > M['by1'])]
+        # only ROIs overlapping by more than overlap_thresh pixels
+        overlap_thresh = 2
+        M = M[(M['ax1'] < M['bx2'] - overlap_thresh) & \
+              (M['ax2'] > M['bx1'] + overlap_thresh) & \
+              (M['ay1'] < M['by2'] - overlap_thresh) & \
+              (M['ay2'] > M['by1'] + overlap_thresh)]
         # now compute stitched boxes
         M['sx1'] = np.minimum(M['ax1'], M['bx1'])
         M['sy1'] = np.minimum(M['ay1'], M['by1'])
@@ -140,8 +141,11 @@ def infill_image(raw_stitch):
     are in the raw_stitch, NaNs elsewhere)"""
     boundary = find_boundary(dilate(raw_stitch.mask))
     boundary = chop_boundary_edges(boundary)
-    infill_value = int(round(np.mean(raw_stitch[boundary])))
-    fill_image = np.full(raw_stitch.shape, dtype=np.uint8, fill_value=infill_value)
+    if np.sum(boundary) > 0:
+        infill_value = int(round(np.mean(raw_stitch[boundary])))
+        fill_image = np.full(raw_stitch.shape, dtype=np.uint8, fill_value=infill_value)
+    else:
+        fill_image = np.zeros(raw_stitch.shape)
     infill = np.ma.array(fill_image, mask=np.logical_not(raw_stitch.mask))
     return infill
     
