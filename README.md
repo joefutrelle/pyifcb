@@ -10,6 +10,15 @@ Generation 1 of this data system was called the IFCB Data Dashboard. In this, ge
 
 Joe Futrelle (jfutrelle@whoi.edu) - Woods Hole Oceanographic Institution
 
+## Installation via anaconda
+
+With a Python 3 conda environment activated:
+
+```
+conda install --file requirements.txt
+python setup.py install
+```
+
 ## Status
 
 As of 2017-04-28 pyifcb requires Python 3.
