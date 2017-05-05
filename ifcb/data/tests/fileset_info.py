@@ -26,6 +26,11 @@ TEST_FILES = {
             'roi': 98472,
             'hdr': 2970,
             'adc': 19513
+        },
+        'headers': {
+            'KloehnPort': 'COM3',
+            'laserMotorSmallStep_ms': 1000,
+            'blobXgrowAmount': 20
         }
     },
     'IFCB5_2012_028_081515': {
@@ -57,6 +62,10 @@ TEST_FILES = {
             'roi': 71083,
             'hdr': 307,
             'adc': 1011
+        },
+        'headers': {
+            'binarizeThreshold': 30,
+            'fluorescencePhotomultiplierSetting': 0.6,
         }
     }
 }
