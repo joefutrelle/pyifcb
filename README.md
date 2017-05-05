@@ -16,6 +16,7 @@ To create a conda environment called "pyifcb":
 
 ```
 conda env create -f environment.yml
+python setup.py install
 ```
 
 Or with a Python 3 conda environment already activated:
