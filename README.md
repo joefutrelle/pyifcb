@@ -12,7 +12,13 @@ Joe Futrelle (jfutrelle@whoi.edu) - Woods Hole Oceanographic Institution
 
 ## Installation via anaconda
 
-With a Python 3 conda environment activated:
+To create a conda environment called "pyifcb":
+
+```
+conda env create -f environment.yml
+```
+
+Or with a Python 3 conda environment already activated:
 
 ```
 conda install --file requirements.txt
