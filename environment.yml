@@ -1,0 +1,9 @@
+name: pyifcb
+dependencies:
+- python>=3.5
+- scipy
+- pandas
+- h5py
+- requests
+- Pillow
+
