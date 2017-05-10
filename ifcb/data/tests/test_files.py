@@ -26,14 +26,14 @@ class TestListUtils(unittest.TestCase):
     def test_list_filesets(self):
         """test with validation off and search"""
         paths = list(files.list_filesets(self.data_dir, whitelist=WHITELIST, validate=False))
-        assert len(paths) == 3
+        assert len(paths) == 5
 
 class TestDataDirectory(unittest.TestCase):
     def setUp(self):
         self.data_dir = data_dir()
         self.default = files.DataDirectory(self.data_dir)
         self.whitelist = files.DataDirectory(self.data_dir, whitelist=WHITELIST)
-        self.blacklist = files.DataDirectory(self.data_dir, blacklist=['skip','invalid'])
+        self.blacklist = files.DataDirectory(self.data_dir, blacklist=['skip','invalid','empty'])
     def test_iteration(self):
         fss = list(self.default)
         assert len(fss) == 1 # only one whitelisted by default
@@ -59,7 +59,7 @@ class TestDataDirectory(unittest.TestCase):
             assert fs.getsizes() == sizes
             assert fs.getsize() == sum(sizes.values())
     def test_descendants(self):
-        assert len(list(self.default.list_descendants())) == 3
+        assert len(list(self.default.list_descendants())) == 4
         assert len(list(self.blacklist.list_descendants())) == 2
 
 class TestFilesetBin(unittest.TestCase):
@@ -94,6 +94,35 @@ class TestFilesetBin(unittest.TestCase):
             with b:
                 assert b.isopen(), 'context mgr on should open bin on enter'
             assert not b.isopen(), 'context mgr should close bin on exit'
+
+class TestEmptyBin(unittest.TestCase):
+    def setUp(self):
+        dd = files.DataDirectory(data_dir(), whitelist=['empty'])
+        self.bins = list(dd)
+    def test_len(self):
+        for b in self.bins:
+            assert len(b) == 0, 'expected empty bin'
+    def test_adc_len(self):
+        for b in self.bins:
+            assert len(b.adc) == 0, 'expected empty adc data'
+            assert len(b.adc.columns) > 0, 'expected empty columnar adc data'
+    def test_images_adc(self):
+        for b in self.bins:
+            assert len(b.images_adc) == 0, 'expected empty image adc data'
+            assert len(b.images_adc.columns) > 0, 'expected empty columnar image adc data'
+    def test_images(self):
+        for b in self.bins:
+            assert len(b.images) == 0, 'expected no image data'
+            for im in b.images:
+                assert False, 'expected no image data'
+    def test_headers(self):
+        for b in self.bins:
+            assert len(b.headers) > 0, 'expected headers'
+    def test_keys(self):
+        for b in self.bins:
+            assert len(b.keys()) == 0, 'expected no keys in empty bin'
+            for k in b:
+                assert False, 'expected no keys in empty bin'
 
 class TestImagesAdc(unittest.TestCase):
     def test_images_adc(self):

@@ -2,8 +2,6 @@ import unittest
 import shutil
 import os
 
-from pandas.parser import CParserError
-
 from ...tests.utils import test_dir
 from .fileset_info import list_test_filesets, TEST_FILES
 

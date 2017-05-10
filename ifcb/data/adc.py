@@ -6,6 +6,8 @@ import os
 from io import BytesIO
 
 import pandas as pd
+from pandas.errors import EmptyDataError
+
 from functools import lru_cache
 
 from .identifiers import Pid
@@ -26,6 +28,7 @@ class SCHEMA_VERSION_1(object):
     IFCB revision 1 schema.
     """
     _name = 'v1'
+    _cols = range(15)
     TRIGGER = 0
     PROCESSING_END_TIME = 1
     FLUORESCENCE_LOW = 2
@@ -47,6 +50,7 @@ class SCHEMA_VERSION_2(object):
     IFCB revision 2 schema.
     """
     _name = 'v2'
+    _cols = range(24)
     TRIGGER = 0
     ADC_TIME = 1
     PMT_A = 2
@@ -90,9 +94,14 @@ def parse_adc_file(adc_file):
     :param adc_file: the pathname or URL of the ADC file,
       or a buffer containing the ADC data
     """
-    df = pd.read_csv(adc_file, header=None, index_col=False)
-    df.index += 1 # index by 1-based ROI number
-    return df
+    try:
+        df = pd.read_csv(adc_file, header=None, index_col=False)
+        df.index += 1 # index by 1-based ROI number
+        return df
+    except EmptyDataError:
+        s = SCHEMA[Pid(adc_file).schema_version]
+        cols = s._cols
+        return pd.DataFrame({c:[] for c in cols}, columns=cols)
     
 class AdcFile(BaseDictlike):
     """
