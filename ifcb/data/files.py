@@ -3,8 +3,9 @@ Access to IFCB raw data files, including directory operations.
 """
 
 import os
-
 from functools import lru_cache
+
+import pandas as pd
 
 from .identifiers import Pid
 from .adc import AdcFile, AdcFragment
@@ -331,7 +332,7 @@ class DataDirectory(object):
 
     Provides a dict-like interface allowing access to FilesetBins by LID.
     """
-    def __init__(self, path='.', whitelist=DEFAULT_WHITELIST, blacklist=DEFAULT_BLACKLIST):
+    def __init__(self, path='.', whitelist=DEFAULT_WHITELIST, blacklist=DEFAULT_BLACKLIST, filter=lambda x: True):
         """
         :param path: the path of the data directory
         :param whitelist: a list of directory names to allow
@@ -340,13 +341,16 @@ class DataDirectory(object):
         self.path = path
         self.whitelist = whitelist
         self.blacklist = blacklist
+        self.filter = filter
     def list_filesets(self):
         """
         Yield all filesets.
         """
         for dirpath, basename in list_filesets(self.path, whitelist=self.whitelist, blacklist=self.blacklist):
             basepath = os.path.join(dirpath, basename)
-            yield Fileset(basepath)
+            fs = Fileset(basepath)
+            if self.filter(fs):
+                yield fs
     def find_fileset(self, lid):
         """
         Locate a fileset by LID. Returns None if it is not found.
@@ -355,7 +359,11 @@ class DataDirectory(object):
         :type lid: str
         :returns Fileset: the fileset, or None if not found
         """
-        return find_fileset(self.path, lid, whitelist=self.whitelist, blacklist=self.blacklist)
+        fs = find_fileset(self.path, lid, whitelist=self.whitelist, blacklist=self.blacklist)
+        if fs is None:
+            return None
+        elif self.filter(fs):
+            return fs
     def __iter__(self):
         # yield from list_filesets called with no keyword args
         for fs in self.list_filesets():
@@ -386,3 +394,13 @@ class DataDirectory(object):
         return '<DataDirectory %s>' % self.path
     def __str__(self):
         return self.path
+
+# filters for DataDirectory
+
+def time_filter(start='1970-01-01', end='3000-01-01'):
+    start = pd.to_datetime(start, utc=True)
+    end = pd.to_datetime(end, utc=True)
+    def inner(fs):
+        ts = fs.pid.timestamp
+        return ts >= start and ts < end
+    return inner
