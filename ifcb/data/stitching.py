@@ -230,7 +230,11 @@ class InfilledImages(BaseDictlike):
             # construct infill
             infill = self.infiller[target_number]
             # sum the stitched and infill images
-            return raw_stitch.filled(0) + infill.filled(0)
+            infilled = raw_stitch.filled(0) + infill.filled(0)
+            return infilled
         else:
             # this is not a stitched image
             return self.bin.images[target_number]
+    # convenience methods
+    def raw_stitch(self, target_number):
+        return self.stitcher[target_number]
