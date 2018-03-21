@@ -1,5 +1,7 @@
 import unittest
 
+import numpy as np
+
 from ifcb.data.tests.fileset_info import list_test_bins, get_fileset_bin
 
 from ..ml_analyzed import compute_ml_analyzed
@@ -11,7 +13,8 @@ TARGET_ML_ANALYZED = {
 
 class TestMlAnalyzed(unittest.TestCase):
     def test_ml_analyzed(self):
-        ma = { b.lid: compute_ml_analyzed(b) for b in list_test_bins() }
-        for lid, result in ma.items():
-            target_result = TARGET_ML_ANALYZED[lid]
-            assert result == target_result
+        for b in list_test_bins():
+            result = compute_ml_analyzed(b)
+            target_result = TARGET_ML_ANALYZED[b.lid]
+            for rv, trv in zip(result, target_result):
+                assert np.isclose(rv, trv)
