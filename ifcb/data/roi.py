@@ -23,7 +23,7 @@ def read_image(inroi, byte_offset, width, height):
     """
     length = width * height
     inroi.seek(byte_offset)
-    return np.fromstring(inroi.read(length), dtype=np.uint8).reshape((width,height))
+    return np.frombuffer(inroi.read(length), dtype=np.uint8).reshape((width,height))
 
 class RoiFile(BaseDictlike):
     """
