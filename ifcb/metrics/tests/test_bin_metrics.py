@@ -7,8 +7,6 @@ from ifcb.data.hdr import TEMPERATURE, HUMIDITY
 
 from .test_ml_analyzed import TARGET_ML_ANALYZED
 
-from ..bin_metrics import BinMetrics
-
 TARGET_METRICS = {
     'IFCB5_2012_028_081515': {
         'ml_analyzed': 0.0033914708,
@@ -31,24 +29,19 @@ TARGET_METRICS = {
 }
 
 class TestBinMetrics(unittest.TestCase):
-    def test_toplevel_import(self):
-        from ifcb.metrics import BinMetrics
     def test_ml_analyzed(self):
-        for b in list_test_bins():
-            target = TARGET_METRICS[b.lid]
-            met = BinMetrics(b)
-            assert np.isclose(met.ml_analyzed(), target['ml_analyzed'])
-            assert np.isclose(met.run_time(), target['run_time'])
-            assert np.isclose(met.look_time(), target['look_time'])
-            assert np.isclose(met.inhibit_time(), target['inhibit_time'])            
+        for met in list_test_bins():
+            target = TARGET_METRICS[met.lid]
+            assert np.isclose(met.ml_analyzed, target['ml_analyzed'])
+            assert np.isclose(met.run_time, target['run_time'])
+            assert np.isclose(met.look_time, target['look_time'])
+            assert np.isclose(met.inhibit_time, target['inhibit_time'])            
     def test_trigger_rate(self):
-        for b in list_test_bins():
-            target = TARGET_METRICS[b.lid]
-            met = BinMetrics(b)
-            assert np.isclose(met.trigger_rate(), target['trigger_rate'])
+        for met in list_test_bins():
+            target = TARGET_METRICS[met.lid]
+            assert np.isclose(met.trigger_rate, target['trigger_rate'])
     def test_header_metrics(self):
-        for b in list_test_bins():
-            target = TARGET_METRICS[b.lid]
-            met = BinMetrics(b)
-            assert np.isclose(met.temperature(), target[TEMPERATURE])
-            assert np.isclose(met.humidity(), target[HUMIDITY])
+        for met in list_test_bins():
+            target = TARGET_METRICS[met.lid]
+            assert np.isclose(met.temperature, target[TEMPERATURE])
+            assert np.isclose(met.humidity, target[HUMIDITY])
