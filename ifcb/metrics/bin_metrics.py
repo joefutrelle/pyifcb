@@ -19,6 +19,8 @@ class BinMetrics(object):
     def run_time(self):
         _, _, rt = self._get_ml_analyzed()
         return rt
+    def inhibit_time(self):
+        return self.run_time() - self.look_time()
     def trigger_rate(self):
         """return trigger rate in triggers / s"""
         return 1.0 * len(self.bin) / self.run_time()

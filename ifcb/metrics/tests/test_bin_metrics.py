@@ -11,17 +11,19 @@ from ..bin_metrics import BinMetrics
 
 TARGET_METRICS = {
     'IFCB5_2012_028_081515': {
-        'ml_analyzed': 0.003391470833333334,
+        'ml_analyzed': 0.0033914708,
         'run_time': 1.251953,
-        'look_time': 0.8139530000000001,
+        'look_time': 0.813953,
+        'inhibit_time': 0.438,
         'trigger_rate': 5.59126420880017,
         TEMPERATURE: 11.4799732421875,
         HUMIDITY:  32.167437512207,
     },
     'D20130526T095207_IFCB013': {
-        'ml_analyzed': 5.080841170833334,
+        'ml_analyzed': 5.0808411708,
         'run_time': 1231.024861,
         'look_time': 1219.401881,
+        'inhibit_time': 11.62298,
         'trigger_rate': 0.09585509093954846,
         TEMPERATURE: 35.270397,
         HUMIDITY: 2.48685,
@@ -38,6 +40,7 @@ class TestBinMetrics(unittest.TestCase):
             assert np.isclose(met.ml_analyzed(), target['ml_analyzed'])
             assert np.isclose(met.run_time(), target['run_time'])
             assert np.isclose(met.look_time(), target['look_time'])
+            assert np.isclose(met.inhibit_time(), target['inhibit_time'])            
     def test_trigger_rate(self):
         for b in list_test_bins():
             target = TARGET_METRICS[b.lid]
