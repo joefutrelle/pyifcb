@@ -2,13 +2,18 @@
 Bin API. Provides consistent access to IFCB raw data stored
 in various formats.
 """
+from functools import lru_cache
+
 from .adc import SCHEMA
+from .hdr import TEMPERATURE, HUMIDITY
 
 from .utils import BaseDictlike
 
+from ..metrics.ml_analyzed import compute_ml_analyzed
+
 class BaseBin(BaseDictlike):
     """
-    Abstract base class for Bin implementations.
+    Base class for Bin implementations. Providing common features.
 
     The bin PID is available as a Pid object via the "pid" property.
     Subclasses must implement this.
@@ -73,6 +78,35 @@ class BaseBin(BaseDictlike):
         return d
     def __getitem__(self, target_number):
         return self.get_target(target_number)
+    # metrics
+    @lru_cache()
+    def _get_ml_analyzed(self):
+        return compute_ml_analyzed(self)
+    @property
+    def ml_analyzed(self):
+        ma, _, _ = self._get_ml_analyzed()
+        return ma
+    @property
+    def look_time(self):
+        _, lt, _ = self._get_ml_analyzed()
+        return lt
+    @property
+    def run_time(self):
+        _, _, rt = self._get_ml_analyzed()
+        return rt
+    @property
+    def inhibit_time(self):
+        return self.run_time - self.look_time
+    @property
+    def trigger_rate(self):
+        """return trigger rate in triggers / s"""
+        return 1.0 * len(self) / self.run_time
+    @property
+    def temperature(self):
+        return self.headers[TEMPERATURE]
+    @property
+    def humidity(self):
+        return self.headers[HUMIDITY]
     # convenience APIs for writing in different formats
     def read(self):
         new_bin = BaseBin()
