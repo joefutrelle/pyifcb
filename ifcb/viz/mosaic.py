@@ -1,6 +1,8 @@
 from functools import lru_cache
 
 from rectpack import newPacker, SORT_AREA
+from rectpack.guillotine import GuillotineBafSlas
+
 import numpy as np
 import pandas as pd
 
@@ -25,7 +27,7 @@ class Mosaic(object):
     def _pack(self):
         page_h, page_w = self.shape
         pages = [(page_h - 1, page_w - 1) for _ in range(20)]
-        packer = newPacker(sort_algo=SORT_AREA, rotation=False)
+        packer = newPacker(sort_algo=SORT_AREA, rotation=False, pack_algo=GuillotineBafSlas)
         for r in self._shapes():
             packer.add_rect(*r)
         for p in pages:
