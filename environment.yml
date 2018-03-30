@@ -6,4 +6,5 @@ dependencies:
 - h5py
 - requests
 - Pillow
-
+- pip:
+  - rectpack

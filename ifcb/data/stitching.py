@@ -91,11 +91,15 @@ class Stitcher(BaseDictlike):
             yield k
     def __len__(self):
         return len(self.coordinates.index)
-    @lru_cache(maxsize=2)
-    def __getitem__(self, target_number):
+    def shape(self, target_number):
         row = self.coordinates.loc[target_number]
         w = row['sx2'] - row['sx1']
         h = row['sy2'] - row['sy1']
+        return (h, w)
+    @lru_cache(maxsize=2)
+    def __getitem__(self, target_number):
+        h, w = self.shape(target_number)
+        row = self.coordinates.loc[target_number]
         # create composite image
         msk = np.ones((h,w),dtype=np.bool)
         im = np.zeros((h,w),dtype=np.uint8)
@@ -235,6 +239,15 @@ class InfilledImages(BaseDictlike):
         else:
             # this is not a stitched image
             return self.bin.images[target_number]
+    def shape(self, target_number):
+        if target_number in self.stitcher:
+            return self.stitcher.shape(target_number)
+        else:
+            s = self.bin.schema
+            row = self.bin.images_adc.loc[target_number]
+            h = int(row[s.ROI_HEIGHT])
+            w = int(row[s.ROI_WIDTH])
+            return (h, w)
     # convenience methods
     def raw_stitch(self, target_number):
         return self.stitcher[target_number]
