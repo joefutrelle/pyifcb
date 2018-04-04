@@ -6,5 +6,6 @@ dependencies:
 - h5py
 - requests
 - Pillow
+- scikit-image
 - pip:
   - rectpack
