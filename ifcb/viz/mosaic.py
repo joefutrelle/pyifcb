@@ -24,7 +24,7 @@ class Mosaic(object):
             ix.append(target_number)
         return zip(hs, ws, ix)
     @lru_cache()
-    def _pack(self):
+    def pack(self):
         page_h, page_w = self.shape
         pages = [(page_h - 1, page_w - 1) for _ in range(20)]
         packer = newPacker(sort_algo=SORT_AREA, rotation=False, pack_algo=GuillotineBafSlas)
@@ -36,7 +36,7 @@ class Mosaic(object):
         COLS = ['page', 'y', 'x', 'h', 'w', 'roi_number']
         return pd.DataFrame(packer.rect_list(), columns=COLS)
     def page(self, page=0):
-        df = self._pack()
+        df = self.pack()
         page_h, page_w = self.shape
         page_image = np.zeros((page_h, page_w), dtype=np.uint8) + self.bg_color
         sdf = df[df.page == page]
