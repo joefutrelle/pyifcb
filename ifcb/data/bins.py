@@ -35,6 +35,7 @@ class BaseBin(BaseDictlike):
         """
         return self.pid.bin_lid
     @property
+    @lru_cache()
     def images_adc(self):
         """
         :returns pandas.DataFrame: the ADC data, minus targets that
