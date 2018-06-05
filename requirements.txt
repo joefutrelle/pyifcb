@@ -5,3 +5,4 @@ requests
 Pillow
 rectpack
 scikit-image
+pysmb

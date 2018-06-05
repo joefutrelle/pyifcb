@@ -9,3 +9,4 @@ dependencies:
 - scikit-image
 - pip:
   - rectpack
+  - pysmb
