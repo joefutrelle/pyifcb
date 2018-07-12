@@ -1,16 +1,19 @@
 import numpy as np
-from skimage.io import imread, imsave
-from skimage.transform import rescale
+from skimage.transform import rescale, resize
 
-SQUARE_LETTERBOXED_DEFAULT_SIZE = 399
+SQUARE_DEFAULT_SIZE = 399
 
-def square_letterboxed(img, size=SQUARE_LETTERBOXED_DEFAULT_SIZE, fill_value='median'):
+def square(img, size=SQUARE_DEFAULT_SIZE):
+    scaled = resize(img, (size, size), mode='reflect', preserve_range=True).astype(np.uint8)
+    return scaled
+
+def square_letterboxed(img, size=SQUARE_DEFAULT_SIZE, fill_value='median'):
     if fill_value == 'median':
         fill_value = int(np.median(img))
     elif fill_value == 'mean':
         fill_value = int(np.mean(img))
     scale = 1.0 * size / max(img.shape)
-    scaled = rescale(img, scale, mode='reflect', preserve_range=True)
+    scaled = rescale(img, scale, mode='reflect', preserve_range=True).astype(np.uint8)
     h, w = scaled.shape
     ctr = size / 2
     letterboxed = np.zeros((size, size), dtype=np.uint8) + fill_value
