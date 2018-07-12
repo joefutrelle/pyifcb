@@ -24,8 +24,8 @@ TEST_FILES = {
                                [176, 169, 176, 173, 172]], dtype=np.uint8),
         'sizes': {
             'roi': 98472,
-            'hdr': 2970,
-            'adc': 19513
+            'hdr': 2885,
+            'adc': 19395
         },
         'headers': {
             'KloehnPort': 'COM3',
@@ -60,8 +60,8 @@ TEST_FILES = {
                              6: [212, 206, 209, 208]},
         'sizes': {
             'roi': 71083,
-            'hdr': 307,
-            'adc': 1011
+            'hdr': 301,
+            'adc': 1004
         },
         'headers': {
             'binarizeThreshold': 30,
