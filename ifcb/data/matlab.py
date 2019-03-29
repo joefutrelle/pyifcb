@@ -58,7 +58,7 @@ class MatBin(BaseBin):
         self.images = _MatBinImages(self._mat)
         rec = self._mat[HEADERS_VAR]
         rec_names = rec.dtype.names
-        self.headers = { n : np.asscalar(rec[n]) for n in rec_names }
+        self.headers = { n : rec[n].item() for n in rec_names }
 
 
 

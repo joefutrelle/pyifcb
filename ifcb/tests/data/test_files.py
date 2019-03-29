@@ -85,7 +85,7 @@ class TestFilesetBin(unittest.TestCase):
             roi_slice = d['roi_slice']
             c = d['roi_slice_coords']
             with b:
-                assert np.all(b.images[roi_number][c] == roi_slice), 'wrong image data'
+                assert np.all(b.images[roi_number][tuple(c)] == roi_slice), 'wrong image data'
     def test_bin_open_state(self):
         for b, d in self._bins():
             assert not b.isopen(), 'FilesetBin should start closed'

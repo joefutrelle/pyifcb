@@ -22,7 +22,7 @@ class TestRoi(unittest.TestCase):
             assert image.shape == info['roi_shape']
             A = info['roi_slice']
             c = info['roi_slice_coords']
-            B = image[c] # small slice
+            B = image[tuple(c)] # small slice
             assert np.all(A == B)
     def test_with(self):
         for lid, info, roi in self.fsinfo():
