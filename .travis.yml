@@ -7,7 +7,7 @@ before_install:
   - sudo apt-get -qq update
   - sudo apt-get install python-dev libhdf5-serial-dev
 install:
-  - pip install scipy pandas h5py requests Pillow rectpack scikit-image
+  - pip install scipy pandas h5py requests Pillow rectpack scikit-image pysmb
 script:
   - python -m unittest discover
 branches:
