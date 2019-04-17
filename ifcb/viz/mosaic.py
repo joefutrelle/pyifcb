@@ -1,4 +1,7 @@
 from functools import lru_cache
+import math
+
+from skimage.transform import resize
 
 from rectpack import newPacker, SORT_AREA
 from rectpack.guillotine import GuillotineBafSlas
@@ -9,19 +12,21 @@ import pandas as pd
 from ifcb.data.stitching import InfilledImages
 
 class Mosaic(object):
-    def __init__(self, the_bin, shape=(720, 1280), bg_color=200):
+    def __init__(self, the_bin, shape=(600, 800), scale=0.33, bg_color=200):
         self.bin = the_bin
         self.shape = shape
         self.bg_color = bg_color
-        self.ii = InfilledImages(self.bin)
+        self.scale = scale
     @lru_cache()
     def _shapes(self):
         hs, ws, ix = [], [], []
-        for target_number in self.ii:
-            h, w = self.ii.shape(target_number)
-            hs.append(h)
-            ws.append(w)
-            ix.append(target_number)
+        with self.bin:
+            ii = InfilledImages(self.bin)
+            for target_number in ii:
+                h, w = ii.shape(target_number)
+                hs.append(math.floor(h * self.scale))
+                ws.append(math.floor(w * self.scale))
+                ix.append(target_number)
         return zip(hs, ws, ix)
     @lru_cache()
     def pack(self):
@@ -40,8 +45,12 @@ class Mosaic(object):
         page_h, page_w = self.shape
         page_image = np.zeros((page_h, page_w), dtype=np.uint8) + self.bg_color
         sdf = df[df.page == page]
-        for index, row in sdf.iterrows():
-            y, x = row.y, row.x
-            h, w = row.h, row.w
-            page_image[y:y+h, x:x+w] = self.ii[row.roi_number]
+        with self.bin:
+            ii = InfilledImages(self.bin)
+            for index, row in sdf.iterrows():
+                y, x = row.y, row.x
+                h, w = row.h, row.w
+                unscaled_image = ii[row.roi_number]
+                scaled_image = resize(unscaled_image, (h, w), mode='reflect', preserve_range=True)
+                page_image[y:y+h, x:x+w] = scaled_image
         return page_image
