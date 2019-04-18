@@ -179,8 +179,7 @@ class AdcFile(BaseDictlike):
         """
         Yield the target numbers of this ADC file, in order.
         """
-        for k in self.csv.index:
-            yield k
+        yield from self.csv.index
     def has_key(self, k):
         return k in self.csv.index
     def __len__(self):

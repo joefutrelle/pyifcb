@@ -87,8 +87,7 @@ class Stitcher(BaseDictlike):
         """
         Yield the target number of each stitched ROI.
         """
-        for k in self.coordinates.index:
-            yield k
+        yield from self.coordinates.index
     def __len__(self):
         return len(self.coordinates.index)
     def shape(self, target_number):
@@ -186,8 +185,7 @@ class Infiller(BaseDictlike):
         """
         Yield the target number of each stitched ROI.
         """
-        for k in self.stitcher:
-            yield k
+        yield from self.stitcher
     def has_key(self, target_number):
         """
         :returns bool: is the ROI with the given target

@@ -58,15 +58,9 @@ class BaseBin(BaseDictlike):
         pass
     # dictlike interface
     def keys(self):
-        for k in self.adc.index:
-            yield k
-    def __iter__(self):
-        for k in self.keys():
-            yield k
+        yield from self.adc.index
     def has_key(self, k):
         return k in self.adc.index
-    def keys(self):
-        return list(self.adc.index)
     def __len__(self):
         return len(self.adc.index)
     def get_target(self, target_number):

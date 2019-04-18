@@ -301,9 +301,7 @@ def list_data_dirs(dirpath, blacklist=DEFAULT_BLACKLIST, sort=True, prune=True):
         if name not in blacklist:
             child = os.path.join(dirpath,name)
             if os.path.isdir(child):
-                # yield from recursive
-                for dp in list_data_dirs(child, sort=sort, prune=prune):
-                    yield dp
+                yield from list_data_dirs(child, sort=sort, prune=prune)
 
 def find_fileset(dirpath, lid, whitelist=['data'], blacklist=['skip','beads']):
     """

@@ -221,8 +221,7 @@ class HdfRoi(BaseDictlike):
         """
         self._group = group
     def keys(self):
-        for k in self._group.attrs['index']:
-            yield k
+        yield from self._group.attrs['index']
     def __len__(self):
         return len(self._group.attrs['index'])
     def __getitem__(self, roi_number):

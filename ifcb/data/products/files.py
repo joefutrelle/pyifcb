@@ -16,7 +16,6 @@ def list_product_files(directory, regex):
     for fn in os.listdir(directory):
         path = os.path.join(directory, fn)
         if os.path.isdir(path):
-            for p in list_product_files(path, regex):
-                yield p
+            yield from list_product_files(path, regex)
         elif re.match(regex, fn):
             yield os.path.join(directory, fn)

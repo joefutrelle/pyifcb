@@ -27,8 +27,7 @@ class BaseDictlike(object):
         """
         raise NotImplementedError
     def __iter__(self):
-        for k in self.keys():
-            yield k
+        yield from self.keys()
     def has_key(self, k):
         """
         Iterates over keys and returns first key for

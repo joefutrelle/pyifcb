@@ -120,7 +120,7 @@ class TestEmptyBin(unittest.TestCase):
             assert len(b.headers) > 0, 'expected headers'
     def test_keys(self):
         for b in self.bins:
-            assert len(b.keys()) == 0, 'expected no keys in empty bin'
+            assert len(list(b.keys())) == 0, 'expected no keys in empty bin'
             for k in b:
                 assert False, 'expected no keys in empty bin'
 

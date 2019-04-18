@@ -24,7 +24,7 @@ class TestMosaic(unittest.TestCase):
         for b in list_test_bins():
             if b.lid not in PACKED:
                 continue
-            m = Mosaic(b)
+            m = Mosaic(b, shape=(720, 1280), scale=1)
             packed = m.pack()
             for col in ['y', 'x', 'roi_number']:
                 values = packed[col].values
