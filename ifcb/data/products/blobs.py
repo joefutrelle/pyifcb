@@ -50,20 +50,26 @@ class BlobFile(BaseDictlike):
         self.open()
     def __exit__(self, *args):
         self.close()
+    def _read_image(self, zin, target_number):
+        entry_name = '{}_{:05d}.png'.format(self.bin_lid, target_number)
+        return BytesIO(zin.read(entry_name))
     def __getitem__(self, target_number):
         if self._zipfile is None:
-            zin = ZipFile(self.path)
+            with ZipFile(self.path) as zin:
+                image_data = self._read_image(zin, target_number)
         else:
-            zin = self._zipfile
-        entry_name = '{}_{:05d}.png'.format(self.bin_lid, target_number)
-        image_data = BytesIO(zin.read(entry_name))
-        if self._zipfile is None:
-            zin.close()
+            image_data = self._read_image(self._zipfile, target_number)
         return read_image(image_data)
-    def keys(self):
-        for name in self._zipfile.namelist():
+    def _keys(self, zin):
+        for name in zin.namelist():
             if re.match(r'.*\.png$', name):
                  yield int(Pid(name).target)
+    def keys(self):
+        if self._zipfile is None:
+            with ZipFile(self.path) as zin:
+                yield from self._keys(zin)
+        else:
+            yield from self._keys(self._zipfile)
     def __str__(self):
         return '<BlobFile {}>'.format(self.bin_lid)
 
