@@ -82,6 +82,10 @@ SCHEMA = {
     SCHEMA_VERSION_1._name: SCHEMA_VERSION_1,
     SCHEMA_VERSION_2._name: SCHEMA_VERSION_2
 }
+
+def schema_names(schema):
+    return [v.lower() for v in vars(schema) if not v.startswith('_')]
+
 """
 IFCB schemas
 """
