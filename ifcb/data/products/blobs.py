@@ -10,9 +10,11 @@ from .files import find_product_file, list_product_files
 
 class BlobDirectory(BaseDictlike):
     """a dictlike keyed by bin lid. the values are BlobFiles"""
-    def __init__(self, path, version='2'):
+    def __init__(self, path, version=None):
         self.path = path
-        self.version = version
+        if version is None:
+            version = 2
+        self.version = str(version)
     def __getitem__(self, bin_lid):
         filename = '{}_blobs_v{}.zip'.format(bin_lid, self.version)
         # note that versions other than 2 might not be zip files
@@ -27,12 +29,12 @@ class BlobDirectory(BaseDictlike):
         except KeyError:
             return False
     def keys(self):
-        fn_regex = '.*_blobs_v.*'
+        fn_regex = r'.*_blobs_v{}\.zip'.format(self.version)
         for p in list_product_files(self.path, fn_regex):
             # parse the filename as a pid
             bin_lid = Pid(os.path.basename(p)).bin_lid
             yield BlobFile(p, bin_lid, version=self.version)
-    def __str__(self):
+    def __repr__(self):
         return '<BlobDirectory {}>'.format(self.path)
 
 class BlobFile(BaseDictlike):
@@ -70,6 +72,6 @@ class BlobFile(BaseDictlike):
                 yield from self._keys(zin)
         else:
             yield from self._keys(self._zipfile)
-    def __str__(self):
+    def __repr__(self):
         return '<BlobFile {}>'.format(self.bin_lid)
 
