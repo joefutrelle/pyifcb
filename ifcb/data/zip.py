@@ -7,6 +7,8 @@ import pandas as pd
 
 from .identifiers import Pid
 from .adc import SCHEMA
+from io import BytesIO
+
 from .utils import BaseDictlike
 from .bins import BaseBin
 
@@ -16,8 +18,9 @@ METADATA_ARCNAME = 'metadata.json'
 HEADERS_ARCNAME_SUFFIX = '_headers.json'
 ADC_ARCNAME_SUFFIX = '.csv'
 
-def bin2zip(b, zip_path):
-    with ZipFile(zip_path, 'w', compression=ZIP_STORED) as zip:
+def bin2zip_stream(b):
+    zip_stream = BytesIO()
+    with ZipFile(zip_stream, 'w', compression=ZIP_STORED) as zip:
         # bin metadata as JSON
         metadata = {
             'lid': b.lid,
@@ -39,6 +42,13 @@ def bin2zip(b, zip_path):
             arcname = image_lid + '.png'
             buf = format_image(b.images[target], mimetype='image/png')
             zip.writestr(arcname, buf.getvalue())
+    zip_stream.seek(0)
+    return zip_stream
+
+def bin2zip(b, zip_path):
+    zip_bytes = bin2zip_stream(b).getvalue()
+    with open(zip_path,'wb') as zout:
+        zout.write(zip_bytes)
 
 class ZipImages(BaseDictlike):
     def __init__(self, open_zip_file):
