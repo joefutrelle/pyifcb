@@ -37,11 +37,12 @@ def bin2zip_stream(b):
         b.adc.to_csv(buf, header=False)
         zip.writestr(b.lid + ADC_ARCNAME_SUFFIX, buf.getvalue())
         # images as PNGs
-        for target in b.images:
-            image_lid = b.pid.with_target(target, namespace=False)
-            arcname = image_lid + '.png'
-            buf = format_image(b.images[target], mimetype='image/png')
-            zip.writestr(arcname, buf.getvalue())
+        with b:
+            for target in b.images:
+                image_lid = b.pid.with_target(target, namespace=False)
+                arcname = image_lid + '.png'
+                buf = format_image(b.images[target], mimetype='image/png')
+                zip.writestr(arcname, buf.getvalue())
     zip_stream.seek(0)
     return zip_stream
 
