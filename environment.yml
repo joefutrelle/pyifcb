@@ -1,13 +1,13 @@
 name: pyifcb
 dependencies:
-- python>=3.5
-- scipy
-- pandas
-- h5py
-- requests
-- Pillow
-- scikit-image
-- pip
+- python>=3.7
+- scipy=1.2.1
+- pandas=0.24.2
+- h5py=2.9.0
+- requests=2.21.0
+- Pillow=6.0.0
+- scikit-image=0.14.2
+- pip=19.0.3
 - pip:
-  - rectpack
-  - pysmb
+  - rectpack==0.2.1
+  - pysmb==1.1.27
