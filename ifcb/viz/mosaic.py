@@ -12,11 +12,12 @@ import pandas as pd
 from ifcb.data.stitching import InfilledImages
 
 class Mosaic(object):
-    def __init__(self, the_bin, shape=(600, 800), scale=0.33, bg_color=200):
+    def __init__(self, the_bin, shape=(600, 800), scale=0.33, bg_color=200, coordinates=None):
         self.bin = the_bin
         self.shape = shape
         self.bg_color = bg_color
         self.scale = scale
+        self.coordinates = coordinates
     @lru_cache()
     def _shapes(self):
         hs, ws, ix = [], [], []
@@ -28,8 +29,9 @@ class Mosaic(object):
                 ws.append(math.floor(w * self.scale))
                 ix.append(target_number)
         return zip(hs, ws, ix)
-    @lru_cache()
     def pack(self):
+        if self.coordinates is not None:
+            return self.coordinates
         page_h, page_w = self.shape
         pages = [(page_h - 1, page_w - 1) for _ in range(20)]
         packer = newPacker(sort_algo=SORT_AREA, rotation=False, pack_algo=GuillotineBafSlas)
@@ -39,7 +41,8 @@ class Mosaic(object):
             packer.add_bin(*p)
         packer.pack()
         COLS = ['page', 'y', 'x', 'h', 'w', 'roi_number']
-        return pd.DataFrame(packer.rect_list(), columns=COLS)
+        self.coordinates = pd.DataFrame(packer.rect_list(), columns=COLS)
+        return self.coordinates
     def page(self, page=0):
         df = self.pack()
         page_h, page_w = self.shape
