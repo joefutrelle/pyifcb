@@ -6,7 +6,7 @@ from functools import lru_cache
 import pandas as pd
 
 from .identifiers import Pid
-from .adc import SCHEMA
+from .adc import SCHEMA, schema_names
 from io import BytesIO
 
 from .utils import BaseDictlike
@@ -34,7 +34,7 @@ def bin2zip_stream(b):
         # ADC as CSV
         buf = StringIO()
         # FIXME what float format to use?
-        b.adc.to_csv(buf, header=False)
+        b.adc.to_csv(buf, header=False, index=False)
         zip.writestr(b.lid + ADC_ARCNAME_SUFFIX, buf.getvalue())
         # images as PNGs
         with b:
@@ -115,8 +115,9 @@ class ZipBin(BaseBin):
     def adc(self):
         arcname = self.lid + ADC_ARCNAME_SUFFIX
         fin = self._zip.open(arcname)
-        adc = pd.read_csv(fin, header=None, index_col=0)
-        adc.columns = [c-1 for c in adc.columns]
+        adc = pd.read_csv(fin, header=None, index_col=False)
+        adc.columns = [c for c in adc.columns]
+        adc.index = pd.RangeIndex(1, len(adc) + 1)
         return adc
     @property
     @lru_cache()
