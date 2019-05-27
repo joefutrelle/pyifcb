@@ -29,11 +29,11 @@ class Mosaic(object):
                 ws.append(math.floor(w * self.scale))
                 ix.append(target_number)
         return zip(hs, ws, ix)
-    def pack(self):
+    def pack(self, max_pages=20):
         if self.coordinates is not None:
             return self.coordinates
         page_h, page_w = self.shape
-        pages = [(page_h - 1, page_w - 1) for _ in range(20)]
+        pages = [(page_h - 1, page_w - 1) for _ in range(max_pages)]
         packer = newPacker(sort_algo=SORT_AREA, rotation=False, pack_algo=GuillotineBafSlas)
         for r in self._shapes():
             packer.add_rect(*r)

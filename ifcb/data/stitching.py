@@ -237,15 +237,22 @@ class InfilledImages(BaseDictlike):
         else:
             # this is not a stitched image
             return self.bin.images[target_number]
+    @lru_cache()
+    def _shapes(self):
+        schema = self.bin.schema
+        h_attr = '_{}'.format(schema.ROI_HEIGHT + 1)
+        w_attr = '_{}'.format(schema.ROI_WIDTH + 1)
+        shapes = {}
+        for row in self.bin.images_adc.itertuples():
+            target_number = row.Index
+            h = getattr(row, h_attr)
+            w = getattr(row, w_attr)
+            shapes[target_number] = (h, w)
+        for target_number in self.stitcher:
+            shapes[target_number] = self.stitcher.shape(target_number)
+        return shapes
     def shape(self, target_number):
-        if target_number in self.stitcher:
-            return self.stitcher.shape(target_number)
-        else:
-            s = self.bin.schema
-            row = self.bin.images_adc.loc[target_number]
-            h = int(row[s.ROI_HEIGHT])
-            w = int(row[s.ROI_WIDTH])
-            return (h, w)
+        return self._shapes()[target_number]
     # convenience methods
     def raw_stitch(self, target_number):
         return self.stitcher[target_number]
