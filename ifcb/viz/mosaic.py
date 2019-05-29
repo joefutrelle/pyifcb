@@ -49,7 +49,10 @@ class Mosaic(object):
         page_image = np.zeros((page_h, page_w), dtype=np.uint8) + self.bg_color
         sdf = df[df.page == page]
         with self.bin:
-            ii = InfilledImages(self.bin)
+            if self.bin.schema == 1:
+                ii = InfilledImages(self.bin)
+            else:
+                ii = self.bin.images
             for index, row in sdf.iterrows():
                 y, x = row.y, row.x
                 h, w = row.h, row.w
