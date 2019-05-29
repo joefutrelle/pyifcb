@@ -32,6 +32,7 @@ SQ = np.array([[206, 205, 204, 206, 204],
        [206, 204, 159, 207, 205],
        [206, 204, 205, 206, 205]])
 
+@unittest.skip('deprecated feature')
 class TestSquare(unittest.TestCase):
     def setUp(self):
         b = get_fileset_bin(SL_BIN_LID)
@@ -47,6 +48,7 @@ class TestSquare(unittest.TestCase):
         assert sq.shape[0] == SQUARE_DEFAULT_SIZE
         assert sq.shape[1] == SQUARE_DEFAULT_SIZE
 
+@unittest.skip('deprecated feature')
 class TestSquareLetterboxed(unittest.TestCase):
     def setUp(self):
         b = get_fileset_bin(SL_BIN_LID)
