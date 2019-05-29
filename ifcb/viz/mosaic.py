@@ -9,6 +9,7 @@ from rectpack.guillotine import GuillotineBafSlas
 import numpy as np
 import pandas as pd
 
+from ifcb.data.adc import SCHEMA_VERSION_1
 from ifcb.data.stitching import InfilledImages
 
 class Mosaic(object):
@@ -49,7 +50,7 @@ class Mosaic(object):
         page_image = np.zeros((page_h, page_w), dtype=np.uint8) + self.bg_color
         sdf = df[df.page == page]
         with self.bin:
-            if self.bin.schema == 1:
+            if self.bin.schema == SCHEMA_VERSION_1:
                 ii = InfilledImages(self.bin)
             else:
                 ii = self.bin.images
