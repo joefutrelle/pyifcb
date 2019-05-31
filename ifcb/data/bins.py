@@ -104,12 +104,13 @@ class BaseBin(BaseDictlike):
         return self.headers[HUMIDITY]
     # convenience APIs for writing in different formats
     def read(self):
-        new_bin = BaseBin()
-        new_bin.pid = self.pid.copy()
-        new_bin.headers = self.headers.copy()
-        new_bin.adc = self.adc
-        new_bin.images = { k:v for k,v in self.images.items() }
-        return new_bin
+        with self:
+            new_bin = BaseBin()
+            new_bin.pid = self.pid.copy()
+            new_bin.headers = self.headers.copy()
+            new_bin.adc = self.adc
+            new_bin.images = { k:v for k,v in self.images.items() }
+            return new_bin
     def to_hdf(self, hdf_file, group=None, replace=True):
         from .hdf import bin2hdf
         bin2hdf(self, hdf_file, group=group, replace=replace)
