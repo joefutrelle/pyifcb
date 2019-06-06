@@ -98,12 +98,14 @@ def parse_adc_file(adc_file):
     :param adc_file: the pathname or URL of the ADC file,
       or a buffer containing the ADC data
     """
+    s = SCHEMA[Pid(adc_file).schema_version]
     try:
         df = pd.read_csv(adc_file, header=None, index_col=False)
+        if s == SCHEMA_VERSION_1:
+            df.pop(df.columns[-1]) # remove bogus final column
         df.index += 1 # index by 1-based ROI number
         return df
     except EmptyDataError:
-        s = SCHEMA[Pid(adc_file).schema_version]
         cols = s._cols
         return pd.DataFrame({c:[] for c in cols}, columns=cols)
     
@@ -217,7 +219,7 @@ class AdcFragment(AdcFile):
             n, buf = 1, BytesIO()
             for line in adc_file:
                 if n >= self.start:
-                    buf.write(line.encode('utf8'))
+                    buf.write(line.rstrip(',').encode('utf8'))
                 n += 1
                 if n == self.end:
                     break
