@@ -1,9 +1,11 @@
 import os
 import re
 
-def find_product_file(directory, filename):
+def find_product_file(directory, filename, exhaustive=False):
     for fn in os.listdir(directory):
-        if os.path.isdir(os.path.join(directory,fn)) and fn in filename:
+        if os.path.isdir(os.path.join(directory,fn)):
+            if not exhaustive and fn not in filename:
+                break
             child_directory = os.path.join(directory, fn)
             result = find_product_file(child_directory, filename)
             if result is not None:
