@@ -1,6 +1,8 @@
 import re
 import os
 
+import pandas as pd
+
 from ..identifiers import Pid
 from ..utils import BaseDictlike
 from .files import find_product_file, list_product_files
