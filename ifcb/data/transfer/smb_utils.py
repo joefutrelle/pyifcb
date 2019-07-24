@@ -33,11 +33,11 @@ def list_local_directory(path):
 class NameError(Exception):
     pass
 
-def get_netbios_name(remote_addr):
+def get_netbios_name(remote_addr, timeout=DEFAULT_TIMEOUT):
     nb = NetBIOS()
-    names = nb.queryIPForName(remote_addr)
+    names = nb.queryIPForName(remote_addr, timeout=timeout)
     nb.close()
-    if len(names) == 0:
+    if names is None or len(names) == 0:
         raise NameError('No NetBIOS name found for {}'.format(remote_addr))
     elif len(names) > 1:
         logging.warn('More than one NetBIOS name for {}'.format(remote_addr))
@@ -46,7 +46,7 @@ def get_netbios_name(remote_addr):
 def smb_connect(remote_server, username, password, timeout=DEFAULT_TIMEOUT):
 
     logging.debug('Querying NetBIOS for name of {}'.format(remote_server))
-    remote_name = get_netbios_name(remote_server)
+    remote_name = get_netbios_name(remote_server, timeout=timeout)
     logging.debug('Name is {}'.format(remote_name))
 
     logging.debug('Connecting to {}'.format(remote_server))
