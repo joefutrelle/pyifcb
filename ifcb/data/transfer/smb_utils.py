@@ -69,8 +69,18 @@ def smb_connection(remote_server, username, password, timeout=DEFAULT_TIMEOUT):
 
         c.close()
 
+def do_nothing(*args, **kw):
+    pass
+
+def progress(total_files, n_copied, fn):
+    return {
+        'total': total_files,
+        'copied': n_copied,
+        'filename': fn,
+    }
+
 def smb_sync_directory(remote_server, username, password, remote_path, local_path,
-    timeout=DEFAULT_TIMEOUT, limit=None):
+    timeout=DEFAULT_TIMEOUT, limit=None, progress_callback=do_nothing):
     """copies a remote directory to a local one (non-recursive).
     remote_server = remote server DNS name or IP address
     username = Samba username on remote server
@@ -82,6 +92,7 @@ def smb_sync_directory(remote_server, username, password, remote_path, local_pat
     Does not recurse into subdirectories."""
     local_files = list_local_directory(local_path)
 
+    total_files = 0
     n_copied = 0
 
     with smb_connection(remote_server, username, password, timeout=timeout) as c:
@@ -109,10 +120,15 @@ def smb_sync_directory(remote_server, username, password, remote_path, local_pat
                     os.remove(download_path)
 
         for rf in remote_files:
+            total_files += 1
+
             if limit is not None and n_copied == limit:
                 return
 
             name = rf.filename
+
+            progress_callback(progress(total_files, n_copied, name))
+
             local_file = os.path.join(local_path, name)
             try:
                 if name not in local_files:
