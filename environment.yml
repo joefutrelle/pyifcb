@@ -1,4 +1,6 @@
 name: pyifcb
+channels:
+  - conda-forge
 dependencies:
 - python>=3.6
 - scipy=1.2.1
