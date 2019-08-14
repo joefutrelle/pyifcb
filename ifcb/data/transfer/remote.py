@@ -34,6 +34,7 @@ class RemoteIfcb(object):
     def close(self):
         if self._c is not None:
             self._c.close()
+            self._c = None
     def __enter__(self):
         if self.connect:
             self.open()
