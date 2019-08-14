@@ -54,12 +54,16 @@ class RemoteIfcb(object):
                 return True
             except:
                 return False
-    def share_exists(self):
+    def list_shares(self):
         self.ensure_connected()
         for share in self._c.listShares():
             if share.type == SharedDevice.DISK_TREE:
-                if share.name.lower() == self.share.lower():
-                    return True
+                yield share.name
+    def share_exists(self):
+        self.ensure_connected()
+        for share in self.list_shares():
+            if share.lower() == self.share.lower():
+                return True
         return False
     def list_filesets(self):
         """list fileset lids, most recent first"""
@@ -95,13 +99,18 @@ class RemoteIfcb(object):
                 self._c.retrieveFile(self.share, remote_path, fout, timeout=self.timeout)
             os.rename(temp_local_path, local_path)
     def sync(self, local_directory, progress_callback=do_nothing):
+        # local_directory can be
+        # * a path, or
+        # * a callbale returning a path when passed a bin lid
         self.ensure_connected()
         fss = self.list_filesets()
         copied = []
         failed = []
         for lid in fss:
             try:
-                self.transfer_fileset(lid, local_directory, skip_existing=True)
+                if callable(local_directory):
+                    destination_directory = local_directory(lid)
+                self.transfer_fileset(lid, destination_directory, skip_existing=True)
                 copied.append(lid)
             except:
                 failed.append(lid)

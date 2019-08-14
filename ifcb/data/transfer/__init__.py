@@ -1,1 +1,1 @@
-from .remote import RemoteIfcb
+from .remote import RemoteIfcb, IfcbConnectionError
