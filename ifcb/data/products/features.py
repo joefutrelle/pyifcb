@@ -31,7 +31,7 @@ class FeaturesDirectory(BaseDictlike):
         for p in list_product_files(self.path, fn_regex):
             # parse the filename as a pid
             bin_lid = Pid(os.path.basename(p)).bin_lid
-            yield FeaturesFile(p, bin_lid, version=self.version)
+            yield bin_lid
     def __repr__(self):
         return '<FeaturesDirectory {}>'.format(self.path)
 

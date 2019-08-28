@@ -33,7 +33,7 @@ class BlobDirectory(BaseDictlike):
         for p in list_product_files(self.path, fn_regex):
             # parse the filename as a pid
             bin_lid = Pid(os.path.basename(p)).bin_lid
-            yield BlobFile(p, bin_lid, version=self.version)
+            yield bin_lid
     def __repr__(self):
         return '<BlobDirectory {}>'.format(self.path)
 
