@@ -18,19 +18,21 @@ To create a conda environment called "pyifcb":
 
 ```
 conda env create -f environment.yml
+conda activate pyifcb
 python setup.py install
 ```
 
-Or with a Python 3 conda environment already activated:
+Or to update an existing conda environment:
 
 ```
-conda install --file requirements.txt
+conda update -n {name of existing envrionment} -f environment.yml
+conda activate {name of existing environment}
 python setup.py install
 ```
+
+If you want to update your pyifcb installation when the code is updated, use `python setup.py develop` instead.
 
 ## Status
-
-As of 2018-03-26 project scope has expanded to include a much larger set of capabilities including database management and web services.
 
 As of 2017-04-28 pyifcb requires Python 3.
 
