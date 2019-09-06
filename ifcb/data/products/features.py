@@ -13,13 +13,19 @@ class FeaturesDirectory(BaseDictlike):
         self.path = path
         if version is None:
             version = 2
-        self.version = str(version)
+        self.version = int(version)
     def __getitem__(self, bin_lid):
         year = Pid(bin_lid).year
         filename = '{}_fea_v{}.csv'.format(bin_lid, self.version)
-        legacy_path = os.path.join(self.path, 'features{}_v{}'.format(year, self.version), filename)
-        if os.path.exists(legacy_path):
-            return FeaturesFile(legacy_path, bin_lid, version=self.version)
+        # legacy refers to v2 features
+        if self.version == 2:
+            legacy_dir = 'features{}_v{}'.format(year, self.version)
+            legacy_path = os.path.join(self.path, legacy_dir, filename)
+            if os.path.exists(legacy_path):
+                return FeaturesFile(legacy_path, bin_lid, version=self.version)
+            if os.path.exists(os.path.join(self.path, legacy_dir)): # the legacy dir is there, but not the features file
+                # avoid searching massive directories
+                raise KeyError(bin_lid)
         path = find_product_file(self.path, filename, exhaustive=True)
         if path is not None:
             return FeaturesFile(path, bin_lid, version=self.version)
