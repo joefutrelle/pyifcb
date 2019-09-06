@@ -38,6 +38,8 @@ def parse_hdr(lines):
     """
     lines = [line.rstrip() for line in lines]
     props = {}
+    if not lines:
+        return {}
     if lines[0] == 'Imaging FlowCytobot Acquisition Software version 2.0; May 2010':
         props = { CONTEXT: lines[0] } # FIXME parse
     elif re.match(r'^softwareVersion:',lines[0]):
