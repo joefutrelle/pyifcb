@@ -15,7 +15,11 @@ class FeaturesDirectory(BaseDictlike):
             version = 2
         self.version = str(version)
     def __getitem__(self, bin_lid):
+        year = Pid(bin_lid).year
         filename = '{}_fea_v{}.csv'.format(bin_lid, self.version)
+        legacy_path = os.path.join(self.path, 'features{}_v{}'.format(year, self.version), filename)
+        if os.path.exists(legacy_path):
+            return FeaturesFile(legacy_path, bin_lid, version=self.version)
         path = find_product_file(self.path, filename, exhaustive=True)
         if path is not None:
             return FeaturesFile(path, bin_lid, version=self.version)
