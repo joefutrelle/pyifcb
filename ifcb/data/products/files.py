@@ -2,8 +2,12 @@ import os
 import re
 
 def find_product_file(directory, filename, exhaustive=False):
-    for fn in os.listdir(directory):
-        if os.path.isdir(os.path.join(directory,fn)):
+    candidate = os.path.join(directory, filename)
+    if os.path.exists(candidate):
+        return candidate
+    for dir_entry in os.scandir(directory):
+        fn = dir_entry.name
+        if dir_entry.is_dir():
             if not exhaustive and fn not in filename:
                 continue
             child_directory = os.path.join(directory, fn)
@@ -15,9 +19,10 @@ def find_product_file(directory, filename, exhaustive=False):
     return None
 
 def list_product_files(directory, regex):
-    for fn in os.listdir(directory):
-        path = os.path.join(directory, fn)
-        if os.path.isdir(path):
+    for dir_entry in os.scandir(directory):
+        fn = dir_entry.name
+        path = dir_entry.path
+        if dir_entry.is_dir():
             yield from list_product_files(path, regex)
         elif re.match(regex, fn):
             yield os.path.join(directory, fn)
