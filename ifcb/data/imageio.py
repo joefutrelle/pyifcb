@@ -29,11 +29,8 @@ def format_image(array, mimetype='image/png'):
     if array.dtype == np.bool:
         array = array.astype(np.uint8)
         array *= 255
-        pil = Image.fromarray(array)
-        pil.save(buf, fmt)
-    else:
-        pil = Image.fromarray(array)
-        pil.save(buf, fmt)
+    pil = Image.fromarray(array)
+    pil.save(buf, fmt)
     buf.seek(0)
     return buf
 

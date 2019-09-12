@@ -148,7 +148,7 @@ def infill_image(raw_stitch):
         infill_value = int(round(np.mean(raw_stitch[boundary])))
         fill_image = np.full(raw_stitch.shape, dtype=np.uint8, fill_value=infill_value)
     else:
-        fill_image = np.zeros(raw_stitch.shape)
+        fill_image = np.zeros(raw_stitch.shape, dtype=np.uint8)
     infill = np.ma.array(fill_image, mask=np.logical_not(raw_stitch.mask))
     return infill
     
