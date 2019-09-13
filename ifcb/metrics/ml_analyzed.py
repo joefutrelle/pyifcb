@@ -52,6 +52,17 @@ def compute_ml_analyzed_s1_adc(adc):
 def compute_ml_analyzed_s1(abin):
     return compute_ml_analyzed_s1_adc(abin.adc)
 
+
+def compute_ml_analyzed_s2_adc(abin):
+    """compute ml_analyzed for a new instrument, based on ADC file"""
+    FLOW_RATE = 0.25 # ml/minute
+    last_row = abin.adc.iloc[-1]
+    run_time = last_row[abin.schema.RUN_TIME]
+    inhibit_time = last_row[abin.schema.INHIBIT_TIME]
+    look_time = run_time - inhibit_time
+    ml_analyzed = 0.25 * (look_time / 60.)
+    return ml_analyzed, look_time, run_time
+
 def compute_ml_analyzed_s2(abin):
     """compute ml_analyzed for a new instrument"""
     FLOW_RATE = 0.25 # ml/minute
@@ -60,6 +71,8 @@ def compute_ml_analyzed_s2(abin):
     inhibit_time = abin.headers['inhibitTime']
     look_time = run_time - inhibit_time
     ml_analyzed = FLOW_RATE * (look_time / 60.)
+    if ml_analyzed == 0:
+        return compute_ml_analyzed_s2_adc(abin)
     return ml_analyzed, look_time, run_time
 
 def compute_ml_analyzed(abin):
