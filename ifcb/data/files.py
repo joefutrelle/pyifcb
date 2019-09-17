@@ -268,8 +268,8 @@ def list_filesets(dirpath, blacklist=DEFAULT_BLACKLIST, whitelist=DEFAULT_WHITEL
             if d in blacklist:
                 dirnames.remove(d)
         if sort:
-            dirnames.sort()
-            filenames.sort()
+            dirnames.sort(reverse=True)
+            filenames.sort(reverse=True)
         for f in filenames:
             basename, extension = f[:-4], f[-3:]
             if extension == 'adc' and basename+'.hdr' in filenames and basename+'.roi' in filenames:
