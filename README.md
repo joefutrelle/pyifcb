@@ -39,3 +39,4 @@ As of 2017-04-28 pyifcb requires Python 3.
 As of 2017-01-04 this is mostly complete and the APIs are not likely to change much, but there is no stable release yet so APIs may still change. The Wiki and code-level documentation is up to date.
 
 [![Build Status](https://travis-ci.org/joefutrelle/pyifcb.svg?branch=master)](https://travis-ci.org/joefutrelle/pyifcb)
+
