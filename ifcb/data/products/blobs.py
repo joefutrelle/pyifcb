@@ -41,6 +41,7 @@ class BlobFile(BaseDictlike):
     def __init__(self, path, bin_lid, version='2'):
         self.path = path
         self.bin_lid = bin_lid
+        self.version = version
         self._zipfile = None
     def open(self):
         if self._zipfile is None:
