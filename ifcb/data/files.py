@@ -11,7 +11,7 @@ from .identifiers import Pid
 from .adc import AdcFile, AdcFragment
 from .hdr import parse_hdr_file
 from .roi import RoiFile
-from .utils import BaseDictlike
+from .utils import BaseDictlike, CaseInsensitiveDict
 from .bins import BaseBin
 
 DEFAULT_BLACKLIST = ['skip','beads']
@@ -173,6 +173,9 @@ class FilesetBin(BaseBin):
         The header dict
         """
         return self.hdr_attributes
+    def header(self, key):
+        ci_dict = CaseInsensitiveDict(self.hdr_attributes)
+        return ci_dict[key]
     @property
     def adc(self):
         """

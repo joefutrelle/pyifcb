@@ -98,10 +98,10 @@ class BaseBin(BaseDictlike):
         return 1.0 * len(self) / self.run_time
     @property
     def temperature(self):
-        return self.headers[TEMPERATURE]
+        return self.header(TEMPERATURE)
     @property
     def humidity(self):
-        return self.headers[HUMIDITY]
+        return self.header(HUMIDITY)
     # convenience APIs for writing in different formats
     def read(self):
         with self:
