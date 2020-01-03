@@ -74,8 +74,8 @@ def compute_ml_analyzed_s2(abin):
     """compute ml_analyzed for a new instrument"""
     FLOW_RATE = 0.25 # ml/minute
     # ml analyzed is (run time - inhibit time) * flow rate
-    run_time = abin.headers['runTime']
-    inhibit_time = abin.headers['inhibitTime']
+    run_time = abin.header('runTime')
+    inhibit_time = abin.header('inhibitTime')
     look_time = run_time - inhibit_time
     ml_analyzed = FLOW_RATE * (look_time / 60.)
     if ml_analyzed == 0:
