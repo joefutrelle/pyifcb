@@ -33,6 +33,7 @@ class ClassScoresDirectory(BaseDictlike):
         path = find_product_file(self.path, filename, exhaustive=self.exhaustive)
         if path is not None:
             return ClassScoresFile(path, bin_lid, version=2)
+        raise KeyError(bin_lid)
     def __getitem__(self, bin_lid):
         if self.version == 1:
             return self._get_v1_file(bin_lid)
