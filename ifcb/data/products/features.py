@@ -26,7 +26,7 @@ class FeaturesDirectory(BaseDictlike):
             if os.path.exists(os.path.join(self.path, legacy_dir)): # the legacy dir is there, but not the features file
                 # avoid searching massive directories
                 raise KeyError(bin_lid)
-        path = find_product_file(self.path, filename, exhaustive=True)
+        path = find_product_file(self.path, filename, exhaustive=False)
         if path is not None:
             return FeaturesFile(path, bin_lid, version=self.version)
         raise KeyError(bin_lid)
