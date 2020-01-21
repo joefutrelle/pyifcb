@@ -43,22 +43,23 @@ def get_netbios_name(remote_addr, timeout=DEFAULT_TIMEOUT):
         logging.warn('More than one NetBIOS name for {}'.format(remote_addr))
     return names[0]
 
-def smb_connect(remote_server, username, password, timeout=DEFAULT_TIMEOUT):
+def smb_connect(remote_server, username, password, netbios_name=None, timeout=DEFAULT_TIMEOUT):
 
-    logging.debug('Querying NetBIOS for name of {}'.format(remote_server))
-    remote_name = get_netbios_name(remote_server, timeout=timeout)
-    logging.debug('Name is {}'.format(remote_name))
+    if netbios_name is None:
+        logging.debug('Querying NetBIOS for name of {}'.format(remote_server))
+        netbios_name = get_netbios_name(remote_server, timeout=timeout)
+        logging.debug('Name is {}'.format(netbios_name))
 
     logging.debug('Connecting to {}'.format(remote_server))
 
-    c = SMBConnection(username, password, 'ignore', remote_name)
+    c = SMBConnection(username, password, 'ignore', netbios_name)
     c.connect(remote_server, timeout=timeout)
 
     return c
 
 @contextmanager
-def smb_connection(remote_server, username, password, timeout=DEFAULT_TIMEOUT):
-    c = smb_connect(remote_server, username, password, timeout)
+def smb_connection(remote_server, username, password, netbios_name=None, timeout=DEFAULT_TIMEOUT):
+    c = smb_connect(remote_server, username, password, netbios_name, timeout)
 
     try:
         yield c

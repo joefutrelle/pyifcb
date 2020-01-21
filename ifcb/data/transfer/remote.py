@@ -15,7 +15,7 @@ def do_nothing(*args, **kw):
     pass
 
 class RemoteIfcb(object):
-    def __init__(self, addr, username, password, timeout=DEFAULT_TIMEOUT,
+    def __init__(self, addr, username, password, netbios_name=None, timeout=DEFAULT_TIMEOUT,
                     share=DEFAULT_SHARE, connect=True):
         self.addr = addr
         self.username = username
@@ -23,12 +23,13 @@ class RemoteIfcb(object):
         self.timeout = timeout
         self.share = share
         self.connect = connect
+        self.netbios_name = netbios_name
         self._c = None
     def open(self):
         if self._c is not None:
             return
         try:
-            self._c = smb_connect(self.addr, self.username, self.password, self.timeout)
+            self._c = smb_connect(self.addr, self.username, self.password, self.netbios_name, self.timeout)
         except:
             raise IfcbConnectionError('unable to connect to IFCB')
     def close(self):
@@ -46,6 +47,8 @@ class RemoteIfcb(object):
             raise IfcbConnectionError('IFCB is not connected')
     def is_responding(self):
         # tries to get NetBIOS name to see if IFCB is responding
+        if self.netbios_name is not None:
+            return True # FIXME determine connection state
         if self._c is not None:
             return True
         else:
