@@ -93,6 +93,12 @@ class RoiFile(BaseDictlike):
         return self
     def __exit__(self, *args):
         self.close()
+    def shape(self, roi_number):
+        roi_number = int(roi_number)
+        s = self.adc.schema
+        width = self.csv[s.ROI_WIDTH][roi_number]
+        height = self.csv[s.ROI_HEIGHT][roi_number]
+        return (height, width)
     def get_image(self, roi_number):
         """
         Read an image from the file. Note that the dict-like
