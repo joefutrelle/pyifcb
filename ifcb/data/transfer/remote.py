@@ -84,8 +84,10 @@ class RemoteIfcb(object):
             if c == 3: # complete fileset
                 complete_sets.append(lid)
         return sorted(complete_sets, reverse=True)
-    def transfer_fileset(self, lid, local_directory, skip_existing=True):
+    def transfer_fileset(self, lid, local_directory, skip_existing=True, create_directories=True):
         self.ensure_connected()
+        if create_directories:
+            os.makedirs(local_directory, exist_ok=True)
         for ext in ['hdr', 'adc', 'roi']:
             fn = '{}.{}'.format(lid, ext)
             local_path = os.path.join(local_directory, fn)
@@ -117,6 +119,7 @@ class RemoteIfcb(object):
                 copied.append(lid)
             except:
                 failed.append(lid)
+                raise
             progress_callback({
                 'total': len(fss),
                 'copied': copied,
