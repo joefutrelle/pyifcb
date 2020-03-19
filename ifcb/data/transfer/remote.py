@@ -103,7 +103,7 @@ class RemoteIfcb(object):
             with open(temp_local_path, 'wb') as fout:
                 self._c.retrieveFile(self.share, remote_path, fout, timeout=self.timeout)
             os.rename(temp_local_path, local_path)
-    def sync(self, local_directory, progress_callback=do_nothing):
+    def sync(self, local_directory, progress_callback=do_nothing, fileset_callback=do_nothing):
         # local_directory can be
         # * a path, or
         # * a callbale returning a path when passed a bin lid
@@ -117,6 +117,7 @@ class RemoteIfcb(object):
                     destination_directory = local_directory(lid)
                 self.transfer_fileset(lid, destination_directory, skip_existing=True)
                 copied.append(lid)
+                fileset_callback(lid)
             except:
                 failed.append(lid)
                 raise
