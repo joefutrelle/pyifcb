@@ -29,6 +29,20 @@ HDR_COLUMNS = ['Temp', 'Humidity', 'BinarizeThresh', 'PMT1hv(ssc)', 'PMT2hv(chl)
 
 CONTEXT = 'context'
 
+def parse_alt_header(lines):
+    props = {}
+    for line in lines:
+        m = re.match(r'^run time = ([\d.]+) s\s+inhibit time = ([\d.]+)', line)
+        if m:
+            props['runTime'] = float(m.group(1))
+            props['inhibitTime'] = float(m.group(2))
+            continue
+        m = re.match(r'([\d.]+) temperature,\s+([\d.]+) humidity', line)
+        if m:
+            props['temperature'] = float(m.group(1))
+            props['humidity'] = float(m.group(2))
+    return props
+
 def parse_hdr(lines):
     """
     Given the lines of a header file, return the properties in it.
@@ -40,6 +54,8 @@ def parse_hdr(lines):
     if not lines:
         return {}
     if lines[0] == 'Imaging FlowCytobot Acquisition Software version 2.0; May 2010':
+        if lines[1].startswith('Sample Date'):
+            return parse_alt_header(lines)
         props = { CONTEXT: lines[0] } # FIXME parse
     elif re.match(r'^[Ss]oftwareVersion:',lines[0]):
         props = { CONTEXT: lines[0] }
