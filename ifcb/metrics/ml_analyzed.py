@@ -60,14 +60,14 @@ def compute_ml_analyzed_s2_adc(abin):
         run_time = row[abin.schema.RUN_TIME]
         inhibit_time = row[abin.schema.INHIBIT_TIME]
         look_time = run_time - inhibit_time
-        ml_analyzed = 0.25 * (look_time / 60.)
+        ml_analyzed = FLOW_RATE * (look_time / 60.)
         return ml_analyzed, look_time, run_time
     last_row = abin.adc.iloc[-1]
-    ml_analyzed, look_time, run_time = ma(last_row)
-    if ml_analyzed <= 0:
-        if len(abin.adc) > 1:
-            row = abin.adc.iloc[-2]
-            ml_analyzed, look_time, run_time = ma(row)
+    if abs(last_row[abin.schema.RUN_TIME] - last_row[abin.schema.ADC_TIME]) > 0.3 and len(abin.adc) > 1:
+        row = abin.adc.iloc[-2]
+        ml_analyzed, look_time, run_time = ma(row)
+    else:
+        ml_analyzed, look_time, run_time = ma(last_row)
     return ml_analyzed, look_time, run_time
 
 def compute_ml_analyzed_s2(abin):
