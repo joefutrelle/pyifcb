@@ -103,6 +103,10 @@ class RemoteIfcb(object):
             with open(temp_local_path, 'wb') as fout:
                 self._c.retrieveFile(self.share, remote_path, fout, timeout=self.timeout)
             os.rename(temp_local_path, local_path)
+    def delete_fileset(self, lid):
+        self.ensure_connected()
+        for ext in ['hdr', 'adc', 'roi']:
+            self._c.deleteFiles(self.share, '{}.{}'.format(lid, ext))
     def sync(self, local_directory, progress_callback=do_nothing, fileset_callback=do_nothing):
         # local_directory can be
         # * a path, or
