@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
 
+import scipy.stats as stats
+
 from ifcb.data.adc import SCHEMA_VERSION_1, SCHEMA_VERSION_2
 
 def read_ml_analyzed(path):
@@ -56,18 +58,29 @@ def compute_ml_analyzed_s1(abin):
 def compute_ml_analyzed_s2_adc(abin):
     """compute ml_analyzed for a new instrument, based on ADC file"""
     FLOW_RATE = 0.25 # ml/minute
+    s = abin.schema
+    adc = abin.adc
     def ma(row):
-        run_time = row[abin.schema.RUN_TIME]
-        inhibit_time = row[abin.schema.INHIBIT_TIME]
+        run_time = row[s.RUN_TIME]
+        inhibit_time = row[s.INHIBIT_TIME]
         look_time = run_time - inhibit_time
         ml_analyzed = FLOW_RATE * (look_time / 60.)
         return ml_analyzed, look_time, run_time
-    last_row = abin.adc.iloc[-1]
-    if abs(last_row[abin.schema.RUN_TIME] - last_row[abin.schema.ADC_TIME]) > 0.3 and len(abin.adc) > 1:
-        row = abin.adc.iloc[-2]
+    last_row = adc.iloc[-1]
+    if abs(last_row[s.RUN_TIME] - last_row[s.ADC_TIME]) > 0.3 and len(abin.adc) > 1:
+        row = adc.iloc[-2]
         ml_analyzed, look_time, run_time = ma(row)
     else:
         ml_analyzed, look_time, run_time = ma(last_row)
+    if ml_analyzed <= 0:
+        row = adc.iloc[-2]
+        run_time = row[s.ADC_TIME]
+        nz = adc[s.RUN_TIME].nonzero()[0]
+        mode_inhibit_time = stats.mode(np.diff(adc[s.INHIBIT_TIME].iloc[nz]))[0][0]
+        last_good_inhibit_time = adc[s.INHIBIT_TIME].iloc[nz[-1]]
+        inhibit_time = last_good_inhibit_time + (len(adc) - len(nz)) * mode_inhibit_time
+        look_time = run_time - inhibit_time
+        ml_analyzed = FLOW_RATE * (look_time / 60)
     return ml_analyzed, look_time, run_time
 
 def compute_ml_analyzed_s2(abin):
