@@ -74,7 +74,7 @@ def compute_ml_analyzed_s2_adc(abin):
         row = adc.iloc[-2]
         run_time = row[s.ADC_TIME]
         nz = adc[s.RUN_TIME].to_numpy().nonzero()[0]
-        mode_inhibit_time = mode(np.diff(adc[s.INHIBIT_TIME].iloc[nz]))[0][0]
+        mode_inhibit_time = stats.mode(np.diff(adc[s.INHIBIT_TIME].iloc[nz]))[0][0]
         last_good_inhibit_time = adc[s.INHIBIT_TIME].iloc[nz[-1]]
         inhibit_time = last_good_inhibit_time + (len(adc) - len(nz)) * mode_inhibit_time
         look_time = run_time - inhibit_time
