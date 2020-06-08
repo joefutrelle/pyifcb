@@ -89,9 +89,10 @@ def compute_ml_analyzed_s2(abin):
     inhibit_time = abin.header('inhibitTime')
     look_time = run_time - inhibit_time
     ml_analyzed = FLOW_RATE * (look_time / 60.)
-    if ml_analyzed == 0:
+    if look_time > 0:
+        return ml_analyzed, look_time, run_time
+    else:
         return compute_ml_analyzed_s2_adc(abin)
-    return ml_analyzed, look_time, run_time
 
 def compute_ml_analyzed(abin):
     """returns ml_analyzed, look time, run time"""
