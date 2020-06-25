@@ -16,7 +16,7 @@ def do_nothing(*args, **kw):
 
 class RemoteIfcb(object):
     def __init__(self, addr, username, password, netbios_name=None, timeout=DEFAULT_TIMEOUT,
-                    share=DEFAULT_SHARE, connect=True):
+                    share=DEFAULT_SHARE, directory='', connect=True):
         self.addr = addr
         self.username = username
         self.password = password
@@ -24,6 +24,7 @@ class RemoteIfcb(object):
         self.share = share
         self.connect = connect
         self.netbios_name = netbios_name
+        self.directory = directory
         self._c = None
     def open(self):
         if self._c is not None:
@@ -72,7 +73,7 @@ class RemoteIfcb(object):
         """list fileset lids, most recent first"""
         self.ensure_connected()
         fs = defaultdict(lambda: 0)
-        for f in self._c.listPath(self.share, ''):
+        for f in self._c.listPath(self.share, self.directory):
             if f.isDirectory:
                 continue
             fn = f.filename
@@ -91,7 +92,7 @@ class RemoteIfcb(object):
         for ext in ['hdr', 'adc', 'roi']:
             fn = '{}.{}'.format(lid, ext)
             local_path = os.path.join(local_directory, fn)
-            remote_path = fn
+            remote_path = os.path.join(self.directory, fn)
             temp_local_path = local_path + '.temp_download'
 
             if skip_existing and os.path.exists(local_path):
