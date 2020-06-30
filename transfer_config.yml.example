@@ -1,0 +1,16 @@
+dashboard:
+  url: http://localhost:8000 # base URL of dashboard, no trailing slash
+ifcbs:
+  underway: # you can call each IFCB whatever you want
+    address: 10.0.0.23
+    username: some_username # username to connect to IFCB
+    password: some_password # password to connect to IFCB
+    share: Data
+    destination: D:\my_ifcb_data # local path where files will be copied to
+    dataset: underway # name of dataset in dashboard
+  discrete: # here's a minimal config example
+    address: 10.0.0.24
+    username: ifcb
+    password: ifcb
+    destination: D:\my_data
+    dataset: discrete
