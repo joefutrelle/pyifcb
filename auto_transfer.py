@@ -1,6 +1,7 @@
 import os
 import time
 import logging
+import traceback
 
 import requests
 import yaml
@@ -35,8 +36,6 @@ def sync_ifcb(name, dashboard_url, ifcb_config):
         else:
             dest = destination_directory
 
-        logging.info(f'copying files for {lid} into {dest}...')
-
         return dest
 
     def hit_sync_endpoint(lid):
@@ -47,27 +46,33 @@ def sync_ifcb(name, dashboard_url, ifcb_config):
         except:
             logging.error(f'unable to reach {url}, {lid} not synced!')
 
-    ifcb = RemoteIfcb(address, username, password, netbios_name=netbios_name, share=share, directory=directory)
-
     logging.info(f'connecting to {name} ...')
 
-    with ifcb:
-        ifcb.sync(destination, fileset_callback=hit_sync_endpoint)
+    try:
+        ifcb = RemoteIfcb(address, username, password, netbios_name=netbios_name, share=share, directory=directory)
+
+        with ifcb:
+            ifcb.sync(destination, fileset_callback=hit_sync_endpoint)
+            logging.info(f'completed transferring from {name}')
+    except:
+        logging.error(f'unable to transfer from {name}')
+        traceback.print_exc()
 
 def sync_ifcbs(config):
     dashboard_url = config['dashboard']['url']
     logging.info(f'dashboard URL = {dashboard_url}')
 
     for name, ifcb_config in config['ifcbs'].items():
-        print(f'transferring from {name}...')
+        logging.info(f'transferring from {name}...')
         sync_ifcb(name, dashboard_url, ifcb_config)
 
 def main(config_file='transfer_config.yml'):
     config = load_config(config_file)
-
+    sleep = config.get('sleep',60)
     while True:
         sync_ifcbs(config)
-        time.sleep(5000)
+        logging.info(f'pausing for {sleep}s ...')
+        time.sleep(sleep)
 
 if __name__ == '__main__':
     main() 
