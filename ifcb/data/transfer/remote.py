@@ -89,6 +89,7 @@ class RemoteIfcb(object):
         self.ensure_connected()
         if create_directories:
             os.makedirs(local_directory, exist_ok=True)
+        n_copied = 0
         for ext in ['hdr', 'adc', 'roi']:
             fn = '{}.{}'.format(lid, ext)
             local_path = os.path.join(local_directory, fn)
@@ -104,6 +105,8 @@ class RemoteIfcb(object):
             with open(temp_local_path, 'wb') as fout:
                 self._c.retrieveFile(self.share, remote_path, fout, timeout=self.timeout)
             os.rename(temp_local_path, local_path)
+            n_copied += 1
+        return n_copied > 0
     def delete_fileset(self, lid):
         self.ensure_connected()
         for ext in ['hdr', 'adc', 'roi']:
@@ -120,12 +123,13 @@ class RemoteIfcb(object):
             try:
                 if callable(local_directory):
                     destination_directory = local_directory(lid)
-                self.transfer_fileset(lid, destination_directory, skip_existing=True)
-                copied.append(lid)
-                fileset_callback(lid)
+                was_copied = self.transfer_fileset(lid, destination_directory, skip_existing=True)
+                if was_copied:
+                    copied.append(lid)
+                    fileset_callback(lid)
             except:
                 failed.append(lid)
-                raise
+                pass
             progress_callback({
                 'total': len(fss),
                 'copied': copied,
