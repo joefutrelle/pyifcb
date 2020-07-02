@@ -1,2 +1,3 @@
-This is some test text
+This is some test text, which I just modified
 
+This is an addition line
