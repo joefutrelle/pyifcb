@@ -8,6 +8,7 @@ ifcbs:
     password: some_password # password to connect to IFCB
     share: Data
     destination: D:\my_ifcb_data # local path where files will be copied to
+    beads_destination: D:\my_beads # local path where beads will be copied to
     dataset: underway # name of dataset in dashboard
   discrete: # here's a minimal config example
     address: 10.0.0.24
