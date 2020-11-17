@@ -9,6 +9,7 @@ dependencies:
 - requests
 - Pillow
 - scikit-image
+- pyyaml
 - pip
 - pip:
   - rectpack
