@@ -27,7 +27,11 @@ def sync_ifcb(name, dashboard_url, ifcb_config):
     share = ifcb_config.get('share','Data')
     directory = ifcb_config.get('directory','')
     destination_directory = ifcb_config.get('destination')
-    dataset = ifcb_config['dataset']
+    beads_destination_directory = ifcb_config.get('beads_destination')
+    dataset = ifcb_config.get('dataset')
+    timeout = int(ifcb_config.get('timeout',30))
+    if dataset is None:
+        raise ValueError('dataset must be specified')
     day_dirs = ifcb_config.get('day_dirs',False)
 
     def destination(lid):
@@ -49,7 +53,8 @@ def sync_ifcb(name, dashboard_url, ifcb_config):
     logging.info(f'connecting to {name} ...')
 
     try:
-        ifcb = RemoteIfcb(address, username, password, netbios_name=netbios_name, share=share, directory=directory)
+        ifcb = RemoteIfcb(address, username, password, netbios_name=netbios_name,
+            share=share, directory=directory, timeout=timeout)
 
         with ifcb:
             ifcb.sync(destination, fileset_callback=hit_sync_endpoint)
@@ -57,6 +62,20 @@ def sync_ifcb(name, dashboard_url, ifcb_config):
     except:
         logging.error(f'unable to transfer from {name}')
         traceback.print_exc()
+
+    if beads_destination_directory is not None:
+        logging.info(f'transferring beads ...')
+
+        try:
+            ifcb = RemoteIfcb(address, username, password, netbios_name=netbios_name,
+                share=share, directory='beads', timeout=timeout)
+
+            with ifcb:
+                ifcb.sync(beads_destination_directory)
+                logging.info(f'completed transferring beads from {name}')
+        except:
+            logging.error(f'unable to transfer beads from {name}')
+            traceback.print_exc()
 
 def sync_ifcbs(config):
     dashboard_url = config['dashboard']['url']

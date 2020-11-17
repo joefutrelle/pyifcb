@@ -6,3 +6,4 @@ Pillow
 rectpack
 scikit-image
 pysmb
+pyyaml
