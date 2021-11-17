@@ -36,7 +36,16 @@ class ClassScoresDirectory(BaseDictlike):
         raise KeyError(bin_lid)
     def _get_v3_file(self, bin_lid):
         filename = '{}_class.h5'.format(bin_lid)
-        path = find_product_file(self.path, filename, exhaustive=self.exhaustive)
+        # support certain IFCB classifier output
+        pid = Pid(bin_lid)
+        year = pid.timestamp.year
+        doy = f'{pid.timestamp.dayofyear:03d}'
+        possible_path = os.path.join(self.path, f'D{year}', f'D{year}_{doy}', filename)
+        if os.path.exists(possible_path):
+            path = possible_path
+        else:
+            # this is the most likely case
+            path = find_product_file(self.path, filename, exhaustive=self.exhaustive)
         if path is not None:
             return ClassScoresFile(path, bin_lid, version=3)
         raise KeyError(bin_lid)
@@ -96,7 +105,7 @@ class ClassScoresFile(object):
         with h5.File(self.path, 'r') as f:
             ds = f['output_scores']
             scores = ds[:]
-            class_labels = list(f['class_labels'][:])
+            class_labels = [l.decode('ascii') for l in f['class_labels'][:]]
             roi_numbers = f['roi_numbers'][:]
         return self._cs2df(scores, class_labels, roi_numbers)
     def class_scores(self):
