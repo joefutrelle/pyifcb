@@ -15,7 +15,7 @@ def load_config(config_file):
     logging.info(f'loading configuration from {config_file}...')
 
     with open(config_file) as fin:
-        config = yaml.load(fin)
+        config = yaml.safe_load(fin)
 
     return config
 
