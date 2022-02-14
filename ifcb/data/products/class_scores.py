@@ -105,7 +105,7 @@ class ClassScoresFile(object):
         with h5.File(self.path, 'r') as f:
             ds = f['output_scores']
             scores = ds[:]
-            class_labels = list(f['class_labels'][:])
+            class_labels = [l.decode('ascii') for l in f['class_labels'][:]]
             roi_numbers = f['roi_numbers'][:]
         return self._cs2df(scores, class_labels, roi_numbers)
     def class_scores(self):
