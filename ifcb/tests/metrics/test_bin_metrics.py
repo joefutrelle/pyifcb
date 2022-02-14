@@ -13,7 +13,7 @@ TARGET_METRICS = {
         'run_time': 1.251953,
         'look_time': 0.813953,
         'inhibit_time': 0.438,
-        'trigger_rate': 5.59126420880017,
+        'trigger_rate': 4.792512178971575,
         TEMPERATURE: 11.4799732421875,
         HUMIDITY:  32.167437512207,
     },

@@ -93,9 +93,16 @@ class BaseBin(BaseDictlike):
     def inhibit_time(self):
         return self.run_time - self.look_time
     @property
+    def n_triggers(self):
+        try:
+            last_row = self.adc.iloc[-1]
+        except IndexError: # empty ADC file
+            return 0
+        return int(last_row[self.schema.TRIGGER])
+    @property
     def trigger_rate(self):
         """return trigger rate in triggers / s"""
-        return 1.0 * len(self) / self.run_time
+        return 1.0 * self.n_triggers / self.run_time
     @property
     def temperature(self):
         return self.header(TEMPERATURE)
