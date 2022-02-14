@@ -1,4 +1,6 @@
+import hashlib
 import os
+import random
 import shutil
 import tempfile
 from contextlib import contextmanager
@@ -16,7 +18,7 @@ def test_dir():
 @contextmanager
 def test_file(name=None):
     if name is None:
-        name = 'test_file'
+        name = 'pyifcb_' + hashlib.sha1(random.getrandbits(64).to_bytes(8, 'little')).hexdigest()
     with test_dir() as d:
         yield os.path.join(d, name)
     
