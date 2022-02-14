@@ -3,7 +3,7 @@ import unittest
 
 import numpy as np
 import h5py as h5
-from pandas.util.testing import assert_frame_equal
+from pandas.testing import assert_frame_equal
 
 from ifcb.tests.utils import withfile, test_dir
 

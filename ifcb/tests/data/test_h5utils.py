@@ -6,7 +6,7 @@ import numpy as np
 import h5py as h5
 import pandas as pd
 
-from pandas.util.testing import assert_frame_equal
+from pandas.testing import assert_frame_equal
 
 from ifcb.tests.utils import withfile
 
@@ -29,10 +29,10 @@ class TestH5Utils(unittest.TestCase):
                 assert f.attrs[attr] == v2, 'replacing attribute failed'
     @withfile
     def test_clear_h5_group(self, F):
-        with h5.File(F) as f:
+        with h5.File(F, 'w') as f:
             f['foo/bar'] = [1,2,3]
             f.attrs['baz'] = 5
-        with h5.File(F) as f:
+        with h5.File(F, 'a') as f:
             assert 'foo' in f.keys(), 'missing key'
             assert 'baz' in f.attrs.keys(), 'missing attribute'
             clear_h5_group(f)
