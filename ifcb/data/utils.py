@@ -2,9 +2,9 @@
 Utilities for the IFCB data API.
 """
 
-import collections
+from collections.abc import Mapping
 
-class CaseInsensitiveDict(collections.Mapping):
+class CaseInsensitiveDict(Mapping):
     def __init__(self, d):
         self._d = d
         self._s = dict((k.lower(), k) for k in d)
