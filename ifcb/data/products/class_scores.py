@@ -57,7 +57,7 @@ class ClassScoresDirectory(BaseDictlike):
         elif self.version == 3:
             return self._get_v3_file(bin_lid)
         else:
-            raise KeyError('unknown class scores version {}'.format(version))
+            raise KeyError('unknown class scores version {}'.format(self.version))
     def has_key(self, bin_lid):
         try:
             self[bin_lid]
