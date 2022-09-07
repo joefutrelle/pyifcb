@@ -81,18 +81,24 @@ def compute_ml_analyzed_s2_adc(abin):
         ml_analyzed = FLOW_RATE * (look_time / 60)
     return ml_analyzed, look_time, run_time
 
-def compute_ml_analyzed_s2(abin):
-    """compute ml_analyzed for a new instrument"""
+def compute_ml_analyzed_s2_hdr(abin):
     FLOW_RATE = 0.25 # ml/minute
     # ml analyzed is (run time - inhibit time) * flow rate
     run_time = abin.header('runTime')
     inhibit_time = abin.header('inhibitTime')
     look_time = run_time - inhibit_time
     ml_analyzed = FLOW_RATE * (look_time / 60.)
-    if look_time > 0:
-        return ml_analyzed, look_time, run_time
+    return ml_analyzed, look_time, run_time
+    
+def compute_ml_analyzed_s2(abin):
+    """compute ml_analyzed for a new instrument"""
+    TOLERANCE = 0.05
+    ml_analyzed_hdr, look_time_hdr, run_time_hdr = compute_ml_analyzed_s2_hdr(abin)
+    ml_analyzed_adc, look_time_adc, run_time_adc = compute_ml_analyzed_s2_adc(abin)
+    if abs(ml_analyzed_adc - ml_analyzed_hdr) < TOLERANCE:
+        return ml_analyzed_hdr, look_time_hdr, run_time_hdr
     else:
-        return compute_ml_analyzed_s2_adc(abin)
+        return ml_analyzed_adc, look_time_adc, run_time_adc
 
 def compute_ml_analyzed(abin):
     """returns ml_analyzed, look time, run time"""
