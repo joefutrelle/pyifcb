@@ -100,7 +100,7 @@ class Stitcher(BaseDictlike):
         h, w = self.shape(target_number)
         row = self.coordinates.loc[target_number]
         # create composite image
-        msk = np.ones((h,w),dtype=np.bool)
+        msk = np.ones((h,w),dtype=bool)
         im = np.zeros((h,w),dtype=np.uint8)
         for ab,ij in zip('ab',[target_number, target_number+1]):
             rx1 = row[ab+'x1'] - row['sx1']
@@ -114,7 +114,7 @@ class Stitcher(BaseDictlike):
 ### Infilling
 
 def apply_kernel(B,kernel):
-    B = np.array(B).astype(np.bool) * 1
+    B = np.array(B).astype(bool) * 1
     return ndi.correlate(B,kernel,mode='constant') > 0
 
 def dilate(B):

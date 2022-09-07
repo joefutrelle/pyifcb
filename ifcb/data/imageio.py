@@ -26,7 +26,7 @@ def format_image(array, mimetype='image/png'):
     """
     fmt = PIL_FORMATS_BY_MIME_TYPE[mimetype]
     buf = BytesIO()
-    if array.dtype == np.bool:
+    if array.dtype == bool:
         array = array.astype(np.uint8)
         array *= 255
     pil = Image.fromarray(array)
