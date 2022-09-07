@@ -5,6 +5,7 @@ import scipy.stats as stats
 
 from ifcb.data.adc import SCHEMA_VERSION_1, SCHEMA_VERSION_2
 
+
 def read_ml_analyzed(path):
     """read from the legacy matlab files"""
     from scipy.io import loadmat
@@ -16,13 +17,12 @@ def read_ml_analyzed(path):
     df.index = df.pop('filelist_all') # index by bin LID
     return df
 
-def compute_ml_analyzed_s1_adc(adc):
+def compute_ml_analyzed_s1_adc(adc, min_proc_time=0.073):
     """compute ml_analyzed for an old instrument"""
     # first, make sure this isn't an empty bin
     if len(adc) == 0:
         return np.nan, np.nan, np.nan
     # we have targets, can proceed
-    MIN_PROC_TIME = 0.073
     STEPS_PER_SEC = 40.
     ML_PER_STEP = 5./48000.
     FLOW_RATE = ML_PER_STEP * STEPS_PER_SEC # ml/s
@@ -42,17 +42,17 @@ def compute_ml_analyzed_s1_adc(adc):
     # frame grab time
     proc_time = np.array(trigger_open_time.iloc[1:]) - np.array(frame_grab_time[:-1])
     # set all proc times that are less than min to min
-    proc_time[proc_time < MIN_PROC_TIME] = MIN_PROC_TIME
+    proc_time[proc_time < min_proc_time] = min_proc_time
     # look time is run time - proc time
-    # not sure why subtracting MIN_PROC_TIME here is necessary
+    # not sure why subtracting min_proc_time here is necessary
     # to match output from MATLAB code, that code may have a bug
-    look_time = run_time - proc_time.sum() - MIN_PROC_TIME
+    look_time = run_time - proc_time.sum() - min_proc_time
     # ml analyzed is look time times flow rate
     ml_analyzed = look_time * FLOW_RATE
     return ml_analyzed, look_time, run_time
 
-def compute_ml_analyzed_s1(abin):
-    return compute_ml_analyzed_s1_adc(abin.adc)
+def compute_ml_analyzed_s1(abin, min_proc_time=0.073):
+    return compute_ml_analyzed_s1_adc(abin.adc, min_proc_time=min_proc_time)
 
 def compute_ml_analyzed_s2_adc(abin):
     """compute ml_analyzed for a new instrument, based on ADC file"""
@@ -97,7 +97,12 @@ def compute_ml_analyzed_s2(abin):
 def compute_ml_analyzed(abin):
     """returns ml_analyzed, look time, run time"""
     s = abin.schema
-    if s is SCHEMA_VERSION_1:
+    if abin.pid.instrument == 5 and abin.timestamp >= pd.to_datetime('2015-06-01', utc=True):
+        # IFCB5 bins after June 2015 require a non-default min_proc_time
+        return compute_ml_analyzed_s1(abin, min_proc_time=0.05)
+    elif s is SCHEMA_VERSION_1:
         return compute_ml_analyzed_s1(abin)
     elif s is SCHEMA_VERSION_2:
         return compute_ml_analyzed_s2(abin)
+    else: # unknown bin type, indicating some upstream error
+        return np.nan, np.nan, np.nan
