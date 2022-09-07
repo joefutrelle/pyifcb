@@ -95,7 +95,7 @@ def compute_ml_analyzed_s2(abin):
     TOLERANCE = 0.05
     ml_analyzed_hdr, look_time_hdr, run_time_hdr = compute_ml_analyzed_s2_hdr(abin)
     ml_analyzed_adc, look_time_adc, run_time_adc = compute_ml_analyzed_s2_adc(abin)
-    if abs(ml_analyzed_adc - ml_analyzed_hdr) < TOLERANCE:
+    if look_time_hdr > 0 and abs(ml_analyzed_adc - ml_analyzed_hdr) < TOLERANCE:
         return ml_analyzed_hdr, look_time_hdr, run_time_hdr
     else:
         return ml_analyzed_adc, look_time_adc, run_time_adc

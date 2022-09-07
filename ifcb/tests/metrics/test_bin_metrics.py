@@ -18,11 +18,11 @@ TARGET_METRICS = {
         HUMIDITY:  32.167437512207,
     },
     'D20130526T095207_IFCB013': {
-        'ml_analyzed': 5.0808411708,
-        'run_time': 1231.024861,
-        'look_time': 1219.401881,
-        'inhibit_time': 11.62298,
-        'trigger_rate': 0.09585509093954846,
+        'ml_analyzed': 4.8850699041666665,
+        'run_time': 1184.037103,
+        'look_time': 1172.416777,
+        'inhibit_time': 11.620325999999977,
+        'trigger_rate': 0.09965903914752577,
         TEMPERATURE: 35.270397,
         HUMIDITY: 2.48685,
     }
