@@ -6,7 +6,9 @@ from functools import lru_cache
 import pandas as pd
 
 from .identifiers import Pid
-from .adc import SCHEMA, schema_names
+from .adc import SCHEMA_VERSION_1
+from .stitching import InfilledImages
+
 from io import BytesIO
 
 from .utils import BaseDictlike
@@ -38,7 +40,11 @@ def bin2zip_stream(b):
         zip.writestr(b.lid + ADC_ARCNAME_SUFFIX, buf.getvalue())
         # images as PNGs
         with b:
-            for target in b.images:
+            if b.schema == SCHEMA_VERSION_1:
+                images = InfilledImages(b)
+            else:
+                images = b.images
+            for target in images:
                 image_lid = b.pid.with_target(target, namespace=False)
                 arcname = image_lid + '.png'
                 buf = format_image(b.images[target], mimetype='image/png')
