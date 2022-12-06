@@ -9,6 +9,7 @@ from .fileset_info import list_test_bins
 from .bins import assert_bin_equals
 
 class TestZipBin(unittest.TestCase):
+    @unittest.skip('redundant')
     @withfile
     def test_roundtrip(self, path):
         for out_bin in list_test_bins():
