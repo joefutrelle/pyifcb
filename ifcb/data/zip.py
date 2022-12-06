@@ -47,7 +47,7 @@ def bin2zip_stream(b):
             for target in images:
                 image_lid = b.pid.with_target(target, namespace=False)
                 arcname = image_lid + '.png'
-                buf = format_image(b.images[target], mimetype='image/png')
+                buf = format_image(images[target], mimetype='image/png')
                 zip.writestr(arcname, buf.getvalue())
     zip_stream.seek(0)
     return zip_stream
