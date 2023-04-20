@@ -3,7 +3,7 @@ channels:
   - conda-forge
 dependencies:
 - python>=3.6
-- scipy
+- scipy<1.9.2
 - pandas
 - h5py
 - requests
