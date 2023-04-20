@@ -24,7 +24,7 @@ def bin2mat(b, mat_path):
     adc = np.array(b.adc)
     # warning: reads all images into memory
     roi_numbers = sorted(b.images)
-    images = [ b.images[r] for r in roi_numbers ]
+    images = np.array([ b.images[r] for r in roi_numbers ], dtype=object)
     savemat(mat_path, {
         PID_VAR: str(b.lid), # remove non-bin parts of pid
         HEADERS_VAR: b.headers,
