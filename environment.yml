@@ -1,9 +1,6 @@
 name: pyifcb
-channels:
-  - conda-forge
 dependencies:
-- python>=3.6
-- scipy<1.9.2
+- scipy
 - pandas
 - h5py
 - requests
