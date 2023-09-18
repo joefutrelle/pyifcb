@@ -1,21 +1,10 @@
-import numpy as np
+import os
 import pandas as pd
-
-import scipy.stats as stats
+import numpy as np
 
 from ifcb.data.adc import SCHEMA_VERSION_1, SCHEMA_VERSION_2
 
-
-def read_ml_analyzed(path):
-    """read from the legacy matlab files"""
-    from scipy.io import loadmat
-    mat = loadmat(path, squeeze_me=True)
-    # ignore variables other than the following
-    cols = ['filelist_all', 'looktime', 'minproctime', 'ml_analyzed', 'runtime']
-    # convert to dataframe
-    df = pd.DataFrame({ c: mat[c] for c in cols }, columns=cols)
-    df.index = df.pop('filelist_all') # index by bin LID
-    return df
+FLOW_RATE = 0.25 # milliliters per minute for syringe pump
 
 def compute_ml_analyzed_s1_adc(adc, min_proc_time=0.073):
     """compute ml_analyzed for an old instrument"""
@@ -51,64 +40,98 @@ def compute_ml_analyzed_s1_adc(adc, min_proc_time=0.073):
     ml_analyzed = look_time * FLOW_RATE
     return ml_analyzed, look_time, run_time
 
-def compute_ml_analyzed_s1(abin, min_proc_time=0.073):
-    return compute_ml_analyzed_s1_adc(abin.adc, min_proc_time=min_proc_time)
+def compute_ml_analyzed_s2_adc(adc):
+    """
+    This function returns the estimate of sample volume analyzed (in milliliters),
+    assuming a standard IFCB configuration with the sample syringe operating at 0.25 mL per minute.
+    It applies only to IFCB instruments after 007 and higher (except 008).
+    """
 
-def compute_ml_analyzed_s2_adc(abin):
-    """compute ml_analyzed for a new instrument, based on ADC file"""
-    FLOW_RATE = 0.25 # ml/minute
-    s = abin.schema
-    adc = abin.adc
-    def ma(row):
-        run_time = row[s.RUN_TIME]
-        inhibit_time = row[s.INHIBIT_TIME]
-        look_time = run_time - inhibit_time
-        ml_analyzed = FLOW_RATE * (look_time / 60.)
-        return ml_analyzed, look_time, run_time
-    last_row = adc.iloc[-1]
-    ml_analyzed, look_time, run_time = ma(last_row)
-    if ml_analyzed <= 0 or abs(last_row[s.RUN_TIME] - last_row[s.ADC_TIME]) >= 0.3:
-        row = adc.iloc[-2]
-        ml_analyzed, look_time, run_time = ma(row)
-    if ml_analyzed <= 0:
-        row = adc.iloc[-2]
-        run_time = row[s.ADC_TIME]
-        nz = adc[s.RUN_TIME].to_numpy().nonzero()[0]
-        mode_inhibit_time = stats.mode(np.diff(adc[s.INHIBIT_TIME].iloc[nz]))[0][0]
-        last_good_inhibit_time = adc[s.INHIBIT_TIME].iloc[nz[-1]]
-        inhibit_time = last_good_inhibit_time + (len(adc) - len(nz)) * mode_inhibit_time
-        look_time = run_time - inhibit_time
-        ml_analyzed = FLOW_RATE * (look_time / 60)
-    return ml_analyzed, look_time, run_time
+    column_names = ['trigger', 'adc_time', 'pmt_a', 'pmt_b', 'pmt_c', 'pmt_d', 'peak_a', 'peak_b', 'peak_c', 'peak_d', 'time_of_flight', 'grabtime_start', 'grabtime_end', 'roi_x', 'roi_y', 'roi_width', 'roi_height', 'start_byte', 'comparator_out', 'start_point', 'signal_length', 'status', 'runtime', 'inhibit_time']
+    adc.columns = column_names
 
-def compute_ml_analyzed_s2_hdr(abin):
-    FLOW_RATE = 0.25 # ml/minute
-    # ml analyzed is (run time - inhibit time) * flow rate
-    run_time = abin.header('runTime')
-    inhibit_time = abin.header('inhibitTime')
-    look_time = run_time - inhibit_time
-    ml_analyzed = FLOW_RATE * (look_time / 60.)
-    return ml_analyzed, look_time, run_time
+    if adc.empty:
+        return np.nan, np.nan, np.nan
+
+    diffinh = np.diff(adc['inhibit_time'])
+
+    # find indices of rows where inhibitime is not 0 and not less than the previous value (within 0.1 second)
+    # iii = [0] + [i+1 for i in range(len(diffinh)) if diffinh[i] > -0.1 and diffinh[i] < 5]
+    iii = np.where((diffinh > -0.1) & (diffinh < 5))[0] + 1
+    iii = np.insert(iii, 0, 0)
+
+
+    # calculate the mode differential inhibittime from the good records, round to nearest 4 digits before finding mode
+    # this will be used as the "second best" estimate of the inhibittime for the whole file
+    rounded_diffinh = round(pd.Series(np.diff(adc.loc[iii+1, 'inhibit_time'])), 4)
+    modeinhibittime = rounded_diffinh.mode().values[0]
     
-def compute_ml_analyzed_s2(abin):
-    """compute ml_analyzed for a new instrument"""
-    TOLERANCE = 0.05
-    ml_analyzed_hdr, look_time_hdr, run_time_hdr = compute_ml_analyzed_s2_hdr(abin)
-    ml_analyzed_adc, look_time_adc, run_time_adc = compute_ml_analyzed_s2_adc(abin)
-    if look_time_hdr > 0 and abs(ml_analyzed_adc - ml_analyzed_hdr) < TOLERANCE:
-        return ml_analyzed_hdr, look_time_hdr, run_time_hdr
-    else:
-        return ml_analyzed_adc, look_time_adc, run_time_adc
+    runtime_offset = 0
+    inhibittime_offset = 0
 
-def compute_ml_analyzed(abin):
-    """returns ml_analyzed, look time, run time"""
-    s = abin.schema
-    if abin.pid.instrument == 5 and abin.timestamp >= pd.to_datetime('2015-06-01', utc=True):
+    if adc.shape[0] > 1: # if there is more than one row in the file
+        # calculate the offset between runtime and adc_time for the first record
+        runtime_offset_test = adc['runtime'].iloc[1] - adc['adc_time'].iloc[1]
+
+        # if the offset is greater than 10 seconds, use it as the offset for the whole file
+        if runtime_offset_test > 10:
+            runtime_offset = runtime_offset_test
+            # use the second row since the first one is bad occasionally, add two mode increments to account for that
+            inhibittime_offset = adc['inhibit_time'].iloc[1] + modeinhibittime * 2
+
+        if adc.shape[0] == len(iii): # if all records are good
+            # inhibittime is the last record's inhibit_time minus the offset
+            # this is the best value--if it's not bad
+            inhibittime = adc['inhibit_time'].iloc[-1] - inhibittime_offset
+        else:
+            # second best estimate, last good row, plus mode as best guess for each bad row
+            inhibittime = adc['inhibit_time'].iloc[iii[-1]] + (adc.shape[0] - len(iii)) * modeinhibittime - inhibittime_offset
+
+        # runtime is the last record's runtime minus the offset
+        runtime = adc['runtime'].iloc[-1] - runtime_offset
+
+        n = min(adc.shape[0], 50) # use the first 50 records to estimate the runtime offset
+        runtime2 = adc['adc_time'].iloc[-1] + (adc['runtime'].iloc[:n] - adc['adc_time'].iloc[:n]).median() - runtime_offset
+
+        # if the difference between the two estimates is greater than 0.2 seconds, use the second one
+        if abs(runtime - runtime2) > 0.2:
+            runtime = runtime2
+    else:
+        return np.nan, np.nan, np.nan
+
+    looktime = runtime - inhibittime
+    ml_analyzed = FLOW_RATE * looktime / 60
+
+    return ml_analyzed, looktime, runtime
+
+def compute_ml_analyzed_s2(b):
+    hdr_runtime = b.header('runtime')
+    hdr_inhibittime = b.header('inhibittime')
+    _, adc_looktime, adc_runtime = compute_ml_analyzed_s2_adc(b.adc)
+    adc_inhibittime = adc_runtime - adc_looktime
+    rat = hdr_runtime / adc_runtime
+    if rat < 0.98 or rat > 1.02:
+        runtime = adc_runtime
+    else:
+        runtime = hdr_runtime
+    rat = hdr_inhibittime / adc_inhibittime
+    if rat < 0.98 or rat > 1.02:
+        inhibittime = adc_inhibittime
+    else:
+        inhibittime = hdr_inhibittime
+    looktime = runtime - inhibittime
+    ml_analyzed = FLOW_RATE * looktime / 60
+    return ml_analyzed, looktime, runtime
+
+
+def compute_ml_analyzed(b):
+    s = b.schema
+    if b.pid.instrument == 5 and b.timestamp >= pd.to_datetime('2015-06-01', utc=True):
         # IFCB5 bins after June 2015 require a non-default min_proc_time
-        return compute_ml_analyzed_s1(abin, min_proc_time=0.05)
+        return compute_ml_analyzed_s1_adc(b.adc, min_proc_time=0.05)
     elif s is SCHEMA_VERSION_1:
-        return compute_ml_analyzed_s1(abin)
+        return compute_ml_analyzed_s1_adc(b.adc)
     elif s is SCHEMA_VERSION_2:
-        return compute_ml_analyzed_s2(abin)
+        return compute_ml_analyzed_s2(b)
     else: # unknown bin type, indicating some upstream error
         return np.nan, np.nan, np.nan
