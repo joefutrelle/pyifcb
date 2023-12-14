@@ -56,8 +56,7 @@ def compute_ml_analyzed_s2_adc(adc):
     diffinh = np.diff(adc['inhibit_time'])
 
     # find indices of rows where inhibitime is not 0 and not less than the previous value (within 0.1 second)
-    # iii = [0] + [i+1 for i in range(len(diffinh)) if diffinh[i] > -0.1 and diffinh[i] < 5]
-    iii = np.where((diffinh > -0.1) & (diffinh < 5))[0] + 1
+    iii = np.where((adc['inhibit_time'][1:] > 0) & (diffinh > -0.1) & (diffinh < 5))[0] + 1
     iii = np.insert(iii, 0, 0)
 
 
