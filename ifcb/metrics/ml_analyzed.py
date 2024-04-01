@@ -50,7 +50,8 @@ def compute_ml_analyzed_s2_adc(adc):
     column_names = ['trigger', 'adc_time', 'pmt_a', 'pmt_b', 'pmt_c', 'pmt_d', 'peak_a', 'peak_b', 'peak_c', 'peak_d', 'time_of_flight', 'grabtime_start', 'grabtime_end', 'roi_x', 'roi_y', 'roi_width', 'roi_height', 'start_byte', 'comparator_out', 'start_point', 'signal_length', 'status', 'runtime', 'inhibit_time']
     adc.columns = column_names
 
-    if adc.empty:
+    # if there are no records or the inhibit time is all 0, return NaN
+    if adc.empty or adc['inhibit_time'].sum() == 0:
         return np.nan, np.nan, np.nan
 
     diffinh = np.diff(adc['inhibit_time'])
@@ -123,14 +124,22 @@ def compute_ml_analyzed_s2(b):
     return ml_analyzed, looktime, runtime
 
 
-def compute_ml_analyzed(b):
-    s = b.schema
-    if b.pid.instrument == 5 and b.timestamp >= pd.to_datetime('2015-06-01', utc=True):
+def compute_ml_analyzed_adc(adc_file):
+    pid = adc_file.pid
+    schema = adc_file.schema
+    adc = adc_file.to_dataframe()
+
+    if pid.instrument == 5 and pid.timestamp >= pd.to_datetime('2015-06-01', utc=True):
         # IFCB5 bins after June 2015 require a non-default min_proc_time
-        return compute_ml_analyzed_s1_adc(b.adc, min_proc_time=0.05)
-    elif s is SCHEMA_VERSION_1:
-        return compute_ml_analyzed_s1_adc(b.adc)
-    elif s is SCHEMA_VERSION_2:
-        return compute_ml_analyzed_s2(b)
+        return compute_ml_analyzed_s1_adc(adc, min_proc_time=0.05)
+    elif schema is SCHEMA_VERSION_1:
+        return compute_ml_analyzed_s1_adc(adc)
+    elif schema is SCHEMA_VERSION_2:
+        return compute_ml_analyzed_s2_adc(adc)
     else: # unknown bin type, indicating some upstream error
         return np.nan, np.nan, np.nan
+
+
+def compute_ml_analyzed(b):
+    adc_file = b.adc_file
+    return compute_ml_analyzed_adc(adc_file)
