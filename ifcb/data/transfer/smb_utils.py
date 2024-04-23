@@ -4,6 +4,7 @@ import logging
 from contextlib import contextmanager
 import traceback
 
+import smbclient
 
 DEFAULT_TIMEOUT=30
 
