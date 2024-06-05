@@ -47,8 +47,8 @@ def compute_ml_analyzed_s2_adc(adc):
     It applies only to IFCB instruments after 007 and higher (except 008).
     """
 
-    column_names = ['trigger', 'adc_time', 'pmt_a', 'pmt_b', 'pmt_c', 'pmt_d', 'peak_a', 'peak_b', 'peak_c', 'peak_d', 'time_of_flight', 'grabtime_start', 'grabtime_end', 'roi_x', 'roi_y', 'roi_width', 'roi_height', 'start_byte', 'comparator_out', 'start_point', 'signal_length', 'status', 'runtime', 'inhibit_time']
-    adc.columns = column_names
+    column_names = ['trigger', 'adc_time', 'pmt_a', 'pmt_b', 'pmt_c', 'pmt_d', 'peak_a', 'peak_b', 'peak_c', 'peak_d', 'time_of_flight', 'grabtime_start', 'grabtime_end', 'roi_x', 'roi_y', 'roi_width', 'roi_height', 'start_byte', 'comparator_out', 'start_point', 'signal_length', 'status', 'runtime', 'inhibit_time', 'extra1', 'extra2']
+    adc.columns = column_names[:len(adc.columns)]
 
     # if there are no records or the inhibit time is all 0, return NaN
     if adc.empty or adc['inhibit_time'].sum() == 0:
