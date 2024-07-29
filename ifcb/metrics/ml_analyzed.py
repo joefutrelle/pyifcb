@@ -40,15 +40,20 @@ def compute_ml_analyzed_s1_adc(adc, min_proc_time=0.073):
     ml_analyzed = look_time * FLOW_RATE
     return ml_analyzed, look_time, run_time
 
-def compute_ml_analyzed_s2_adc(adc):
+def compute_ml_analyzed_s2_adc(b):
     """
     This function returns the estimate of sample volume analyzed (in milliliters),
     assuming a standard IFCB configuration with the sample syringe operating at 0.25 mL per minute.
     It applies only to IFCB instruments after 007 and higher (except 008).
     """
 
-    column_names = ['trigger', 'adc_time', 'pmt_a', 'pmt_b', 'pmt_c', 'pmt_d', 'peak_a', 'peak_b', 'peak_c', 'peak_d', 'time_of_flight', 'grabtime_start', 'grabtime_end', 'roi_x', 'roi_y', 'roi_width', 'roi_height', 'start_byte', 'comparator_out', 'start_point', 'signal_length', 'status', 'runtime', 'inhibit_time']
-    adc.columns = column_names
+    adc = b.adc
+
+    column_names = ['trigger', 'adc_time', 'pmt_a', 'pmt_b', 'pmt_c', 'pmt_d', 'peak_a', 'peak_b', 'peak_c', 'peak_d', 'time_of_flight', 'grabtime_start', 'grabtime_end', 'roi_x', 'roi_y', 'roi_width', 'roi_height', 'start_byte', 'comparator_out', 'start_point', 'signal_length', 'status', 'runtime', 'inhibit_time', 'extra1', 'extra2']
+    adc.columns = column_names[:len(adc.columns)]
+
+    if not 'inhibit_time' in adc.columns or len(adc) == 1:
+        return compute_ml_analyzed_s2_header(b)
 
     # if there are no records or the inhibit time is all 0, return NaN
     if adc.empty or adc['inhibit_time'].sum() == 0:
@@ -59,7 +64,6 @@ def compute_ml_analyzed_s2_adc(adc):
     # find indices of rows where inhibitime is not 0 and not less than the previous value (within 0.1 second)
     iii = np.where((adc['inhibit_time'][1:] > 0) & (diffinh > -0.1) & (diffinh < 5))[0] + 1
     iii = np.insert(iii, 0, 0)
-
 
     # calculate the mode differential inhibittime from the good records, round to nearest 4 digits before finding mode
     # this will be used as the "second best" estimate of the inhibittime for the whole file
@@ -104,10 +108,18 @@ def compute_ml_analyzed_s2_adc(adc):
 
     return ml_analyzed, looktime, runtime
 
+def compute_ml_analyzed_s2_header(b):
+    runtime = b.header('runtime')
+    inhibittime = b.header('inhibittime')
+    looktime = runtime - inhibittime
+    ml_analyzed = FLOW_RATE * looktime / 60
+    return ml_analyzed, looktime, runtime
+
+
 def compute_ml_analyzed_s2(b):
     hdr_runtime = b.header('runtime')
     hdr_inhibittime = b.header('inhibittime')
-    _, adc_looktime, adc_runtime = compute_ml_analyzed_s2_adc(b.adc)
+    _, adc_looktime, adc_runtime = compute_ml_analyzed_s2_adc(b)
     adc_inhibittime = adc_runtime - adc_looktime
     rat = hdr_runtime / adc_runtime
     if rat < 0.98 or rat > 1.02:
@@ -124,7 +136,7 @@ def compute_ml_analyzed_s2(b):
     return ml_analyzed, looktime, runtime
 
 
-def compute_ml_analyzed_adc(adc_file):
+def compute_ml_analyzed_adc(b, adc_file):
     pid = adc_file.pid
     schema = adc_file.schema
     adc = adc_file.to_dataframe()
@@ -135,11 +147,11 @@ def compute_ml_analyzed_adc(adc_file):
     elif schema is SCHEMA_VERSION_1:
         return compute_ml_analyzed_s1_adc(adc)
     elif schema is SCHEMA_VERSION_2:
-        return compute_ml_analyzed_s2_adc(adc)
+        return compute_ml_analyzed_s2_adc(b)
     else: # unknown bin type, indicating some upstream error
         return np.nan, np.nan, np.nan
 
 
 def compute_ml_analyzed(b):
     adc_file = b.adc_file
-    return compute_ml_analyzed_adc(adc_file)
+    return compute_ml_analyzed_adc(b, adc_file)
