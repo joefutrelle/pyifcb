@@ -1,0 +1,52 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pyifcb"
+version = "0.1.0"
+description = "Imaging FlowCytobot Python API, generation 2"
+readme = "README.md"
+authors = [{name = "Joe Futrelle", email = "jfutrelle@whoi.edu"}]
+classifiers = [
+    'Development Status :: 3 - Alpha',
+    'Intended Audience :: Developers',
+    'Intended Audience :: Science/Research',
+    'License :: OSI Approved :: MIT License',
+    'Operating System :: POSIX :: Linux',
+    'Programming Language :: Python',
+    'Topic :: Scientific/Engineering',
+]
+keywords = ['FlowCytobot','Imaging','ifcb']
+
+[tool.hatch.build.targets.wheel]
+include = [
+    "ifcb/**/*",
+    "docs/**/*",
+    "auto_transfer.py",
+    "VERSION",
+    "LICENSE",
+    "README.md",
+    "transfer_config.yml.example",
+    "requirements.txt",
+]
+
+[tool.hatch.envs.default]
+dependencies = [
+    "-r requirements.txt"
+]
+
+[tool.hatch.envs.docs]
+dependencies = ["-r docs/requirements.txt"]
+
+
+[project.scripts]
+auto_transfer = "auto_transfer:main"
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[project.urls]
+Repository = "https://github.com/joefutrelle/pyifcb"
+Documentation = "https://github.com/joefutrelle/pyifcb/wiki"
+Issues = "https://github.com/joefutrelle/pyifcb/issues"
