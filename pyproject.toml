@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pyifcb"
-version = "0.1.0"
+version = "1.1.1"
 description = "Imaging FlowCytobot Python API, generation 2"
 readme = "README.md"
 authors = [{name = "Joe Futrelle", email = "jfutrelle@whoi.edu"}]
@@ -28,17 +28,20 @@ include = [
     "LICENSE",
     "README.md",
     "transfer_config.yml.example",
-    "requirements.txt",
 ]
 
-[tool.hatch.envs.default]
 dependencies = [
-    "-r requirements.txt"
+    "scipy==1.12.0",
+    "pandas==2.2.1",
+    "h5py==3.10.0",
+    "requests==2.32.0",
+    "Pillow==10.3.0",
+    "rectpack==0.2.2",
+    "scikit-image==0.22.0",
+    "pysmb==1.2.9.1",
+    "smbprotocol==1.13.0",
+    "pyyaml==6.0.1"
 ]
-
-[tool.hatch.envs.docs]
-dependencies = ["-r docs/requirements.txt"]
-
 
 [project.scripts]
 auto_transfer = "auto_transfer:main"
