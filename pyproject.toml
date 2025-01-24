@@ -18,6 +18,18 @@ classifiers = [
     'Topic :: Scientific/Engineering',
 ]
 keywords = ['FlowCytobot','Imaging','ifcb']
+dependencies = [
+    "scipy",
+    "pandas",
+    "h5py",
+    "requests",
+    "Pillow",
+    "rectpack",
+    "scikit-image",
+    "pysmb",
+    "smbprotocol",
+    "pyyaml",
+]
 
 [tool.hatch.build.targets.wheel]
 include = [
@@ -28,19 +40,6 @@ include = [
     "LICENSE",
     "README.md",
     "transfer_config.yml.example",
-]
-
-dependencies = [
-    "scipy==1.12.0",
-    "pandas==2.2.1",
-    "h5py==3.10.0",
-    "requests==2.32.0",
-    "Pillow==10.3.0",
-    "rectpack==0.2.2",
-    "scikit-image==0.22.0",
-    "pysmb==1.2.9.1",
-    "smbprotocol==1.13.0",
-    "pyyaml==6.0.1"
 ]
 
 [project.scripts]
