@@ -57,17 +57,18 @@ class Fileset(object):
         The bin's LID
         """
         return self.pid.bin_lid
-    def exists(self):
+    def exists(self, require_roi_files=True):
         """
         Checks for existence of all three raw data files.
 
+        :param require_roi_files: bool, whether to require the .roi file
         :returns bool: whether or not all files exist
         """
         if not os.path.exists(self.adc_path):
             return False
         if not os.path.exists(self.hdr_path):
             return False
-        if not os.path.exists(self.roi_path):
+        if require_roi_files and not os.path.exists(self.roi_path):
             return False
         return True
     # metrics
@@ -252,7 +253,7 @@ def validate_path(filepath, blacklist=DEFAULT_BLACKLIST, whitelist=DEFAULT_WHITE
             return False
     return True
 
-def list_filesets(dirpath, blacklist=DEFAULT_BLACKLIST, whitelist=DEFAULT_WHITELIST, sort=True, validate=True):
+def list_filesets(dirpath, blacklist=DEFAULT_BLACKLIST, whitelist=DEFAULT_WHITELIST, sort=True, validate=True, require_roi_files=True):
     """
     Iterate over entire directory tree and yield a Fileset
     object for each .adc/.hdr/.roi fileset found. Warning: for
@@ -263,6 +264,7 @@ def list_filesets(dirpath, blacklist=DEFAULT_BLACKLIST, whitelist=DEFAULT_WHITEL
       do not match a file's basename
     :param sort: whether to sort output (sorts by alpha)
     :param validate: whether to validate each path
+    :param require_roi_files: bool, whether to require the .roi file
     """
     if not set(blacklist).isdisjoint(set(whitelist)):
         raise ValueError('whitelist and blacklist must be disjoint')
@@ -275,7 +277,7 @@ def list_filesets(dirpath, blacklist=DEFAULT_BLACKLIST, whitelist=DEFAULT_WHITEL
             filenames.sort(reverse=True)
         for f in filenames:
             basename, extension = f[:-4], f[-3:]
-            if extension == 'adc' and basename+'.hdr' in filenames and basename+'.roi' in filenames:
+            if extension == 'adc' and basename+'.hdr' in filenames and (not require_roi_files or basename+'.roi' in filenames):
                 if validate:
                     reldir = dp[len(dirpath)+1:]
                     if not validate_path(os.path.join(reldir,basename), whitelist=whitelist, blacklist=blacklist):
@@ -333,21 +335,23 @@ class DataDirectory(object):
 
     Provides a dict-like interface allowing access to FilesetBins by LID.
     """
-    def __init__(self, path='.', whitelist=DEFAULT_WHITELIST, blacklist=DEFAULT_BLACKLIST, filter=lambda x: True):
+    def __init__(self, path='.', whitelist=DEFAULT_WHITELIST, blacklist=DEFAULT_BLACKLIST, filter=lambda x: True, require_roi_files=True):
         """
         :param path: the path of the data directory
         :param whitelist: a list of directory names to allow
         :param blacklist: a list of directory names to disallow
+        :param require_roi_files: bool, whether to require the .roi file
         """
         self.path = path
         self.whitelist = whitelist
         self.blacklist = blacklist
         self.filter = filter
+        self.require_roi_files=require_roi_files
     def list_filesets(self):
         """
         Yield all filesets.
         """
-        for dirpath, basename in list_filesets(self.path, whitelist=self.whitelist, blacklist=self.blacklist):
+        for dirpath, basename in list_filesets(self.path, whitelist=self.whitelist, blacklist=self.blacklist, require_roi_files=self.require_roi_files):
             basepath = os.path.join(dirpath, basename)
             fs = Fileset(basepath)
             if self.filter(fs):
