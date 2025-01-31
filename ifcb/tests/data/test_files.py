@@ -54,7 +54,7 @@ class TestDataDirectory(unittest.TestCase):
         for fs in partial_fss:
             print("*****")
             print(fs)
-            print(fs.exists(require_roi_files=False))
+            print(fs.exists())
             assert fs.exists()
             assert os.path.exists(fs.adc_path)
             assert os.path.exists(fs.hdr_path)

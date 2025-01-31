@@ -354,7 +354,7 @@ class DataDirectory(object):
         """
         for dirpath, basename in list_filesets(self.path, whitelist=self.whitelist, blacklist=self.blacklist, require_roi_files=self.require_roi_files):
             basepath = os.path.join(dirpath, basename)
-            fs = Fileset(basepath)
+            fs = Fileset(basepath, require_roi_files=self.require_roi_files)
             if self.filter(fs):
                 yield fs
     def find_fileset(self, lid):
