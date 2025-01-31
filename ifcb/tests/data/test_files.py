@@ -27,6 +27,8 @@ class TestListUtils(unittest.TestCase):
         """test with validation off and search"""
         paths = list(files.list_filesets(self.data_dir, whitelist=WHITELIST, validate=False))
         assert len(paths) == 5
+        partial_paths = list(files.list_filesets(self.data_dir, whitelist=WHITELIST, validate=False,require_roi_files=False))
+        assert len(partial_paths) == 6
 
 class TestDataDirectory(unittest.TestCase):
     def setUp(self):
@@ -34,6 +36,8 @@ class TestDataDirectory(unittest.TestCase):
         self.default = files.DataDirectory(self.data_dir)
         self.whitelist = files.DataDirectory(self.data_dir, whitelist=WHITELIST)
         self.blacklist = files.DataDirectory(self.data_dir, blacklist=['skip','invalid','empty'])
+        partial_data_dir = os.path.join(self.data_dir, 'partial')
+        self.partial = files.DataDirectory(partial_data_dir, require_roi_files=False)
     def test_iteration(self):
         fss = list(self.default)
         assert len(fss) == 1 # only one whitelisted by default
@@ -46,6 +50,13 @@ class TestDataDirectory(unittest.TestCase):
             assert os.path.exists(fs.adc_path)
             assert os.path.exists(fs.hdr_path)
             assert os.path.exists(fs.roi_path)
+
+        partial_fss = [b.fileset for b in self.partial]
+        for fs in partial_fss:
+            assert fs.exists()
+            assert os.path.exists(fs.adc_path)
+            assert os.path.exists(fs.hdr_path)
+            assert not os.path.exists(fs.roi_path)
     def test_lids(self):
         fss = [b.fileset for b in self.whitelist]
         lids = [fs.lid for fs in fss]
@@ -60,8 +71,8 @@ class TestDataDirectory(unittest.TestCase):
             assert fs.getsizes() == sizes
             assert fs.getsize() == sum(sizes.values())
     def test_descendants(self):
-        assert len(list(self.default.list_descendants())) == 4
-        assert len(list(self.blacklist.list_descendants())) == 2
+        assert len(list(self.default.list_descendants())) == 5
+        assert len(list(self.blacklist.list_descendants())) == 3
 
 class TestFilesetBin(unittest.TestCase):
     def _bins(self):
