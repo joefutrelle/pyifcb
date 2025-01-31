@@ -96,3 +96,5 @@ ENV/
 
 # vscode
 settings.json
+# any additional data being used for development
+data/
