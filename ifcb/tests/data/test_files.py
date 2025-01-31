@@ -58,7 +58,7 @@ class TestDataDirectory(unittest.TestCase):
             assert fs.exists()
             assert os.path.exists(fs.adc_path)
             assert os.path.exists(fs.hdr_path)
-            assert os.path.exists(fs.roi_path)
+            assert not os.path.exists(fs.roi_path)
     def test_lids(self):
         fss = [b.fileset for b in self.whitelist]
         lids = [fs.lid for fs in fss]

@@ -309,7 +309,7 @@ def list_data_dirs(dirpath, blacklist=DEFAULT_BLACKLIST, sort=True, prune=True):
             if os.path.isdir(child):
                 yield from list_data_dirs(child, sort=sort, prune=prune)
 
-def find_fileset(dirpath, lid, whitelist=['data'], blacklist=['skip','beads']):
+def find_fileset(dirpath, lid, whitelist=['data'], blacklist=['skip','beads'], require_roi_files=True):
     """
     Find a fileset anywhere below the given directory path
     given the bin's lid. This assumes that the file's path
@@ -321,10 +321,10 @@ def find_fileset(dirpath, lid, whitelist=['data'], blacklist=['skip','beads']):
     for name in dirlist:
         if name == lid + '.adc':
             basepath = os.path.join(dirpath,lid)
-            return Fileset(basepath)
+            return Fileset(basepath, require_roi_files=require_roi_files)
         elif name in whitelist or name in lid:
             # is the name whitelisted or contains part of the lid?
-            fs = find_fileset(os.path.join(dirpath,name), lid, whitelist=whitelist, blacklist=blacklist)
+            fs = find_fileset(os.path.join(dirpath,name), lid, whitelist=whitelist, blacklist=blacklist, require_roi_files=require_roi_files)
             if fs is not None:
                 return fs
     # not found
@@ -365,7 +365,7 @@ class DataDirectory(object):
         :type lid: str
         :returns Fileset: the fileset, or None if not found
         """
-        fs = find_fileset(self.path, lid, whitelist=self.whitelist, blacklist=self.blacklist)
+        fs = find_fileset(self.path, lid, whitelist=self.whitelist, blacklist=self.blacklist, require_roi_files=self.require_roi_files)
         if fs is None:
             return None
         elif self.filter(fs):
