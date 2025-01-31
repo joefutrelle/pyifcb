@@ -36,7 +36,8 @@ class TestDataDirectory(unittest.TestCase):
         self.default = files.DataDirectory(self.data_dir)
         self.whitelist = files.DataDirectory(self.data_dir, whitelist=WHITELIST)
         self.blacklist = files.DataDirectory(self.data_dir, blacklist=['skip','invalid','empty'])
-        self.partial = files.DataDirectory(self.data_dir, require_roi_files=False)
+        partial_data_dir = os.path.join(self.data_dir, 'partial')
+        self.partial = files.DataDirectory(partial_data_dir, require_roi_files=False)
     def test_iteration(self):
         fss = list(self.default)
         assert len(fss) == 1 # only one whitelisted by default
@@ -52,9 +53,6 @@ class TestDataDirectory(unittest.TestCase):
 
         partial_fss = [b.fileset for b in self.partial]
         for fs in partial_fss:
-            print("*****")
-            print(fs)
-            print(fs.exists())
             assert fs.exists()
             assert os.path.exists(fs.adc_path)
             assert os.path.exists(fs.hdr_path)
