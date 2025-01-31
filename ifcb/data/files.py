@@ -21,11 +21,12 @@ class Fileset(object):
     """
     Represents a set of three raw data files
     """
-    def __init__(self, basepath):
+    def __init__(self, basepath, require_roi_files=True):
         """
         :param basepath: the base path of the files (no extension)
         """
         self.basepath = basepath
+        self.require_roi_files = require_roi_files
     @property
     def adc_path(self):
         """
@@ -57,7 +58,7 @@ class Fileset(object):
         The bin's LID
         """
         return self.pid.bin_lid
-    def exists(self, require_roi_files=True):
+    def exists(self):
         """
         Checks for existence of all three raw data files.
 
@@ -68,7 +69,7 @@ class Fileset(object):
             return False
         if not os.path.exists(self.hdr_path):
             return False
-        if require_roi_files and not os.path.exists(self.roi_path):
+        if self.require_roi_files and not os.path.exists(self.roi_path):
             return False
         return True
     # metrics
