@@ -12,9 +12,9 @@ pip install git+https://github.com/joefutrelle/pyifcb
 ```
 It is strongly recommended that you use a version tag when installing pyifcb. See [releases](https://github.com/joefutrelle/pyifcb/releases) for available version tags.
 
-For example to install pyifcb 1.1.1,
+For example to install pyifcb 1.2.1,
 ```
-pip install 'git+https://github.com/joefutrelle/pyifcb@v1.1.1'
+pip install 'git+https://github.com/joefutrelle/pyifcb@v1.2.1'
 ```
 
 ### From the latest git commit:
