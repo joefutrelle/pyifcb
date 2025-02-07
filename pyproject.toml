@@ -20,7 +20,7 @@ classifiers = [
 ]
 keywords = ['FlowCytobot','Imaging','ifcb']
 dependencies = [
-    "scipy==1.15.1",
+    "scipy==1.13.1",
     "pandas==2.2.3",
     "h5py==3.12.1",
     "requests==2.32.3",
