@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pyifcb"
-version = "1.2"
+version = "1.2.1"
 description = "Imaging FlowCytobot Python API, generation 2"
 readme = "README.md"
 authors = [{name = "Joe Futrelle", email = "jfutrelle@whoi.edu"},
