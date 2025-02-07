@@ -27,7 +27,7 @@ dependencies = [
     "Pillow==11.1.0",
     "rectpack==0.2.2",
     "scikit-image==0.25.1",
-    "pysmb==1.12.10",
+    "pysmb==1.2.10",
     "smbprotocol==1.15.0",
     "pyyaml==6.0.2"
 ]
