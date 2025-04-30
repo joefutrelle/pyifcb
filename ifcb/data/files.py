@@ -82,7 +82,11 @@ class Fileset(object):
         """
         hdr_size = os.path.getsize(self.hdr_path)
         adc_size = os.path.getsize(self.adc_path)
-        roi_size = os.path.getsize(self.roi_path)
+        if self.require_roi_files:
+            roi_size = os.path.getsize(self.roi_path)
+        else:
+            roi_size = 0
+        # if roi file is not required, set size to 0
         return {
             'hdr': hdr_size,
             'adc': adc_size,
