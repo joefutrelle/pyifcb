@@ -40,7 +40,6 @@ def to_ecotaxa(b, zip_path=None):
             # Write the bytes to the zip file
             fout.writestr(img_file_name, img_byte_arr)
     
-        buffer = BytesIO()
         tsv_filename = f'ecotaxa_metadata.tsv'
         df = pd.DataFrame(records)
         buffer = BytesIO()
