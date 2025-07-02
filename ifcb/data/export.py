@@ -5,6 +5,8 @@ import pandas as pd
 from io import BytesIO
 
 import ifcb
+from ifcb.data.adc import SCHEMA_VERSION_1
+from ifcb.data.stitching import InfilledImages
 
 
 def to_ecotaxa(b, zip_path=None):
@@ -15,7 +17,12 @@ def to_ecotaxa(b, zip_path=None):
     with ZipFile(zip_path, 'w') as fout:
         records = []
 
-        for roi_number, image_data in b.images.items():
+        if b.schema == SCHEMA_VERSION_1:
+            images = InfilledImages(b)
+        else:
+            images = b.images
+    
+        for roi_number, image_data in images.items():
 
             object_id = ifcb.Pid(b.lid).with_target(roi_number)
             img_file_name = f'{object_id}.png'
