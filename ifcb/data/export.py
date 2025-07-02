@@ -40,7 +40,7 @@ def to_ecotaxa(b, zip_path=None):
             # Write the bytes to the zip file
             fout.writestr(img_file_name, img_byte_arr)
     
-        tsv_filename = f'ecotaxa_metadata.tsv'
+        tsv_filename = 'ecotaxa_metadata.tsv'
         df = pd.DataFrame(records)
         buffer = BytesIO()
         buffer.write('\t'.join(df.columns).encode() + b'\n')
@@ -48,4 +48,4 @@ def to_ecotaxa(b, zip_path=None):
         buffer.write('\t'.join('[f]' for _ in range(len(df.columns) - 3)).encode() + b'\n')
         df.to_csv(buffer, sep='\t', index=False, header=None)
 
-        fout.writestr('ecotaxa_metadata.tsv', buffer.getvalue())
+        fout.writestr(tsv_filename, buffer.getvalue())
