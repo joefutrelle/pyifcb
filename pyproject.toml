@@ -19,8 +19,10 @@ classifiers = [
     'Topic :: Scientific/Engineering',
 ]
 keywords = ['FlowCytobot','Imaging','ifcb']
+requires-python = ">=3.11"
 dependencies = [
-    "scipy==1.18.1",
+    "scipy==1.18.1; python_version >= '3.12'",
+    "scipy==1.17.1; python_version < '3.12'",
     "pandas==2.3.3",
     "h5py==3.16.0",
     "requests==2.34.2",
