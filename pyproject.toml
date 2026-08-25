@@ -20,16 +20,16 @@ classifiers = [
 ]
 keywords = ['FlowCytobot','Imaging','ifcb']
 dependencies = [
-    "scipy==1.13.1",
-    "pandas==2.2.3",
-    "h5py==3.12.1",
-    "requests==2.33.0",
+    "scipy==1.18.1",
+    "pandas==2.3.3",
+    "h5py==3.16.0",
+    "requests==2.34.2",
     "Pillow==12.3.0",
     "rectpack==0.2.2",
-    "scikit-image==0.24.0",
-    "pysmb==1.2.10",
-    "smbprotocol==1.15.0",
-    "pyyaml==6.0.2"
+    "scikit-image==0.26.0",
+    "pysmb==1.2.15",
+    "smbprotocol==1.17.0",
+    "pyyaml==6.0.3"
 ]
 
 [tool.hatch.build.targets.wheel]
