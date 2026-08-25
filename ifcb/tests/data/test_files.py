@@ -70,6 +70,15 @@ class TestDataDirectory(unittest.TestCase):
             sizes = TEST_FILES[fs.lid]['sizes']
             assert fs.getsizes() == sizes
             assert fs.getsize() == sum(sizes.values())
+    def test_getsizes_partial(self):
+        partial_fss = [b.fileset for b in self.partial]
+        assert partial_fss
+        for fs in partial_fss:
+            sizes = fs.getsizes()
+            assert sizes['hdr'] == os.path.getsize(fs.hdr_path)
+            assert sizes['adc'] == os.path.getsize(fs.adc_path)
+            assert sizes['roi'] == 0
+            assert fs.getsize() == sum(sizes.values())
     def test_descendants(self):
         assert len(list(self.default.list_descendants())) == 5
         assert len(list(self.blacklist.list_descendants())) == 3
