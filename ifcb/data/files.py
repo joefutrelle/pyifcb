@@ -77,12 +77,18 @@ class Fileset(object):
         """
         Get the sizes of the files.
 
+        If ``.roi`` files are not required and the ``.roi`` file is
+        missing, its size is reported as 0.
+
         :returns dict: sizes of files with keys
           'hdr', 'adc', and 'roi'
         """
         hdr_size = os.path.getsize(self.hdr_path)
         adc_size = os.path.getsize(self.adc_path)
-        roi_size = os.path.getsize(self.roi_path)
+        if not self.require_roi_files and not os.path.exists(self.roi_path):
+            roi_size = 0
+        else:
+            roi_size = os.path.getsize(self.roi_path)
         return {
             'hdr': hdr_size,
             'adc': adc_size,
